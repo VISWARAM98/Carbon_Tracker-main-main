@@ -7229,6 +7229,130 @@ def auditor_dashboard():
                          companies    = companies,
                          total_companies = len(companies))
 
+@app.route('/auditor/company/<int:company_id>')
+def auditor_company_view(company_id):
+    """Read-only detail view for a single company: emissions, ESG data,
+    compliance status, and evidence explicitly shared with this auditor."""
+    if 'user_id' not in session or session.get('role') != 'auditor':
+        flash('Access denied. Auditor login required.', 'error')
+        return redirect(url_for('login'))
+
+    auditor_id = session['user_id']
+
+    # Gate access through the same check used to build the dashboard list —
+    # this also auto-expires the access record if it's past due.
+    if not check_auditor_access_valid(auditor_id, company_id):
+        flash('You do not have active access to this company.', 'error')
+        return redirect(url_for('auditor_dashboard'))
+
+    access = AuditorAccess.query.filter_by(
+        auditor_id = auditor_id,
+        company_id = company_id,
+        status     = 'active'
+    ).first()
+    company = User.query.get_or_404(company_id)
+
+    # Track this visit
+    access.last_login = datetime.now()
+    db.session.commit()
+
+    username     = company.username
+    company_name = company.company_name
+
+    company_settings = CompanySettings.query.filter_by(company_id=company_name).first()
+
+    # --- Emissions ---
+    user_emissions = emission_data.get(username, {'scope1': [], 'scope2': [], 'scope3': []})
+    scope1_total = sum(i.get('co2e', 0) for i in user_emissions.get('scope1', []))
+    scope2_total = sum(i.get('co2e', 0) for i in user_emissions.get('scope2', []))
+    scope3_total = sum(i.get('co2e', 0) for i in user_emissions.get('scope3', []))
+    total_emissions = scope1_total + scope2_total + scope3_total
+
+    # --- Environmental activity records ---
+    env_records = EnvironmentalRecord.query.filter_by(user_id=username)\
+                    .order_by(EnvironmentalRecord.reporting_year.desc()).all()
+    FUEL_ACTS = {'diesel','gasoline','petrol','ron95','ron97','natural_gas','lpg','coal','fuel_oil','fuel'}
+    has_energy = any(r.module_type == 'energy' and r.activity_type not in FUEL_ACTS for r in env_records)
+    has_fuel   = any(r.module_type == 'energy' and r.activity_type in FUEL_ACTS for r in env_records)
+    has_water  = any(r.module_type == 'water' for r in env_records)
+    has_waste  = any(r.module_type == 'waste' for r in env_records)
+    env_pct = round((sum([has_energy, has_fuel, has_water, has_waste]) / 4) * 100)
+
+    # --- Social & Governance (raw SQL against the live tables — see note on
+    # the GovernanceData/SocialWorkforceData ORM classes being out of sync
+    # with the actual schema; mirroring /api/dashboard/stats here) ---
+    import sqlite3
+    conn = sqlite3.connect('instance/carbon_tracker.db')
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+
+    cur.execute("SELECT * FROM social_workforce_data WHERE company_id=? ORDER BY reporting_year DESC LIMIT 1", (company_name,))
+    social_row = cur.fetchone()
+    social_data = dict(social_row) if social_row else {}
+    skip = {'id', 'company_id', 'reporting_year', 'created_at', 'updated_at', 'entered_by', 'timestamp', 'data_source', 'evidence_reference'}
+    social_meaningful = {k: v for k, v in social_data.items() if k not in skip}
+    social_filled = [v for v in social_meaningful.values() if v not in (None, '', 0)]
+    social_pct = min(100, round((len(social_filled) / max(len(social_meaningful), 1)) * 100)) if social_data else 0
+
+    cur.execute("SELECT * FROM governance_data WHERE company_id=? ORDER BY reporting_year DESC LIMIT 1", (company_name,))
+    gov_row = cur.fetchone()
+    gov_data = dict(gov_row) if gov_row else {}
+    gov_meaningful = {k: v for k, v in gov_data.items() if k not in skip}
+    gov_filled = [v for v in gov_meaningful.values() if v not in (None, '', 0)]
+    gov_pct = min(100, round((len(gov_filled) / max(len(gov_meaningful), 1)) * 100)) if gov_data else 0
+    conn.close()
+
+    # Curated label/key pairs for the summary view (subset of the live columns —
+    # extend this list if you want more fields surfaced to auditors).
+    social_fields = [
+        ('Total Employees', 'total_employees'),
+        ('Male / Female Split', 'male_count'),
+        ('LTIFR (Safety)', 'ltifr'),
+        ('Fatalities', 'fatalities'),
+        ('Training Hours', 'total_training_hours'),
+        ('Community Investment (RM)', 'community_investment'),
+    ]
+    gov_fields = [
+        ('Board Size', 'board_size'),
+        ('Independent Directors', 'independent_directors'),
+        ('Female Directors', 'female_directors'),
+        ('Compliance Incidents', 'compliance_incidents'),
+        ('Whistleblower Reports', 'whistleblower_reports'),
+        ('Ethics Training Hours', 'ethics_training_hours'),
+    ]
+
+    # --- Compliance status (GRI / GHG Protocol / IFRS S2 etc.) ---
+    compliance = get_user_compliance_data(username)
+
+    # --- Evidence explicitly shared with auditors (access_level gates this —
+    # items left as 'company'-only won't show here until the company marks
+    # them shareable) ---
+    evidence_files = EvidenceVault.query.filter_by(company_id=company_name)\
+                        .filter(EvidenceVault.access_level.in_(['auditor', 'public']))\
+                        .order_by(EvidenceVault.upload_date.desc()).all()
+
+    return render_template('auditor/company_view.html',
+                         auditor_name = User.query.get(auditor_id).company_name,
+                         access = access,
+                         company = company,
+                         company_settings = company_settings,
+                         user_emissions = user_emissions,
+                         scope1_total = scope1_total,
+                         scope2_total = scope2_total,
+                         scope3_total = scope3_total,
+                         total_emissions = total_emissions,
+                         env_records = env_records,
+                         env_pct = env_pct,
+                         social_data = social_data,
+                         social_fields = social_fields,
+                         social_pct = social_pct,
+                         gov_data = gov_data,
+                         gov_fields = gov_fields,
+                         gov_pct = gov_pct,
+                         compliance = compliance,
+                         evidence_files = evidence_files,
+                         existing_notes = access.auditor_notes or '')
+
 @app.route('/api/auditor/note', methods=['POST'])
 def save_auditor_note():
     """Save auditor review note for a company"""

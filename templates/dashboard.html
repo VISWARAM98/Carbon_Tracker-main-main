@@ -6,23 +6,35 @@
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@300;400;500;600;700&display=swap');
 
 :root {
-    --bg:       #0b0f0c;
-    --surface:  #111612;
-    --card:     #141a15;
-    --border:   #1e2d21;
-    --border2:  #253029;
-    --green:    #22c55e;
-    --green-dim:#16a34a;
-    --green-dk: #052e16;
-    --mint:     #4ade80;
-    --amber:    #f59e0b;
-    --red:      #ef4444;
-    --blue:     #3b82f6;
-    --purple:   #a78bfa;
-    --teal:     #2dd4bf;
-    --text:     #e8f5eb;
-    --muted:    #6b8f72;
-    --sub:      #3a5c40;
+    /* Soft pastel sage-green theme — page bg and card fills are both light,
+       kept a step apart so cards still visibly float without hard borders. */
+    --bg:       #e9f5e4;
+    --surface:  #dcf0d4;
+    --card:     #ffffff;
+    --border:   #d8ead2;
+    --border2:  #c3ddb9;
+    --green:    #3fae6b;
+    --green-rgb:63,174,107;
+    --green-dim:#2f8f56;
+    --green-dim-rgb:47,143,86;
+    --green-dk: #eaf7e6;
+    --mint:     #6fcf97;
+    --amber:    #e0983f;
+    --amber-rgb:224,152,63;
+    --red:      #d97757;
+    --red-rgb:  217,119,87;
+    --blue:     #7c98c9;
+    --blue-rgb: 124,152,201;
+    --purple:   #a68bd1;
+    --purple-rgb:166,139,209;
+    --teal:     #4fb8ac;
+    --teal-rgb: 79,184,172;
+    --text:     #20342a;
+    --muted:    #6b8570;
+    --muted-rgb:107,133,112;
+    --sub:      #9db3a0;
+    --shadow: rgba(63,174,107,0.14);
+    color-scheme: light;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -36,9 +48,9 @@
 .db-subtitle { font-size: 12px; color: var(--muted); margin-top: 2px; }
 .db-actions { display: flex; gap: 10px; align-items: center; }
 
-.btn-outline { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border: 1px solid var(--border2); background: transparent; color: var(--text); border-radius: 8px; font-family: 'Satoshi',sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; text-decoration: none; }
+.btn-outline { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border: 1px solid var(--border2); background: var(--card); color: var(--text); border-radius: 12px; font-family: 'Satoshi',sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; text-decoration: none; }
 .btn-outline:hover { border-color: var(--green); color: var(--green); }
-.btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border: 1px solid var(--green-dim); background: var(--green-dk); color: var(--mint); border-radius: 8px; font-family: 'Satoshi',sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; text-decoration: none; }
+.btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border: 1px solid var(--green-dim); background: var(--green-dk); color: var(--green-dim); border-radius: 12px; font-weight: 700; font-family: 'Satoshi',sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; text-decoration: none; }
 .btn-primary:hover { background: var(--green-dim); border-color: var(--green); color: white; }
 
 /* ── KPI STRIP ── */
@@ -46,13 +58,13 @@
 .kpi-strip-inner { max-width: 1400px; margin: 0 auto; display: flex; align-items: stretch; }
 .kpi-item { flex: 1; padding: 14px 20px; border-right: 1px solid var(--border); display: flex; align-items: center; gap: 12px; cursor: pointer; transition: background 0.2s; }
 .kpi-item:last-child { border-right: none; }
-.kpi-item:hover { background: rgba(34,197,94,0.04); }
-.kpi-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
-.kpi-icon.green  { background: rgba(34,197,94,0.12); color: var(--green); }
-.kpi-icon.amber  { background: rgba(245,158,11,0.12); color: var(--amber); }
-.kpi-icon.blue   { background: rgba(59,130,246,0.12); color: var(--blue); }
-.kpi-icon.red    { background: rgba(239,68,68,0.12); color: var(--red); }
-.kpi-icon.purple { background: rgba(167,139,250,0.12); color: var(--purple); }
+.kpi-item:hover { background: rgba(var(--green-rgb),0.04); }
+.kpi-icon { width: 34px; height: 34px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+.kpi-icon.green  { background: rgba(var(--green-rgb),0.12); color: var(--green); }
+.kpi-icon.amber  { background: rgba(var(--amber-rgb),0.12); color: var(--amber); }
+.kpi-icon.blue   { background: rgba(var(--blue-rgb),0.12); color: var(--blue); }
+.kpi-icon.red    { background: rgba(var(--red-rgb),0.12); color: var(--red); }
+.kpi-icon.purple { background: rgba(var(--purple-rgb),0.12); color: var(--purple); }
 .kpi-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
 .kpi-val { font-family: 'ClashDisplay','Satoshi',sans-serif; font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1; margin-top: 2px; }
 .kpi-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
@@ -72,46 +84,56 @@
 .grid-1-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; margin-bottom: 12px; }
 
 /* ── CARDS ── */
-.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: border-color 0.2s; }
-.card:hover { border-color: var(--border2); }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; box-shadow: 0 4px 16px -6px var(--shadow); transition: box-shadow 0.2s, transform 0.2s; }
+.card:hover { box-shadow: 0 8px 22px -6px var(--shadow); }
 .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .card-title { font-size: 13px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
 .card-badge { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 4px; }
-.badge-green  { background: rgba(34,197,94,0.1);  color: var(--green);  border: 1px solid rgba(34,197,94,0.2); }
-.badge-amber  { background: rgba(245,158,11,0.1); color: var(--amber);  border: 1px solid rgba(245,158,11,0.2); }
-.badge-blue   { background: rgba(59,130,246,0.1); color: var(--blue);   border: 1px solid rgba(59,130,246,0.2); }
-.badge-red    { background: rgba(239,68,68,0.1);  color: var(--red);    border: 1px solid rgba(239,68,68,0.2); }
-.badge-purple { background: rgba(167,139,250,0.1);color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
-.badge-teal   { background: rgba(45,212,191,0.1); color: var(--teal);   border: 1px solid rgba(45,212,191,0.2); }
-.badge-muted  { background: rgba(107,143,114,0.1);color: var(--muted);  border: 1px solid rgba(107,143,114,0.2); }
+.badge-green  { background: rgba(var(--green-rgb),0.1);  color: var(--green);  border: 1px solid rgba(var(--green-rgb),0.2); }
+.badge-amber  { background: rgba(var(--amber-rgb),0.1); color: var(--amber);  border: 1px solid rgba(var(--amber-rgb),0.2); }
+.badge-blue   { background: rgba(var(--blue-rgb),0.1); color: var(--blue);   border: 1px solid rgba(var(--blue-rgb),0.2); }
+.badge-red    { background: rgba(var(--red-rgb),0.1);  color: var(--red);    border: 1px solid rgba(var(--red-rgb),0.2); }
+.badge-purple { background: rgba(var(--purple-rgb),0.1);color: var(--purple); border: 1px solid rgba(var(--purple-rgb),0.2); }
+.badge-teal   { background: rgba(var(--teal-rgb),0.1); color: var(--teal);   border: 1px solid rgba(var(--teal-rgb),0.2); }
+.badge-muted  { background: rgba(var(--muted-rgb),0.1);color: var(--muted);  border: 1px solid rgba(var(--muted-rgb),0.2); }
 
-/* ── STAT CARDS ── */
-.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; position: relative; overflow: hidden; transition: border-color 0.2s; }
-.stat-card:hover { border-color: var(--border2); }
-.stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
-.stat-card.green::before { background: var(--green); }
-.stat-card.amber::before { background: var(--amber); }
-.stat-card.blue::before  { background: var(--blue); }
-.stat-card.red::before   { background: var(--red); }
-.stat-card.purple::before{ background: var(--purple); }
-.stat-card.teal::before  { background: var(--teal); }
+/* ── STAT CARDS ──
+   Only ONE card per row carries the vivid "hero" treatment (the metric that
+   matters most). The rest stay quiet — neutral border, muted top strip,
+   small tinted icon only — so the hero has somewhere to stand out. This is
+   the isolation/von-Restorff effect: concentrate saturation on one focal
+   point instead of spreading it evenly. */
+.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 18px 20px; position: relative; overflow: hidden; box-shadow: 0 4px 16px -6px var(--shadow); transition: box-shadow 0.2s, transform 0.2s; }
+.stat-card:hover { box-shadow: 0 8px 22px -6px var(--shadow); transform: translateY(-1px); }
+.stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--border2); }
 .stat-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 8px; }
-.stat-val { font-family: 'ClashDisplay','Satoshi',sans-serif; font-size: 26px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1; }
+.stat-val { font-family: 'ClashDisplay','Satoshi',sans-serif; font-size: 24px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1; }
 .stat-unit { font-size: 11px; color: var(--muted); margin-top: 4px; }
-.stat-icon { position: absolute; top: 16px; right: 16px; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; }
-.stat-icon.green  { background: rgba(34,197,94,0.12); color: var(--green); }
-.stat-icon.amber  { background: rgba(245,158,11,0.12); color: var(--amber); }
-.stat-icon.blue   { background: rgba(59,130,246,0.12); color: var(--blue); }
-.stat-icon.red    { background: rgba(239,68,68,0.12); color: var(--red); }
-.stat-icon.purple { background: rgba(167,139,250,0.12); color: var(--purple); }
-.stat-icon.teal   { background: rgba(45,212,191,0.12); color: var(--teal); }
+
+.stat-card.hero {
+    background: linear-gradient(150deg, rgba(var(--green-rgb),0.20) 0%, var(--card) 70%);
+    border: 1px solid rgba(var(--green-rgb),0.28);
+    box-shadow: 0 8px 22px -8px rgba(var(--green-rgb),0.35);
+}
+.stat-card.hero:hover { box-shadow: 0 10px 26px -8px rgba(var(--green-rgb),0.4); transform: translateY(-1px); }
+.stat-card.hero::before { background: var(--green); height: 3px; }
+.stat-card.hero .stat-label { color: var(--green-dim); }
+.stat-card.hero .stat-val { font-size: 32px; color: var(--text); }
+.stat-card.hero .stat-icon { background: rgba(var(--green-rgb),0.22); color: var(--green-dim); }
+.stat-icon { position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 13px; background: var(--surface); color: var(--muted); }
+.stat-icon.green  { background: rgba(var(--green-rgb),0.12); color: var(--green); }
+.stat-icon.amber  { background: rgba(var(--amber-rgb),0.12); color: var(--amber); }
+.stat-icon.blue   { background: rgba(var(--blue-rgb),0.12); color: var(--blue); }
+.stat-icon.red    { background: rgba(var(--red-rgb),0.12); color: var(--red); }
+.stat-icon.purple { background: rgba(var(--purple-rgb),0.12); color: var(--purple); }
+.stat-icon.teal   { background: rgba(var(--teal-rgb),0.12); color: var(--teal); }
 
 /* ── CHART ── */
 .chart-wrap { height: 200px; position: relative; }
 .chart-wrap.sm { height: 160px; }
 
 /* ── ESG PILLAR CARDS ── */
-.pillar-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; transition: border-color 0.2s; }
+.pillar-card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 18px 20px; box-shadow: 0 4px 16px -6px var(--shadow); transition: box-shadow 0.2s; }
 .pillar-card:hover { border-color: var(--border2); }
 .pillar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .pillar-name { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; }
@@ -133,7 +155,7 @@
 .pillar-metric-val { font-weight: 600; color: var(--text); }
 
 /* ── ALERT ITEMS ── */
-.alert-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); margin-bottom: 8px; transition: border-color 0.15s; }
+.alert-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); margin-bottom: 8px; transition: border-color 0.15s; }
 .alert-item:hover { border-color: var(--border2); }
 .alert-item:last-child { margin-bottom: 0; }
 .alert-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
@@ -155,7 +177,7 @@
 .entry-list { max-height: 220px; overflow-y: auto; padding-right: 4px; }
 .entry-list::-webkit-scrollbar { width: 3px; }
 .entry-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
-.entry-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 11px; border-radius: 8px; margin-bottom: 5px; border: 1px solid var(--border); background: var(--surface); transition: border-color 0.15s; }
+.entry-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 11px; border-radius: 12px; margin-bottom: 5px; border: 1px solid var(--border); background: var(--surface); transition: border-color 0.15s; }
 .entry-item:hover { border-color: var(--border2); }
 .entry-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-right: 9px; }
 .entry-dot.s1 { background: var(--green); }
@@ -212,18 +234,18 @@
 .method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
 .method-card { padding: 14px; border: 1px solid var(--border2); border-radius: 10px; background: var(--card); cursor: pointer; text-align: center; transition: all 0.2s; }
 .method-card:hover { border-color: var(--green); }
-.method-card.active { border-color: var(--green); background: rgba(34,197,94,0.06); }
+.method-card.active { border-color: var(--green); background: rgba(var(--green-rgb),0.06); }
 .method-card i { font-size: 18px; color: var(--green); display: block; margin-bottom: 7px; }
 .method-card-title { font-weight: 700; font-size: 12px; color: var(--text); }
 .method-card-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
 .scope-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 18px; }
 .scope-btn { padding: 12px 8px; border: 1px solid var(--border2); border-radius: 10px; background: var(--card); cursor: pointer; text-align: center; transition: all 0.2s; font-family: 'Satoshi',sans-serif; }
 .scope-btn:hover { border-color: var(--green); }
-.scope-btn.active { border-color: var(--green); background: rgba(34,197,94,0.06); }
+.scope-btn.active { border-color: var(--green); background: rgba(var(--green-rgb),0.06); }
 .scope-btn i { font-size: 16px; color: var(--green); display: block; margin-bottom: 5px; }
 .scope-btn-title { font-weight: 700; font-size: 11px; color: var(--text); }
 .scope-btn-sub { font-size: 10px; color: var(--muted); margin-top: 1px; }
-.co2e-result { background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.2); border-radius: 10px; padding: 14px; text-align: center; margin-top: 14px; display: none; }
+.co2e-result { background: rgba(var(--green-rgb),0.06); border: 1px solid rgba(var(--green-rgb),0.2); border-radius: 10px; padding: 14px; text-align: center; margin-top: 14px; display: none; }
 .co2e-result-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 5px; }
 .co2e-result-val { font-family: 'ClashDisplay','Satoshi',sans-serif; font-size: 26px; font-weight: 700; color: var(--green); }
 .co2e-result-sub { font-size: 10px; color: var(--muted); margin-top: 3px; }
@@ -330,29 +352,29 @@
 <!-- ── CARBON SECTION ── -->
 <div class="section-label" id="carbon-section">Carbon Emissions</div>
 <div class="grid-4">
-    <div class="stat-card green">
+    <div class="stat-card hero">
         <div class="stat-label">Total Emissions</div>
         <div class="stat-val">{{ "%.1f"|format(chart_data.scope_totals[0] + chart_data.scope_totals[1] + chart_data.scope_totals[2]) }}</div>
         <div class="stat-unit">kg CO₂e</div>
-        <div class="stat-icon green"><i class="fas fa-leaf"></i></div>
+        <div class="stat-icon"><i class="fas fa-leaf"></i></div>
     </div>
-    <div class="stat-card amber">
+    <div class="stat-card">
         <div class="stat-label">Carbon Traded</div>
         <div class="stat-val">{{ "%.1f"|format(chart_data.carbon_traded or 0) }}</div>
         <div class="stat-unit">kg CO₂e</div>
-        <div class="stat-icon amber"><i class="fas fa-exchange-alt"></i></div>
+        <div class="stat-icon"><i class="fas fa-exchange-alt"></i></div>
     </div>
-    <div class="stat-card blue">
+    <div class="stat-card">
         <div class="stat-label">Carbon Offset</div>
         <div class="stat-val">{{ "%.1f"|format(chart_data.carbon_offset or 0) }}</div>
         <div class="stat-unit">kg CO₂e</div>
-        <div class="stat-icon blue"><i class="fas fa-tree"></i></div>
+        <div class="stat-icon"><i class="fas fa-tree"></i></div>
     </div>
-    <div class="stat-card red">
+    <div class="stat-card">
         <div class="stat-label">Carbon Credited</div>
         <div class="stat-val">{{ "%.1f"|format(chart_data.carbon_credited or 0) }}</div>
         <div class="stat-unit">kg CO₂e</div>
-        <div class="stat-icon red"><i class="fas fa-certificate"></i></div>
+        <div class="stat-icon"><i class="fas fa-certificate"></i></div>
     </div>
 </div>
 
@@ -389,8 +411,8 @@
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);margin-bottom:12px;">Overall ESG Score</div>
         <div id="esg-score-ring" style="position:relative;width:120px;height:120px;margin-bottom:16px;">
             <svg width="120" height="120" viewBox="0 0 120 120">
-                <circle cx="60" cy="60" r="50" fill="none" stroke="#1e2d21" stroke-width="8"/>
-                <circle id="esg-ring-fill" cx="60" cy="60" r="50" fill="none" stroke="#22c55e" stroke-width="8" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="314" transform="rotate(-90 60 60)" style="transition:stroke-dashoffset 1.2s ease;"/>
+                <circle cx="60" cy="60" r="50" fill="none" stroke="var(--border)" stroke-width="8"/>
+                <circle id="esg-ring-fill" cx="60" cy="60" r="50" fill="none" stroke="var(--green)" stroke-width="8" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="314" transform="rotate(-90 60 60)" style="transition:stroke-dashoffset 1.2s ease;"/>
             </svg>
             <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;">
                 <div id="esg-score-num" style="font-family:'ClashDisplay','Satoshi',sans-serif;font-size:28px;font-weight:700;color:var(--green);line-height:1;">—</div>
@@ -622,9 +644,15 @@ const emissionFactors = {
     scope3: {business_travel_air:0.25,business_travel_car:0.21,employee_commute:0.12,purchased_goods:0.15,waste_disposal:0.85,water:0.344}
 };
 
-Chart.defaults.color = '#6b8f72';
-Chart.defaults.borderColor = '#1e2d21';
-const darkPalette = ['#22c55e','#f59e0b','#3b82f6','#a78bfa','#f87171','#2dd4bf'];
+// ── CHART COLORS ──
+// Chart.js draws to canvas, which can't read CSS var()/custom properties at
+// paint time — so the palette is mirrored here in JS to match the CSS theme.
+const PALETTE = { green:'#3fae6b', amber:'#e0983f', blue:'#7c98c9', purple:'#a68bd1', red:'#d97757', teal:'#4fb8ac', muted:'#6b8570', border:'#d8ead2', card:'#ffffff' };
+function scopePalette() { return [PALETTE.green, PALETTE.amber, PALETTE.blue, PALETTE.purple, PALETTE.red, PALETTE.teal]; }
+function hexToRgba(hex, alpha) {
+    const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    return `rgba(${r},${g},${b},${alpha})`;
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     initCharts();
@@ -632,13 +660,16 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initCharts() {
+    Chart.defaults.color = PALETTE.muted;
+    Chart.defaults.borderColor = PALETTE.border;
+
     new Chart(document.getElementById('carbonActivitiesChart'), {
         type: 'bar',
         data: {
             labels: ['Emitted','Traded','Offset','Credited'],
-            datasets: [{ data: [{{ chart_data.scope_totals[0]+chart_data.scope_totals[1]+chart_data.scope_totals[2] }},{{ chart_data.carbon_traded or 0 }},{{ chart_data.carbon_offset or 0 }},{{ chart_data.carbon_credited or 0 }}], backgroundColor: ['#22c55e','#f59e0b','#3b82f6','#a78bfa'], borderColor: 'transparent', borderRadius: 6, borderSkipped: false }]
+            datasets: [{ data: [{{ chart_data.scope_totals[0]+chart_data.scope_totals[1]+chart_data.scope_totals[2] }},{{ chart_data.carbon_traded or 0 }},{{ chart_data.carbon_offset or 0 }},{{ chart_data.carbon_credited or 0 }}], backgroundColor: [PALETTE.green, PALETTE.amber, PALETTE.blue, PALETTE.purple], borderColor: 'transparent', borderRadius: 8, borderSkipped: false }]
         },
-        options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true,grid:{color:'#1e2d21'},ticks:{color:'#6b8f72'}}, x:{grid:{display:false},ticks:{color:'#6b8f72'}} } }
+        options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true,grid:{color:PALETTE.border},ticks:{color:PALETTE.muted}}, x:{grid:{display:false},ticks:{color:PALETTE.muted}} } }
     });
 
     new Chart(document.getElementById('monthlyTrendChart'), {
@@ -646,12 +677,12 @@ function initCharts() {
         data: {
             labels: {{ chart_data.monthly_trends.months|tojson }},
             datasets: [
-                {label:'Scope 1',data:{{ chart_data.monthly_trends.scope1|tojson }},borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,0.05)',tension:0.4,fill:true,pointRadius:2},
-                {label:'Scope 2',data:{{ chart_data.monthly_trends.scope2|tojson }},borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.05)',tension:0.4,fill:true,pointRadius:2},
-                {label:'Scope 3',data:{{ chart_data.monthly_trends.scope3|tojson }},borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.05)',tension:0.4,fill:true,pointRadius:2}
+                {label:'Scope 1',data:{{ chart_data.monthly_trends.scope1|tojson }},borderColor:PALETTE.green,backgroundColor:hexToRgba(PALETTE.green,0.12),tension:0.4,fill:true,pointRadius:2},
+                {label:'Scope 2',data:{{ chart_data.monthly_trends.scope2|tojson }},borderColor:PALETTE.amber,backgroundColor:hexToRgba(PALETTE.amber,0.12),tension:0.4,fill:true,pointRadius:2},
+                {label:'Scope 3',data:{{ chart_data.monthly_trends.scope3|tojson }},borderColor:PALETTE.blue,backgroundColor:hexToRgba(PALETTE.blue,0.12),tension:0.4,fill:true,pointRadius:2}
             ]
         },
-        options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top',labels:{color:'#6b8f72',boxWidth:8,font:{size:10}}}}, scales:{ x:{grid:{color:'#1e2d21'},ticks:{color:'#6b8f72'}}, y:{grid:{color:'#1e2d21'},ticks:{color:'#6b8f72'}} } }
+        options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top',labels:{color:PALETTE.muted,boxWidth:8,font:{size:10}}}}, scales:{ x:{grid:{color:PALETTE.border},ticks:{color:PALETTE.muted}}, y:{grid:{color:PALETTE.border},ticks:{color:PALETTE.muted}} } }
     });
 
     [['scope1PieChart',{{ chart_data.scope1_breakdown.keys()|list|tojson }},{{ chart_data.scope1_breakdown.values()|list|tojson }}],
@@ -660,8 +691,8 @@ function initCharts() {
     ].forEach(([id,labels,data]) => {
         new Chart(document.getElementById(id), {
             type: 'doughnut',
-            data: {labels, datasets:[{data,backgroundColor:darkPalette,borderColor:'#141a15',borderWidth:3,hoverOffset:4}]},
-            options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{color:'#6b8f72',boxWidth:8,font:{size:10},padding:10}}}, cutout:'62%' }
+            data: {labels, datasets:[{data,backgroundColor:scopePalette(),borderColor:PALETTE.card,borderWidth:3,hoverOffset:4}]},
+            options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{color:PALETTE.muted,boxWidth:8,font:{size:10},padding:10}}}, cutout:'62%' }
         });
     });
 }
@@ -716,7 +747,7 @@ async function loadESGData() {
         document.getElementById('esg-score-label').textContent = label;
         const offset = 314 - (314 * overallESG / 100);
         document.getElementById('esg-ring-fill').style.strokeDashoffset = offset;
-        const ringColor = overallESG >= 80 ? '#22c55e' : overallESG >= 60 ? '#f59e0b' : overallESG >= 40 ? '#3b82f6' : '#ef4444';
+        const ringColor = overallESG >= 80 ? PALETTE.green : overallESG >= 60 ? PALETTE.amber : overallESG >= 40 ? PALETTE.blue : PALETTE.red;
         document.getElementById('esg-ring-fill').style.stroke = ringColor;
 
         // Bursa readiness bars
