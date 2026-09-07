@@ -1,0 +1,582 @@
+{% extends "base.html" %}
+
+{% block title %}Carbon Tax Modeling - EmittiF{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h2 mb-3">💰 Carbon Tax Modeling 2026</h1>
+            <p class="text-muted">Model potential carbon tax liability under Malaysia's proposed carbon pricing framework.</p>
+        </div>
+    </div>
+
+    <!-- Current Emissions Summary -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Your Current Emissions Profile</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <div class="display-4 text-primary">{{ (total_emissions_kg / 1000)|round(1) }}</div>
+                            <div class="text-muted">Tonnes CO₂e (Current)</div>
+                        </div>
+                        <div class="col-md-8">
+                            <p><strong>Based on your current emission data:</strong></p>
+                            <div class="progress mb-2" style="height: 20px;">
+                                <div class="progress-bar bg-success" style="width: 30%">Scope 1</div>
+                                <div class="progress-bar bg-warning" style="width: 40%">Scope 2</div>
+                                <div class="progress-bar bg-info" style="width: 30%">Scope 3</div>
+                            </div>
+                            <div class="small">
+                                <span class="badge bg-success">Scope 1: {{ (total_emissions_kg * 0.3 / 1000)|round(1) }} t</span>
+                                <span class="badge bg-warning">Scope 2: {{ (total_emissions_kg * 0.4 / 1000)|round(1) }} t</span>
+                                <span class="badge bg-info">Scope 3: {{ (total_emissions_kg * 0.3 / 1000)|round(1) }} t</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Tax-Free Threshold</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="display-4 text-success">25,000</div>
+                    <div class="text-muted">Tonnes CO₂e</div>
+                    <p class="small mt-2">Proposed tax-free allowance for transition period (2026-2030)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tax Modeling Controls -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-sliders"></i> Tax Scenario Modeling
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="taxModelForm">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Tax Rate (RM/tonne)</label>
+                                <input type="range" class="form-range" id="taxRate" min="20" max="100" value="30" step="5">
+                                <div class="text-center">
+                                    <span class="h4" id="taxRateValue">30</span> RM/tCO₂e
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Sector Multiplier</label>
+                                <select class="form-select" id="sectorMultiplier">
+                                    <option value="0.8">SME Transition (0.8x)</option>
+                                    <option value="1.0" selected>General Industry (1.0x)</option>
+                                    <option value="1.2">Heavy Industry (1.2x)</option>
+                                    <option value="1.5">Power Generation (1.5x)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Tax-Free Threshold (t)</label>
+                                <input type="number" class="form-control" id="taxFreeThreshold" value="25000" min="0" max="100000">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Growth Rate (%/year)</label>
+                                <input type="number" class="form-control" id="growthRate" value="5" min="-10" max="20" step="1">
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="includeScope3" checked>
+                                    <label class="form-check-label" for="includeScope3">
+                                        Include Scope 3 emissions in tax calculation
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="carbonOffset" checked>
+                                    <label class="form-check-label" for="carbonOffset">
+                                        Apply carbon offset credits (max 10% reduction)
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <button type="button" class="btn btn-dark" onclick="calculateTaxLiability()">
+                                    <i class="bi bi-calculator"></i> Calculate Tax Liability
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pre-built Scenarios -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h4>Pre-built Scenarios</h4>
+            <div class="row">
+                {% for calc in calculations %}
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100">
+                        <div class="card-header text-white" 
+                             style="background-color: {{ loop.cycle('#0F3B2E', '#1E6B52', '#2D8F6C', '#3CB385') }}">
+                            <h6 class="mb-0">{{ calc.scenario.sector }}</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center">
+                                <div class="display-6">RM {{ calc.calculation.final_tax_liability|round(0)|intcomma }}</div>
+                                <div class="text-muted">Annual Tax (2026)</div>
+                            </div>
+                            <hr>
+                            <div class="small">
+                                <p><strong>Rate:</strong> RM {{ calc.scenario.rate }}/tCO₂e</p>
+                                <p><strong>Multiplier:</strong> {{ calc.scenario.multiplier }}x</p>
+                                <p><strong>Taxable Emissions:</strong> {{ calc.calculation.taxable_emissions_tonnes|round(1) }} t</p>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-sm btn-outline-dark w-100" 
+                                    onclick="loadScenario({{ calc.scenario.rate }}, {{ calc.scenario.multiplier }})">
+                                Use This Scenario
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Calculation Results -->
+    <div class="row" id="calculationResults" style="display: none;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Tax Liability Calculation</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6>Detailed Breakdown</h6>
+                            <table class="table table-bordered" id="taxBreakdown">
+                                <!-- Will be populated by JavaScript -->
+                            </table>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0">Annual Cost Impact</h6>
+                                </div>
+                                <div class="card-body text-center">
+                                    <div class="display-3 text-success" id="annualTaxDisplay">0</div>
+                                    <div class="text-muted">RM per year</div>
+                                    <hr>
+                                    <div class="small">
+                                        <p><strong>Monthly:</strong> RM <span id="monthlyTax">0</span></p>
+                                        <p><strong>Daily:</strong> RM <span id="dailyTax">0</span></p>
+                                        <p><strong>Per Product:</strong> RM <span id="perProductTax">0</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 5-Year Projection -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h6>5-Year Projection (2026-2030)</h6>
+                            <canvas id="taxProjectionChart" height="100"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Reduction Recommendations -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header bg-warning text-dark">
+                                    <h6 class="mb-0">
+                                        <i class="bi bi-lightbulb"></i> Tax Reduction Strategies
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <h6>Immediate (0-1 year)</h6>
+                                            <ul class="small">
+                                                <li>Energy efficiency improvements</li>
+                                                <li>Fuel switching to lower-carbon alternatives</li>
+                                                <li>Process optimization</li>
+                                                <li>Carbon offset purchases (max 10%)</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h6>Medium-term (1-3 years)</h6>
+                                            <ul class="small">
+                                                <li>Renewable energy installation</li>
+                                                <li>Equipment upgrades</li>
+                                                <li>Supply chain optimization</li>
+                                                <li>Carbon capture pilot projects</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h6>Long-term (3-5 years)</h6>
+                                            <ul class="small">
+                                                <li>Complete energy transition</li>
+                                                <li>Circular economy implementation</li>
+                                                <li>Carbon-neutral certification</li>
+                                                <li>Innovation in low-carbon products</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-success" onclick="exportTaxReport()">
+                        <i class="bi bi-download"></i> Export Tax Analysis Report
+                    </button>
+                    <button class="btn btn-outline-dark ms-2" onclick="saveScenario()">
+                        <i class="bi bi-save"></i> Save This Scenario
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Policy Context -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-journal-text"></i> Malaysian Carbon Tax Policy Context
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Proposed Framework (2026 Implementation)</h6>
+                            <ul>
+                                <li><strong>Phase 1 (2026-2030):</strong> Selected sectors, tax-free thresholds</li>
+                                <li><strong>Phase 2 (2031-2035):</strong> Expanded coverage, increased rates</li>
+                                <li><strong>Phase 3 (2036+):</strong> Full economy coverage, market-linked prices</li>
+                            </ul>
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i>
+                                <strong>Revenue Recycling:</strong> Tax revenues will be reinvested in green technology and transition support.
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Affected Sectors (Priority)</h6>
+                            <div class="row">
+                                <div class="col-6">
+                                    <ul class="small">
+                                        <li>Power generation</li>
+                                        <li>Oil & gas</li>
+                                        <li>Cement</li>
+                                        <li>Steel</li>
+                                    </ul>
+                                </div>
+                                <div class="col-6">
+                                    <ul class="small">
+                                        <li>Chemicals</li>
+                                        <li>Aviation</li>
+                                        <li>Shipping</li>
+                                        <li>Large commercial buildings</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <h6 class="mt-3">Compliance Options</h6>
+                            <ul class="small">
+                                <li>Pay tax on emissions</li>
+                                <li>Use domestic carbon credits (max 10% of liability)</li>
+                                <li>International credits (under Article 6)</li>
+                                <li>Sector-specific reduction plans</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let taxChart = null;
+
+// Update tax rate display
+document.getElementById('taxRate').addEventListener('input', function() {
+    document.getElementById('taxRateValue').textContent = this.value;
+});
+
+function calculateTaxLiability() {
+    const taxRate = parseFloat(document.getElementById('taxRate').value);
+    const sectorMultiplier = parseFloat(document.getElementById('sectorMultiplier').value);
+    const taxFreeThreshold = parseFloat(document.getElementById('taxFreeThreshold').value);
+    const growthRate = parseFloat(document.getElementById('growthRate').value) / 100;
+    const includeScope3 = document.getElementById('includeScope3').checked;
+    const carbonOffset = document.getElementById('carbonOffset').checked;
+    
+    // Calculate based on current emissions
+    let taxableEmissions = {{ total_emissions_kg }} / 1000; // Convert to tonnes
+    
+    if (!includeScope3) {
+        // Exclude Scope 3 (assuming 30% of total is Scope 3)
+        taxableEmissions = taxableEmissions * 0.7;
+    }
+    
+    // Calculate tax
+    const baseTax = taxableEmissions * taxRate;
+    const adjustedTax = baseTax * sectorMultiplier;
+    
+    // Apply tax-free threshold
+    const taxableAfterThreshold = Math.max(0, taxableEmissions - taxFreeThreshold);
+    const finalTax = taxableAfterThreshold * taxRate * sectorMultiplier;
+    
+    // Apply carbon offset reduction
+    let offsetReduction = 0;
+    if (carbonOffset) {
+        offsetReduction = finalTax * 0.1; // 10% reduction from offsets
+    }
+    const taxAfterOffset = finalTax - offsetReduction;
+    
+    // Update UI with results
+    updateTaxBreakdown({
+        total_emissions_tonnes: taxableEmissions.toFixed(1),
+        tax_rate_per_tonne: taxRate,
+        sector_multiplier: sectorMultiplier,
+        tax_free_threshold: taxFreeThreshold,
+        taxable_emissions_tonnes: taxableAfterThreshold.toFixed(1),
+        base_tax_liability: baseTax.toFixed(2),
+        adjusted_tax_liability: adjustedTax.toFixed(2),
+        final_tax_liability: finalTax.toFixed(2),
+        offset_reduction: offsetReduction.toFixed(2),
+        tax_after_offset: taxAfterOffset.toFixed(2)
+    });
+    
+    // Show calculation results
+    document.getElementById('calculationResults').style.display = 'block';
+    
+    // Create 5-year projection
+    createTaxProjection(taxAfterOffset, growthRate, taxRate, sectorMultiplier);
+    
+    // Scroll to results
+    document.getElementById('calculationResults').scrollIntoView({ behavior: 'smooth' });
+}
+
+function updateTaxBreakdown(data) {
+    const table = document.getElementById('taxBreakdown');
+    table.innerHTML = `
+        <tr>
+            <td><strong>Total Emissions</strong></td>
+            <td>${parseFloat(data.total_emissions_tonnes).toLocaleString()} tonnes CO₂e</td>
+        </tr>
+        <tr>
+            <td><strong>Tax-Free Threshold</strong></td>
+            <td>${parseFloat(data.tax_free_threshold).toLocaleString()} tonnes</td>
+        </tr>
+        <tr>
+            <td><strong>Taxable Emissions</strong></td>
+            <td>${parseFloat(data.taxable_emissions_tonnes).toLocaleString()} tonnes</td>
+        </tr>
+        <tr>
+            <td><strong>Tax Rate</strong></td>
+            <td>RM ${data.tax_rate_per_tonne.toFixed(0)} per tonne</td>
+        </tr>
+        <tr>
+            <td><strong>Sector Multiplier</strong></td>
+            <td>${data.sector_multiplier}x</td>
+        </tr>
+        <tr class="table-success">
+            <td><strong>Base Tax Liability</strong></td>
+            <td>RM ${parseFloat(data.base_tax_liability).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+        </tr>
+        <tr>
+            <td><strong>After Sector Adjustment</strong></td>
+            <td>RM ${parseFloat(data.adjusted_tax_liability).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+        </tr>
+        <tr class="table-warning">
+            <td><strong>After Tax-Free Threshold</strong></td>
+            <td>RM ${parseFloat(data.final_tax_liability).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+        </tr>
+        <tr>
+            <td><strong>Carbon Offset Reduction (10%)</strong></td>
+            <td>RM ${parseFloat(data.offset_reduction).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+        </tr>
+        <tr class="table-primary">
+            <td><strong>Final Annual Tax Liability</strong></td>
+            <td><strong>RM ${parseFloat(data.tax_after_offset).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></td>
+        </tr>
+    `;
+    
+    // Update cost impact display
+    const annualTax = parseFloat(data.tax_after_offset);
+    document.getElementById('annualTaxDisplay').textContent = formatCurrency(annualTax);
+    document.getElementById('monthlyTax').textContent = formatCurrency(annualTax / 12);
+    document.getElementById('dailyTax').textContent = formatCurrency(annualTax / 365);
+    document.getElementById('perProductTax').textContent = formatCurrency(annualTax / 1000); // Assuming 1000 products
+}
+
+function formatCurrency(amount) {
+    return amount.toLocaleString('en-MY', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    });
+}
+
+function createTaxProjection(baseTax, growthRate, taxRate, sectorMultiplier) {
+    const ctx = document.getElementById('taxProjectionChart').getContext('2d');
+    
+    // Destroy existing chart
+    if (taxChart) {
+        taxChart.destroy();
+    }
+    
+    // Generate 5-year projection
+    const years = ['2026', '2027', '2028', '2029', '2030'];
+    const taxAmounts = [];
+    let currentTax = baseTax;
+    
+    for (let i = 0; i < 5; i++) {
+        taxAmounts.push(currentTax);
+        currentTax *= (1 + growthRate); // Apply annual growth
+    }
+    
+    // Create chart
+    taxChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: years,
+            datasets: [{
+                label: 'Projected Tax Liability (RM)',
+                data: taxAmounts,
+                borderColor: '#0F3B2E',
+                backgroundColor: 'rgba(15, 59, 46, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'RM ' + context.parsed.y.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'RM ' + value.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function loadScenario(taxRate, multiplier) {
+    document.getElementById('taxRate').value = taxRate;
+    document.getElementById('taxRateValue').textContent = taxRate;
+    document.getElementById('sectorMultiplier').value = multiplier;
+    calculateTaxLiability();
+}
+
+function exportTaxReport() {
+    const data = {
+        company: '{{ username }}',
+        total_emissions: {{ total_emissions_kg }} / 1000,
+        tax_rate: document.getElementById('taxRate').value,
+        sector_multiplier: document.getElementById('sectorMultiplier').value,
+        calculation_date: new Date().toISOString()
+    };
+    
+    const jsonStr = JSON.stringify(data, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(jsonStr);
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', `carbon_tax_analysis_${new Date().toISOString().slice(0,10)}.json`);
+    linkElement.click();
+}
+
+function saveScenario() {
+    const scenario = {
+        name: 'Custom Tax Scenario',
+        tax_rate: document.getElementById('taxRate').value,
+        sector_multiplier: document.getElementById('sectorMultiplier').value,
+        tax_free_threshold: document.getElementById('taxFreeThreshold').value,
+        created: new Date().toISOString()
+    };
+    
+    fetch('/api/save-tax-scenario', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(scenario)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Scenario saved successfully');
+        }
+    });
+}
+
+// Initialize with default calculation
+document.addEventListener('DOMContentLoaded', function() {
+    // Use the first pre-built scenario as default
+    if ({{ calculations|length }} > 0) {
+        const firstScenario = {{ calculations[0].scenario|tojson }};
+        loadScenario(firstScenario.rate, firstScenario.multiplier);
+    }
+});
+</script>
+
+<style>
+.form-range::-webkit-slider-thumb {
+    background-color: #0F3B2E;
+}
+
+.form-range::-moz-range-thumb {
+    background-color: #0F3B2E;
+}
+
+.card-header h6 {
+    font-size: 0.9rem;
+}
+
+.table td:first-child {
+    font-weight: 500;
+}
+
+.table-primary {
+    background-color: rgba(13, 110, 253, 0.1) !important;
+}
+
+.table-success {
+    background-color: rgba(25, 135, 84, 0.1) !important;
+}
+
+.table-warning {
+    background-color: rgba(255, 193, 7, 0.1) !important;
+}
+</style>
+{% endblock %}

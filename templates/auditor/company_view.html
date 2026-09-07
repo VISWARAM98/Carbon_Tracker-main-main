@@ -1,0 +1,1135 @@
+{% extends "base_auth.html" %}
+{% block content %}
+
+<style>
+@import url('https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Satoshi:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --bg:          #0b0f0c;
+    --surface:     #111612;
+    --card:        #141a15;
+    --border:      #1e2d21;
+    --border2:     #253029;
+    --green:       #22c55e;
+    --green-dark:  #16a34a;
+    --green-light: #4ade80;
+    --amber:       #f59e0b;
+    --blue:        #3b82f6;
+    --red:         #ef4444;
+    --text:        #e8f5eb;
+    --text-muted:  #6b8f72;
+    --text-dim:    #556262;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: 'Satoshi', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 { font-family: 'ClashDisplay', 'Satoshi', sans-serif; }
+
+/* ══════════════════ NAVBAR ══════════════════ */
+.navbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-left { display: flex; align-items: center; gap: 20px; }
+
+.nav-logo {
+    font-family: 'ClashDisplay', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--green);
+    letter-spacing: -0.02em;
+}
+
+.nav-logo span { color: var(--text); }
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+}
+
+.breadcrumb a {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.breadcrumb a:hover { color: var(--green); }
+
+.breadcrumb-sep { color: var(--border2); }
+
+.nav-right { display: flex; align-items: center; gap: 12px; }
+
+.audit-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--green);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.btn-logout {
+    padding: 7px 14px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text-muted);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+/* ══════════════════ PAGE HEADER ══════════════════ */
+.page-wrapper { max-width: 1400px; margin: 0 auto; padding: 28px 32px 60px; }
+
+.page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.company-header h1 {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+}
+
+.company-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+}
+
+.company-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.summary-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+}
+
+.summary-card-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.summary-card-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--green);
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+    flex-direction: column;
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: var(--green);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-primary:hover { background: var(--green-light); }
+
+.btn-secondary {
+    padding: 10px 18px;
+    background: transparent;
+    border: 1px solid var(--border2);
+    color: var(--text);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-secondary:hover { border-color: var(--green); color: var(--green); }
+
+/* ══════════════════ TAB SYSTEM ══════════════════ */
+.tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+    overflow-x: auto;
+}
+
+.tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s;
+    background: none;
+    border: none;
+}
+
+.tab:hover { color: var(--text); }
+
+.tab.active {
+    color: var(--green);
+    border-bottom-color: var(--green);
+}
+
+.tab-count {
+    background: var(--border2);
+    color: var(--text-muted);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 100px;
+}
+
+.tab.active .tab-count {
+    background: rgba(34, 197, 94, 0.15);
+    color: var(--green);
+}
+
+/* ══════════════════ TAB PANELS ══════════════════ */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ══════════════════ SECTION LABEL ══════════════════ */
+.section-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    margin-top: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+.section-label i { color: var(--green); font-size: 12px; }
+
+/* ══════════════════ CARDS ══════════════════ */
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: border-color 0.2s;
+}
+
+.card:hover { border-color: var(--border2); }
+
+/* ══════════════════ EMISSIONS ══════════════════ */
+.emissions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.emission-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--green);
+    padding: 16px;
+    border-radius: 6px;
+}
+
+.emission-scope {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--green);
+    margin-bottom: 6px;
+}
+
+.emission-category {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+
+.emission-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--green-light);
+    margin-bottom: 8px;
+}
+
+.emission-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+/* ══════════════════ DATA TABLE ══════════════════ */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.data-table th {
+    background: rgba(34, 197, 94, 0.05);
+    color: var(--text-muted);
+    padding: 12px;
+    text-align: left;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border);
+}
+
+.data-table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border2);
+}
+
+.data-table tr:last-child td { border-bottom: none; }
+
+.data-table tr:hover { background: rgba(34, 197, 94, 0.02); }
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--green);
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* ══════════════════ ESG GRID ══════════════════ */
+.esg-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+.esg-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 16px;
+    border-radius: 6px;
+}
+
+.esg-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.esg-value {
+    font-size: 14px;
+    color: var(--text);
+    word-break: break-word;
+    line-height: 1.5;
+}
+
+/* ══════════════════ COMPLIANCE ══════════════════ */
+.compliance-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.compliance-row:last-child { border-bottom: none; }
+
+.compliance-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.compliance-info {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.compliance-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.compliance-badge.compliant {
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--green);
+}
+
+.compliance-badge.partial {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--amber);
+}
+
+.compliance-badge.action_needed {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--red);
+}
+
+/* ══════════════════ EVIDENCE ══════════════════ */
+.evidence-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+}
+
+.evidence-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 16px;
+    border-radius: 6px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.evidence-item:hover {
+    border-color: var(--blue);
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.evidence-icon {
+    font-size: 32px;
+    color: var(--blue);
+    margin-bottom: 12px;
+}
+
+.evidence-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+    word-break: break-word;
+    line-height: 1.3;
+}
+
+.evidence-meta {
+    font-size: 10px;
+    color: var(--text-dim);
+    line-height: 1.4;
+}
+
+/* ══════════════════ NOTES ══════════════════ */
+.notes-textarea {
+    width: 100%;
+    min-height: 240px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+    resize: vertical;
+    transition: border-color 0.2s;
+}
+
+.notes-textarea:focus {
+    outline: none;
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+.notes-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+
+.btn-save {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    background: var(--green);
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-save:hover { background: var(--green-light); }
+
+.btn-signoff {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    background: transparent;
+    border: 2px solid var(--green);
+    color: var(--green);
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-signoff:hover { background: rgba(34, 197, 94, 0.1); }
+
+.note-status {
+    display: none;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 12px;
+    align-items: center;
+    gap: 8px;
+}
+
+.note-status.success {
+    display: flex;
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--green);
+}
+
+.note-status.error {
+    display: flex;
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--red);
+}
+
+/* ══════════════════ EMPTY STATE ══════════════════ */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: var(--text-dim);
+    text-align: center;
+}
+
+.empty-state i {
+    font-size: 48px;
+    color: var(--border2);
+    margin-bottom: 16px;
+}
+
+.empty-state p {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+/* ══════════════════ RESPONSIVE ══════════════════ */
+@media (max-width: 1024px) {
+    .summary-cards { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+    .page-wrapper { padding: 16px; }
+    .navbar { padding: 0 16px; }
+    .company-header h1 { font-size: 24px; }
+    .page-header { flex-direction: column; }
+    .summary-cards { grid-template-columns: 1fr; }
+    .emissions-grid { grid-template-columns: 1fr; }
+    .esg-grid { grid-template-columns: 1fr; }
+    .evidence-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+
+<!-- ══════════════════ NAVBAR ══════════════════ -->
+<div class="navbar">
+    <div class="nav-left">
+        <div class="nav-logo">Emitti<span>F</span></div>
+        <div class="breadcrumb">
+            <a href="/auditor/dashboard"><i class="fas fa-th-large"></i> Dashboard</a>
+            <span class="breadcrumb-sep">/</span>
+            <span>{{ company.company_name }}</span>
+        </div>
+    </div>
+    <div class="nav-right">
+        <div class="audit-badge">
+            <i class="fas fa-clock"></i>
+            Expires: {{ access.expires_at.strftime('%d %b %Y') }}
+        </div>
+        <button class="btn-logout" onclick="location.href='{{ url_for('logout') }}'">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+    </div>
+</div>
+
+<!-- ══════════════════ MAIN CONTENT ══════════════════ -->
+<div class="page-wrapper">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+        <div class="company-header">
+            <h1>{{ company.company_name }}</h1>
+            <div class="company-meta">
+                {% if company_settings %}
+                    <span><i class="fas fa-building"></i> {{ company_settings.industry or 'N/A' }}</span>
+                    <span><i class="fas fa-map-marker-alt"></i> {{ company_settings.headquarters_location or 'N/A' }}</span>
+                {% endif %}
+                <span><i class="fas fa-user-tie"></i> Auditor: {{ auditor_name }}</span>
+            </div>
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="summary-card-label">Total CO₂e</div>
+                    <div class="summary-card-value">{{ total_emissions|float|round(1) }}</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-card-label">Scope 1</div>
+                    <div class="summary-card-value">{{ scope1_total|float|round(1) }}</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-card-label">Scope 2</div>
+                    <div class="summary-card-value">{{ scope2_total|float|round(1) }}</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-card-label">Scope 3</div>
+                    <div class="summary-card-value">{{ scope3_total|float|round(1) }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="btn-primary" onclick="downloadReport()">
+                <i class="fas fa-download"></i> Download Report
+            </button>
+            <button class="btn-secondary" onclick="shareAudit()">
+                <i class="fas fa-share-alt"></i> Share Audit
+            </button>
+        </div>
+    </div>
+
+    <!-- ══════════════════ TAB NAVIGATION ══════════════════ -->
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('emissions', event)">
+            <i class="fas fa-leaf"></i> Emissions 
+            <span class="tab-count">{{ user_emissions.scope1|length + user_emissions.scope2|length + user_emissions.scope3|length }}</span>
+        </button>
+        <button class="tab" onclick="switchTab('esg', event)">
+            <i class="fas fa-chart-pie"></i> ESG Data
+        </button>
+        <button class="tab" onclick="switchTab('compliance', event)">
+            <i class="fas fa-clipboard-check"></i> Compliance 
+            <span class="tab-count">{% if compliance.standards %}{{ compliance.standards|length }}{% else %}0{% endif %}</span>
+        </button>
+        <button class="tab" onclick="switchTab('evidence', event)">
+            <i class="fas fa-folder"></i> Evidence 
+            <span class="tab-count">{{ evidence_files|length }}</span>
+        </button>
+        <button class="tab" onclick="switchTab('notes', event)">
+            <i class="fas fa-sticky-note"></i> Audit Notes
+        </button>
+    </div>
+
+    <!-- ══════════════════ TAB: EMISSIONS ══════════════════ -->
+    <div id="panel-emissions" class="tab-panel active">
+
+        <div class="section-label"><i class="fas fa-leaf"></i> Full Emissions Breakdown</div>
+        <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 13px;">
+            Every emission entry across all scopes, with dates, categories, and CO₂e values
+        </p>
+
+        {% if user_emissions.scope1 or user_emissions.scope2 or user_emissions.scope3 %}
+        <div class="emissions-grid">
+            {% for item in user_emissions.scope1 %}
+            <div class="emission-card">
+                <div class="emission-scope">Scope 1</div>
+                <div class="emission-category">{{ item.category }}</div>
+                <div class="emission-value">{{ item.co2e|float|round(1) }} t</div>
+                <div class="emission-meta">
+                    <span>{{ item.date or '—' }}</span>
+                    <span>{{ item.source or '—' }}</span>
+                </div>
+            </div>
+            {% endfor %}
+
+            {% for item in user_emissions.scope2 %}
+            <div class="emission-card">
+                <div class="emission-scope">Scope 2</div>
+                <div class="emission-category">{{ item.category }}</div>
+                <div class="emission-value">{{ item.co2e|float|round(1) }} t</div>
+                <div class="emission-meta">
+                    <span>{{ item.date or '—' }}</span>
+                    <span>{{ item.source or '—' }}</span>
+                </div>
+            </div>
+            {% endfor %}
+
+            {% for item in user_emissions.scope3 %}
+            <div class="emission-card">
+                <div class="emission-scope">Scope 3</div>
+                <div class="emission-category">{{ item.category }}</div>
+                <div class="emission-value">{{ item.co2e|float|round(1) }} t</div>
+                <div class="emission-meta">
+                    <span>{{ item.date or '—' }}</span>
+                    <span>{{ item.source or '—' }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="empty-state">
+                <i class="fas fa-leaf"></i>
+                <p>No emission entries recorded yet</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Environmental Records Table -->
+        <div class="section-label"><i class="fas fa-water"></i> Environmental Activity Records</div>
+        {% if env_records %}
+        <div class="card" style="padding:0;overflow:hidden;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Module</th>
+                        <th>Activity</th>
+                        <th>Quantity</th>
+                        <th>Unit</th>
+                        <th>Year</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in env_records %}
+                    <tr>
+                        <td style="text-transform:capitalize;">
+                            {{ r.module_type.replace('_',' ') }}
+                        </td>
+                        <td>{{ r.activity_type.replace('_',' ').title() }}</td>
+                        <td>{{ r.quantity }}</td>
+                        <td>{{ r.unit }}</td>
+                        <td>{{ r.reporting_year }}</td>
+                        <td><span class="status-badge">{{ r.status }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="empty-state">
+                <i class="fas fa-leaf"></i>
+                <p>No environmental records found</p>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- ══════════════════ TAB: ESG DATA ══════════════════ -->
+    <div id="panel-esg" class="tab-panel">
+
+        <div class="section-label"><i class="fas fa-chart-pie"></i> ESG Performance</div>
+        
+        <!-- ESG Score Overview -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px;">
+            <div class="card">
+                <div style="text-align: center;">
+                    <div style="font-size: 36px; font-weight: 800; color: var(--green); margin-bottom: 4px;">{{ env_pct }}%</div>
+                    <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Environmental</div>
+                </div>
+            </div>
+            <div class="card">
+                <div style="text-align: center;">
+                    <div style="font-size: 36px; font-weight: 800; color: var(--blue); margin-bottom: 4px;">{{ social_pct }}%</div>
+                    <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Social</div>
+                </div>
+            </div>
+            <div class="card">
+                <div style="text-align: center;">
+                    <div style="font-size: 36px; font-weight: 800; color: var(--amber); margin-bottom: 4px;">{{ gov_pct }}%</div>
+                    <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Governance</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Social & Workforce Data -->
+        {% if social_data %}
+        <div class="section-label"><i class="fas fa-users"></i> Social & Workforce Data</div>
+        <div class="card" style="background: rgba(59,130,246,0.03); border: 1px solid rgba(59,130,246,0.1);">
+            <div class="esg-grid">
+                {% set social_fields = [
+                    ('Total Employees', 'total_employees'),
+                    ('Contractors', 'contractors'),
+                    ('Gender Diversity %', 'gender_diversity_percent'),
+                    ('Training Hours', 'training_hours'),
+                    ('Safety Incidents', 'safety_incidents'),
+                    ('Turnover Rate %', 'turnover_rate')
+                ] %}
+                {% for label, key in social_fields %}
+                {% if social_data.get(key) %}
+                <div class="esg-item">
+                    <div class="esg-label">{{ label }}</div>
+                    <div class="esg-value">{{ social_data.get(key) }}</div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            <p style="color: var(--text-dim); font-size: 11px; margin-top: 12px; font-style: italic;">
+                <i class="fas fa-lock"></i> Social & Workforce data is read-only in audit view
+            </p>
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="empty-state">
+                <i class="fas fa-users"></i>
+                <p>No social & workforce data entered yet</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Governance Data -->
+        {% if gov_data %}
+        <div class="section-label"><i class="fas fa-shield-alt"></i> Governance Data</div>
+        <div class="card" style="background: rgba(245,158,11,0.03); border: 1px solid rgba(245,158,11,0.1);">
+            <div class="esg-grid">
+                {% set gov_fields = [
+                    ('Board Members', 'board_members'),
+                    ('CEO/Executive Compensation', 'ceo_compensation'),
+                    ('Board Independence %', 'board_independence_percent'),
+                    ('Audit Committee', 'audit_committee'),
+                    ('Risk Management', 'risk_management'),
+                    ('Whistleblower Policy', 'whistleblower_policy')
+                ] %}
+                {% for label, key in gov_fields %}
+                {% if gov_data.get(key) %}
+                <div class="esg-item">
+                    <div class="esg-label">{{ label }}</div>
+                    <div class="esg-value">{{ gov_data.get(key) }}</div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            <p style="color: var(--text-dim); font-size: 11px; margin-top: 12px; font-style: italic;">
+                <i class="fas fa-lock"></i> Governance data is read-only in audit view
+            </p>
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="empty-state">
+                <i class="fas fa-shield-alt"></i>
+                <p>No governance data entered yet</p>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- ══════════════════ TAB: COMPLIANCE ══════════════════ -->
+    <div id="panel-compliance" class="tab-panel">
+
+        <div class="section-label"><i class="fas fa-clipboard-check"></i> Standards Assessment</div>
+        <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 13px;">
+            Compliance status across GRI, GHG Protocol, IFRS S2, and other standards
+        </p>
+
+        {% if compliance.standards %}
+        <div class="card" style="padding:0;overflow:hidden;">
+            {% for std in compliance.standards %}
+            <div class="compliance-row">
+                <div>
+                    <div class="compliance-name">{{ std.name }}</div>
+                    <div class="compliance-info">
+                        {{ std.compliant_clauses }}/{{ std.total_clauses }} clauses compliant
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:16px;">
+                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; color: var(--text);">
+                        {{ std.compliance_percentage }}%
+                    </div>
+                    <div class="compliance-badge
+                         {% if std.compliance_percentage >= 80 %}compliant
+                         {% elif std.compliance_percentage >= 40 %}partial
+                         {% else %}action_needed{% endif %}">
+                        {% if std.compliance_percentage >= 80 %}✓ Compliant
+                        {% elif std.compliance_percentage >= 40 %}~ Partial
+                        {% else %}⚠ Action Needed{% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="empty-state">
+                <i class="fas fa-clipboard-check"></i>
+                <p>No compliance data available</p>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- ══════════════════ TAB: EVIDENCE ══════════════════ -->
+    <div id="panel-evidence" class="tab-panel">
+
+        <div class="section-label"><i class="fas fa-folder"></i> Uploaded Documents & Evidence</div>
+        <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 13px;">
+            All supporting documents and evidence files uploaded by the company
+        </p>
+
+        {% if evidence_files %}
+        <div class="evidence-grid">
+            {% for ev in evidence_files %}
+            <div class="evidence-item" onclick="downloadFile('{{ ev.file_path or '' }}')">
+                <div class="evidence-icon">
+                    {% if ev.file_type and 'pdf' in ev.file_type %}
+                        <i class="fas fa-file-pdf"></i>
+                    {% elif ev.file_type and ('image' in ev.file_type or 'png' in ev.file_type or 'jpg' in ev.file_type) %}
+                        <i class="fas fa-file-image"></i>
+                    {% elif ev.file_type and 'excel' in ev.file_type %}
+                        <i class="fas fa-file-excel"></i>
+                    {% elif ev.file_type and 'word' in ev.file_type %}
+                        <i class="fas fa-file-word"></i>
+                    {% else %}
+                        <i class="fas fa-file-alt"></i>
+                    {% endif %}
+                </div>
+                <div class="evidence-name">
+                    {{ ev.title or ev.filename }}
+                </div>
+                <div class="evidence-meta">
+                    {% if ev.upload_date %}
+                        <div>{{ ev.upload_date.strftime('%d %b %Y') }}</div>
+                    {% endif %}
+                    <div>by {{ ev.uploaded_by or 'Unknown' }}</div>
+                </div>
+                {% if ev.description %}
+                <div style="font-size:10px;color:var(--text-dim);margin-top:6px;line-height:1.4;">
+                    {{ ev.description[:60] }}{% if ev.description|length > 60 %}...{% endif %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="empty-state">
+                <i class="fas fa-folder-open"></i>
+                <p>No evidence files uploaded yet</p>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- ══════════════════ TAB: AUDIT NOTES ══════════════════ -->
+    <div id="panel-notes" class="tab-panel">
+
+        <div class="section-label"><i class="fas fa-sticky-note"></i> Your Audit Notes & Sign-Off</div>
+        
+        <div class="card">
+            <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">
+                These notes are private to you as the auditor and are saved against this company's audit record.
+                Use this space for observations, findings, recommendations, and final audit conclusions.
+            </p>
+
+            <textarea id="auditNotes" class="notes-textarea"
+                      placeholder="Enter your audit observations, findings, and recommendations here...
+                      
+Example:
+- Scope 1 emissions: Verified against invoices
+- Scope 2 electricity data: Cross-checked with utility bills
+- Evidence quality: 95% complete
+- Outstanding items: Waiting for Q4 supplier data
+- Recommendation: Implement carbon offset program">{{ existing_notes }}</textarea>
+
+            <div class="notes-actions">
+                <button class="btn-save" onclick="saveNotes()">
+                    <i class="fas fa-save"></i> Save Notes
+                </button>
+                <button class="btn-signoff" onclick="signOff()">
+                    <i class="fas fa-check-double"></i> Sign Off Audit
+                </button>
+            </div>
+
+            <div id="noteStatus" class="note-status"></div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+// ── TAB SWITCHING ──
+function switchTab(name, event) {
+    if (event) event.preventDefault();
+    
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    
+    document.getElementById('panel-' + name).classList.add('active');
+    event.currentTarget.classList.add('active');
+}
+
+// ── SAVE NOTES ──
+function saveNotes() {
+    const note = document.getElementById('auditNotes').value;
+    const status = document.getElementById('noteStatus');
+    const accessId = {{ access.id }};
+
+    fetch('/api/auditor/note', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            access_id: accessId,
+            note: note
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        status.classList.add('success');
+        status.classList.remove('error');
+        status.innerHTML = '<i class="fas fa-check-circle"></i> Notes saved successfully!';
+        setTimeout(() => { 
+            status.classList.remove('success');
+        }, 3000);
+    })
+    .catch(e => {
+        status.classList.add('error');
+        status.classList.remove('success');
+        status.innerHTML = '<i class="fas fa-exclamation-circle"></i> Error: ' + e.message;
+    });
+}
+
+// ── SIGN OFF ──
+function signOff() {
+    if (!confirm('Are you sure you want to sign off on this audit? This action will be recorded with a timestamp.')) return;
+
+    const note = document.getElementById('auditNotes').value;
+    const timestamp = new Date().toLocaleString();
+    const signoffNote = `\n\n[AUDIT SIGNED OFF — ${timestamp}]\nFinal audit sign-off by {{ auditor_name }}\nAll required sections reviewed and verified.`;
+
+    document.getElementById('auditNotes').value = note + signoffNote;
+    
+    setTimeout(() => {
+        saveNotes();
+        alert('✅ Audit signed off successfully! The timestamp has been recorded in your notes.');
+    }, 100);
+}
+
+// ── DOWNLOAD FILE ──
+function downloadFile(path) {
+    if (!path) {
+        alert('File path not available');
+        return;
+    }
+    window.location.href = '/download/' + encodeURIComponent(path);
+}
+
+// ── DOWNLOAD REPORT ──
+function downloadReport() {
+    window.location.href = '/auditor/company/{{ company.id }}/report';
+}
+
+// ── SHARE AUDIT ──
+function shareAudit() {
+    const link = window.location.href;
+    alert('Share this audit URL:\n\n' + link);
+    navigator.clipboard.writeText(link);
+}
+</script>
+
+</body>
+{% endblock %}

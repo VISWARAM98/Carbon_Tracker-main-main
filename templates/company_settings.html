@@ -1,0 +1,926 @@
+{% extends "base_auth.html" %}
+
+{% block title %}Company Settings - EmittiF.io{% endblock %}
+
+{% block content %}
+<div class="container mx-auto max-w-6xl">
+    <div class="mb-8">
+        <div class="flex justify-between items-start">
+            <div>
+                <h1 class="text-3xl font-bold mb-2">🏢 Company Settings</h1>
+                <p class="text-gray-400">Organizational identity, reporting boundary, and governance configuration</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                {% if company.audit_mode_enabled %}
+                <span class="px-4 py-2 bg-red-900/50 text-red-300 rounded-lg border border-red-700">
+                    <i class="fas fa-lock mr-2"></i>Audit Mode Enabled
+                </span>
+                {% endif %}
+                <span class="px-3 py-1 text-sm rounded-full bg-emerald-900/50 text-emerald-300">
+                    {{ user_role }}
+                </span>
+            </div>
+        </div>
+        
+        {% if not can_edit %}
+        <div class="mt-4 p-4 bg-yellow-900/30 border border-yellow-700 rounded-lg">
+            <i class="fas fa-eye mr-2"></i>
+            <span class="font-medium">View-only access:</span> Only Admins and Sustainability Leads can edit company settings.
+        </div>
+        {% endif %}
+    </div>
+
+    <form method="POST" action="{{ url_for('company_settings') }}" class="space-y-8" 
+          {% if not can_edit or company.audit_mode_enabled %}onsubmit="return false;"{% endif %}>
+        
+        <!-- Section 1: Legal Identity -->
+        <div class="bg-gray-800/50 rounded-xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold flex items-center">
+                    <i class="fas fa-balance-scale mr-3 text-blue-400"></i> Legal Identity
+                </h3>
+                <span class="text-sm text-gray-400">Section 1 of 6</span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-300">Legal Company Name *</label>
+                    <input type="text" name="legal_company_name" 
+                           value="{{ company.legal_company_name }}"
+                           required
+                           {% if not can_edit or company.audit_mode_enabled %}readonly{% endif %}
+                           class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-300">Company Registration Number *</label>
+                    <input type="text" name="company_registration_number" 
+                           value="{{ company.company_registration_number }}"
+                           required
+                           {% if not can_edit or company.audit_mode_enabled %}readonly{% endif %}
+                           class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-300">Country of Incorporation *</label>
+                    <input type="text" name="country_of_incorporation" 
+                           value="{{ company.country_of_incorporation }}"
+                           required
+                           {% if not can_edit or company.audit_mode_enabled %}readonly{% endif %}
+                           class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-300">Industry Classification (MSIC/NAICS)</label>
+                    <select name="industry_classification" 
+                            {% if not can_edit or company.audit_mode_enabled %}disabled{% endif %}
+                            class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white">
+                        <option value="">Select industry...</option>
+                        <option value="A001" {% if company.industry_classification == 'A001' %}selected{% endif %}>Agriculture</option>
+                        <option value="B051" {% if company.industry_classification == 'B051' %}selected{% endif %}>Mining</option>
+                        <option value="C101" {% if company.industry_classification == 'C101' %}selected{% endif %}>Manufacturing</option>
+                        <option value="D351" {% if company.industry_classification == 'D351' %}selected{% endif %}>Electricity & Gas</option>
+                        <option value="E360" {% if company.industry_classification == 'E360' %}selected{% endif %}>Water Supply</option>
+                        <option value="F410" {% if company.industry_classification == 'F410' %}selected{% endif %}>Construction</option>
+                        <option value="G451" {% if company.industry_classification == 'G451' %}selected{% endif %}>Wholesale & Retail</option>
+                        <option value="H491" {% if company.industry_classification == 'H491' %}selected{% endif %}>Transportation</option>
+                        <option value="I551" {% if company.industry_classification == 'I551' %}selected{% endif %}>Accommodation & Food</option>
+                        <option value="J582" {% if company.industry_classification == 'J582' %}selected{% endif %}>Information & Communication</option>
+                        <option value="K641" {% if company.industry_classification == 'K641' %}selected{% endif %}>Financial Services</option>
+                        <option value="L681" {% if company.industry_classification == 'L681' %}selected{% endif %}>Real Estate</option>
+                        <option value="M691" {% if company.industry_classification == 'M691' %}selected{% endif %}>Professional Services</option>
+                        <option value="N771" {% if company.industry_classification == 'N771' %}selected{% endif %}>Administrative Services</option>
+                        <option value="O841" {% if company.industry_classification == 'O841' %}selected{% endif %}>Public Administration</option>
+                        <option value="P851" {% if company.industry_classification == 'P851' %}selected{% endif %}>Education</option>
+                        <option value="Q861" {% if company.industry_classification == 'Q861' %}selected{% endif %}>Human Health</option>
+                        <option value="R900" {% if company.industry_classification == 'R900' %}selected{% endif %}>Arts & Entertainment</option>
+                        <option value="S940" {% if company.industry_classification == 'S940' %}selected{% endif %}>Other Services</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-300">Financial Year Start (MM-DD) *</label>
+                    <input type="text" name="financial_year_start" 
+                           value="{{ company.financial_year_start }}"
+                           placeholder="01-01"
+                           required
+                           {% if not can_edit or company.audit_mode_enabled %}readonly{% endif %}
+                           class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-300">Financial Year End (MM-DD) *</label>
+                    <input type="text" name="financial_year_end" 
+                           value="{{ company.financial_year_end }}"
+                           placeholder="12-31"
+                           required
+                           {% if not can_edit or company.audit_mode_enabled %}readonly{% endif %}
+                           class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-300">Reporting Currency *</label>
+                    <select name="reporting_currency" 
+                            required
+                            {% if not can_edit or company.audit_mode_enabled %}disabled{% endif %}
+                            class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white">
+                        <option value="MYR" {% if company.reporting_currency == 'MYR' %}selected{% endif %}>MYR - Malaysian Ringgit</option>
+                        <option value="USD" {% if company.reporting_currency == 'USD' %}selected{% endif %}>USD - US Dollar</option>
+                        <option value="EUR" {% if company.reporting_currency == 'EUR' %}selected{% endif %}>EUR - Euro</option>
+                        <option value="GBP" {% if company.reporting_currency == 'GBP' %}selected{% endif %}>GBP - British Pound</option>
+                        <option value="SGD" {% if company.reporting_currency == 'SGD' %}selected{% endif %}>SGD - Singapore Dollar</option>
+                        <option value="AUD" {% if company.reporting_currency == 'AUD' %}selected{% endif %}>AUD - Australian Dollar</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Organisational Boundary -->
+        <div class="bg-gray-800/50 rounded-xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold flex items-center">
+                    <i class="fas fa-project-diagram mr-3 text-green-400"></i> Organisational Boundary
+                </h3>
+                <span class="text-sm text-gray-400">Section 2 of 6</span>
+            </div>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium mb-3 text-gray-300">Reporting Boundary Method *</label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <label class="flex items-center p-3 bg-gray-900/50 rounded-lg border border-gray-700 hover:border-green-500 cursor-pointer">
+                            <input type="radio" name="reporting_boundary_method" value="Operational Control" 
+                                   {% if company.reporting_boundary_method == 'Operational Control' %}checked{% endif %}
+                                   required
+                                   {% if not can_edit or company.audit_mode_enabled %}disabled{% endif %}
+                                   class="mr-3 h-5 w-5 text-green-500 focus:ring-green-500">
+                            <div>
+                                <span class="font-medium">Operational Control</span>
+                                <p class="text-xs text-gray-500">GHG Protocol default</p>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-center p-3 bg-gray-900/50 rounded-lg border border-gray-700 hover:border-green-500 cursor-pointer">
+                            <input type="radio" name="reporting_boundary_method" value="Financial Control" 
+                                   {% if company.reporting_boundary_method == 'Financial Control' %}checked{% endif %}
+                                   class="mr-3 h-5 w-5 text-green-500 focus:ring-green-500"
+                                   {% if not can_edit or company.audit_mode_enabled %}disabled{% endif %}>
+                            <div>
+                                <span class="font-medium">Financial Control</span>
+                                <p class="text-xs text-gray-500">Based on financial interest</p>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-center p-3 bg-gray-900/50 rounded-lg border border-gray-700 hover:border-green-500 cursor-pointer">
+                            <input type="radio" name="reporting_boundary_method" value="Equity Share" 
+                                   {% if company.reporting_boundary_method == 'Equity Share' %}checked{% endif %}
+                                   class="mr-3 h-5 w-5 text-green-500 focus:ring-green-500"
+                                   {% if not can_edit or company.audit_mode_enabled %}disabled{% endif %}>
+                            <div>
+                                <span class="font-medium">Equity Share</span>
+                                <p class="text-xs text-gray-500">Based on ownership percentage</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium mb-2 text-gray-300">Included Entities *</label>
+                        <textarea name="included_entities" 
+                                  rows="3"
+                                  required
+                                  {% if not can_edit or company.audit_mode_enabled %}readonly{% endif %}
+                                  class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-white">{{ company.included_entities }}</textarea>
+                        <p class="text-xs text-gray-500 mt-1">List all entities included in reporting</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2 text-gray-300">Excluded Entities</label>
+                        <textarea name="excluded_entities" 
+                                  rows="3"
+                                  {% if not can_edit or company.audit_mode_enabled %}readonly{% endif %}
+                                  class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-white">{{ company.excluded_entities }}</textarea>
+                        <p class="text-xs text-gray-500 mt-1">Entities excluded from reporting</p>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-300">Justification for Exclusions</label>
+                    <textarea name="excluded_entities_justification" 
+                              rows="2"
+                              {% if not can_edit or company.audit_mode_enabled %}readonly{% endif %}
+                              class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-white">{{ company.excluded_entities_justification }}</textarea>
+                    <p class="text-xs text-gray-500 mt-1">Required for audit purposes if entities are excluded</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Operational Footprint -->
+        <div class="bg-gray-800/50 rounded-xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold flex items-center">
+                    <i class="fas fa-map-marker-alt mr-3 text-yellow-400"></i> Operational Footprint
+                </h3>
+                <span class="text-sm text-gray-400">Section 3 of 6</span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-300">Number of Operational Sites</label>
+                    <input type="number" name="number_of_operational_sites" 
+                           value="{{ company.number_of_operational_sites }}"
+                           min="0"
+                           {% if not can_edit or company.audit_mode_enabled %}readonly{% endif %}
+                           class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-white">
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium mb-2 text-gray-300">Site Locations</label>
+                    <input type="text" name="site_locations" 
+                           value="{{ company.site_locations|join(', ') if company.site_locations is iterable else company.site_locations }}"
+                           placeholder="Country, State/City (comma-separated)"
+                           {% if not can_edit or company.audit_mode_enabled %}readonly{% endif %}
+                           class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-white">
+                    <p class="text-xs text-gray-500 mt-1">Example: Malaysia, Selangor; Singapore, Central Region</p>
+                </div>
+            </div>
+            
+            <div class="mt-6">
+                <label class="block text-sm font-medium mb-2 text-gray-300">Primary Business Activities per Site</label>
+                <textarea name="primary_business_activities" 
+                          rows="3"
+                          {% if not can_edit or company.audit_mode_enabled %}readonly{% endif %}
+                          class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-white">{{ company.primary_business_activities }}</textarea>
+            </div>
+        </div>
+
+        <!-- Section 4: Governance & Oversight -->
+        <div class="bg-gray-800/50 rounded-xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold flex items-center">
+                    <i class="fas fa-users mr-3 text-purple-400"></i> Governance & Oversight
+                </h3>
+                <span class="text-sm text-gray-400">Section 4 of 6</span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <label class="flex items-center">
+                        <input type="checkbox" name="board_oversight" 
+                               {% if company.board_oversight %}checked{% endif %}
+                               {% if not can_edit or company.audit_mode_enabled %}disabled{% endif %}
+                               class="mr-3 h-5 w-5 text-purple-500 rounded focus:ring-purple-500">
+                        <span class="font-medium">Board Oversight of Sustainability</span>
+                    </label>
+                    
+                    <label class="flex items-center">
+                        <input type="checkbox" name="esg_committee_exists" 
+                               {% if company.esg_committee_exists %}checked{% endif %}
+                               {% if not can_edit or company.audit_mode_enabled %}disabled{% endif %}
+                               class="mr-3 h-5 w-5 text-purple-500 rounded focus:ring-purple-500">
+                        <span class="font-medium">ESG Committee Exists</span>
+                    </label>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-300">Role Responsible for ESG</label>
+                    <input type="text" name="role_responsible_for_esg" 
+                           value="{{ company.role_responsible_for_esg }}"
+                           {% if not can_edit or company.audit_mode_enabled %}readonly{% endif %}
+                           class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-300">External Assurance Status</label>
+                    <select name="external_assurance_status" 
+                            {% if not can_edit or company.audit_mode_enabled %}disabled{% endif %}
+                            class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white">
+                        <option value="None" {% if company.external_assurance_status == 'None' %}selected{% endif %}>None</option>
+                        <option value="Limited" {% if company.external_assurance_status == 'Limited' %}selected{% endif %}>Limited Assurance</option>
+                        <option value="Reasonable" {% if company.external_assurance_status == 'Reasonable' %}selected{% endif %}>Reasonable Assurance</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 5: Policies & Commitments -->
+        <div class="bg-gray-800/50 rounded-xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold flex items-center">
+                    <i class="fas fa-file-contract mr-3 text-red-400"></i> Policies & Commitments
+                </h3>
+                <span class="text-sm text-gray-400">Section 5 of 6</span>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="p-4 bg-gray-900/50 rounded-lg border border-gray-700">
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-file-alt mr-3 text-red-300"></i>
+                        <span class="font-medium">ESG Policy</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="file" 
+                               {% if not can_edit or company.audit_mode_enabled %}disabled{% endif %}
+                               class="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm">
+                        <input type="date" name="esg_policy_issue_date" 
+                               value="{{ company.policy_issue_dates.get('esg_policy', '') }}"
+                               {% if not can_edit or company.audit_mode_enabled %}readonly{% endif %}
+                               class="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white">
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">Upload ESG policy and enter issue date</p>
+                </div>
+                
+                <!-- Repeat similar blocks for Environmental, Health & Safety, Supplier Code -->
+                <!-- Simplified for brevity -->
+                <div class="text-center p-4 border-2 border-dashed border-gray-700 rounded-lg">
+                    <i class="fas fa-cloud-upload-alt text-2xl text-gray-500 mb-2"></i>
+                    <p class="text-gray-400">Additional policy uploads would appear here</p>
+                    <p class="text-xs text-gray-500 mt-1">Environmental Policy, Health & Safety Policy, Supplier Code of Conduct</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 6: Reporting Scope Selection -->
+        <div class="bg-gray-800/50 rounded-xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold flex items-center">
+                    <i class="fas fa-check-circle mr-3 text-emerald-400"></i> Reporting Scope Selection
+                </h3>
+                <span class="text-sm text-gray-400">Section 6 of 6</span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label class="flex items-center p-3 bg-gray-900/50 rounded-lg border border-gray-700 hover:border-emerald-500 cursor-pointer">
+                    <input type="checkbox" name="reporting_scope[]" value="GHG Inventory" 
+                           {% if 'GHG Inventory' in company.reporting_scope %}checked{% endif %}
+                           {% if not can_edit or company.audit_mode_enabled %}disabled{% endif %}
+                           class="mr-3 h-5 w-5 text-emerald-500 rounded focus:ring-emerald-500">
+                    <div>
+                        <span class="font-medium">GHG Inventory</span>
+                        <p class="text-xs text-gray-500">Scope 1, 2, 3 emissions tracking</p>
+                    </div>
+                </label>
+                
+                <label class="flex items-center p-3 bg-gray-900/50 rounded-lg border border-gray-700 hover:border-emerald-500 cursor-pointer">
+                    <input type="checkbox" name="reporting_scope[]" value="ESG (GRI)" 
+                           {% if 'ESG (GRI)' in company.reporting_scope %}checked{% endif %}
+                           {% if not can_edit or company.audit_mode_enabled %}disabled{% endif %}
+                           class="mr-3 h-5 w-5 text-emerald-500 rounded focus:ring-emerald-500">
+                    <div>
+                        <span class="font-medium">ESG (GRI)</span>
+                        <p class="text-xs text-gray-500">GRI Standards compliance reporting</p>
+                    </div>
+                </label>
+                
+                <label class="flex items-center p-3 bg-gray-900/50 rounded-lg border border-gray-700 hover:border-emerald-500 cursor-pointer">
+                    <input type="checkbox" name="reporting_scope[]" value="IFRS S1 / S2" 
+                           {% if 'IFRS S1 / S2' in company.reporting_scope %}checked{% endif %}
+                           {% if not can_edit or company.audit_mode_enabled %}disabled{% endif %}
+                           class="mr-3 h-5 w-5 text-emerald-500 rounded focus:ring-emerald-500">
+                    <div>
+                        <span class="font-medium">IFRS S1 / S2</span>
+                        <p class="text-xs text-gray-500">Climate-related financial disclosures</p>
+                    </div>
+                </label>
+                
+                <label class="flex items-center p-3 bg-gray-900/50 rounded-lg border border-gray-700 hover:border-emerald-500 cursor-pointer">
+                    <input type="checkbox" name="reporting_scope[]" value="EIA / ERA" 
+                           {% if 'EIA / ERA' in company.reporting_scope %}checked{% endif %}
+                           {% if not can_edit or company.audit_mode_enabled %}disabled{% endif %}
+                           class="mr-3 h-5 w-5 text-emerald-500 rounded focus:ring-emerald-500">
+                    <div>
+                        <span class="font-medium">EIA / ERA</span>
+                        <p class="text-xs text-gray-500">Environmental Impact Assessment</p>
+                    </div>
+                </label>
+                
+                <label class="flex items-center p-3 bg-gray-900/50 rounded-lg border border-gray-700 hover:border-emerald-500 cursor-pointer">
+                    <input type="checkbox" name="reporting_scope[]" value="Malaysia MGTC / SEDA" 
+                           {% if 'Malaysia MGTC / SEDA' in company.reporting_scope %}checked{% endif %}
+                           {% if not can_edit or company.audit_mode_enabled %}disabled{% endif %}
+                           class="mr-3 h-5 w-5 text-emerald-500 rounded focus:ring-emerald-500">
+                    <div>
+                        <span class="font-medium">Malaysia MGTC / SEDA</span>
+                        <p class="text-xs text-gray-500">Malaysia-specific compliance</p>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+                           <!-- ── AUDITOR MANAGEMENT SECTION ── -->
+<div class="settings-section" id="auditor-section">
+    <div class="section-header">
+        <div class="section-icon" style="background:rgba(59,130,246,0.1);color:#3b82f6;">
+            <i class="fas fa-user-shield"></i>
+        </div>
+        <div>
+            <div class="section-title">Auditor Access</div>
+            <div class="section-sub">
+                Invite external auditors to review your ESG data in read-only mode
+            </div>
+        </div>
+    </div>
+
+    <!-- Invite Form -->
+    <div class="auditor-invite-box">
+        <div class="invite-grid">
+            <div class="form-group">
+                <label class="field-label">Auditor Full Name</label>
+                <input type="text" id="auditorName"
+                       placeholder="e.g. Ahmad bin Abdullah"
+                       class="field-input">
+            </div>
+            <div class="form-group">
+                <label class="field-label">Auditor Email</label>
+                <input type="email" id="auditorEmail"
+                       placeholder="auditor@firm.com"
+                       class="field-input">
+            </div>
+            <div class="form-group">
+                <label class="field-label">Access Duration</label>
+                <select id="auditorExpiry" class="field-input">
+                    <option value="30">30 days</option>
+                    <option value="60">60 days</option>
+                    <option value="90" selected>90 days</option>
+                    <option value="180">6 months</option>
+                    <option value="365">1 year</option>
+                </select>
+            </div>
+            <div class="form-group"
+                 style="display:flex;align-items:flex-end;">
+                <button onclick="inviteAuditor()"
+                        class="btn-invite" id="inviteBtn">
+                    <i class="fas fa-paper-plane"></i>
+                    Send Invite
+                </button>
+            </div>
+        </div>
+
+        <div id="inviteStatus" style="display:none;"></div>
+    </div>
+
+    <!-- Auditors List -->
+    <div class="auditors-list-header">
+        <div style="font-size:12px;font-weight:700;
+                    color:#6b8f72;text-transform:uppercase;
+                    letter-spacing:0.07em;">
+            Active Auditors
+        </div>
+        <button onclick="loadAuditors()"
+                style="background:none;border:none;
+                       color:#6b8f72;font-size:11px;
+                       cursor:pointer;">
+            <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+    </div>
+
+    <div id="auditorsList">
+        <div class="auditors-loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            Loading auditors...
+        </div>
+    </div>
+</div>
+
+        <!-- Audit Info -->
+        <div class="bg-gray-800/30 rounded-xl p-4">
+            <div class="flex items-center text-sm text-gray-400">
+                <i class="fas fa-database mr-2"></i>
+                <div>
+                    <span class="font-medium">Audit Information:</span> 
+                    Company ID: {{ company.company_id }} | 
+                    Version: {{ company.version }} | 
+                    Last Updated: {{ company.updated_at[:10] if company.updated_at else 'Never' }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="flex justify-end pt-6">
+            {% if can_edit and not company.audit_mode_enabled %}
+            <button type="submit" 
+                    class="px-8 py-3 bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white font-semibold rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105">
+                <i class="fas fa-save mr-2"></i> Save Company Settings
+            </button>
+            {% elif company.audit_mode_enabled %}
+            <div class="px-6 py-3 bg-gray-700 text-gray-400 rounded-lg border border-gray-600">
+                <i class="fas fa-lock mr-2"></i>Settings locked during audit
+            </div>
+            {% else %}
+            <div class="px-6 py-3 bg-gray-700 text-gray-400 rounded-lg border border-gray-600">
+                <i class="fas fa-eye mr-2"></i>View-only access
+            </div>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<style>
+    input:read-only, textarea:read-only, select:disabled {
+        background-color: #1f2937 !important;
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+    
+    input[type="checkbox"]:disabled, input[type="radio"]:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .border-gray-700 {
+        border-color: #374151;
+    }
+    
+    .bg-gray-800\/50 {
+        background-color: rgba(31, 41, 55, 0.5);
+    }
+    
+    .bg-gray-900\/50 {
+        background-color: rgba(17, 24, 39, 0.5);
+    }
+
+    /* ── AUDITOR SECTION STYLES ── */
+.auditor-invite-box {
+    background: #0b0f0c;
+    border: 1px solid #1e2d21;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.invite-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.btn-invite {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #052e16;
+    border: 1px solid #16a34a;
+    color: #4ade80;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    width: 100%;
+    justify-content: center;
+}
+
+.btn-invite:hover {
+    background: #16a34a;
+    color: white;
+}
+
+.btn-invite:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.auditors-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.auditors-loading {
+    text-align: center;
+    padding: 24px;
+    color: #6b8f72;
+    font-size: 13px;
+}
+
+.auditor-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #0b0f0c;
+    border: 1px solid #1e2d21;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    transition: border-color 0.2s;
+}
+
+.auditor-row:hover { border-color: #253029; }
+
+.auditor-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(59,130,246,0.1);
+    border: 1px solid rgba(59,130,246,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: #3b82f6;
+    flex-shrink: 0;
+}
+
+.auditor-info { flex: 1; min-width: 0; }
+
+.auditor-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e8f5eb;
+}
+
+.auditor-meta {
+    font-size: 11px;
+    color: #6b8f72;
+    margin-top: 2px;
+}
+
+.auditor-status {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.auditor-status.pending {
+    background: rgba(245,158,11,0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245,158,11,0.2);
+}
+
+.auditor-status.active {
+    background: rgba(34,197,94,0.1);
+    color: #22c55e;
+    border: 1px solid rgba(34,197,94,0.2);
+}
+
+.auditor-status.expired {
+    background: rgba(107,143,114,0.1);
+    color: #6b8f72;
+    border: 1px solid rgba(107,143,114,0.2);
+}
+
+.auditor-status.revoked {
+    background: rgba(239,68,68,0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239,68,68,0.2);
+}
+
+.auditor-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.btn-auditor-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid #253029;
+    background: transparent;
+    color: #6b8f72;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-auditor-action:hover {
+    border-color: #22c55e;
+    color: #22c55e;
+}
+
+.btn-auditor-action.danger:hover {
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.invite-success {
+    background: rgba(34,197,94,0.08);
+    border: 1px solid rgba(34,197,94,0.2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #22c55e;
+    margin-top: 12px;
+}
+
+.invite-error {
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #ef4444;
+    margin-top: 12px;
+}
+
+.empty-auditors {
+    text-align: center;
+    padding: 28px;
+    color: #6b8f72;
+    font-size: 12px;
+    border: 1px dashed #1e2d21;
+    border-radius: 10px;
+}
+
+.empty-auditors i {
+    font-size: 24px;
+    display: block;
+    margin-bottom: 8px;
+    opacity: 0.4;
+}
+
+@media (max-width: 768px) {
+    .invite-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+<script> 
+// ── AUDITOR MANAGEMENT ──
+function inviteAuditor() {
+    const name    = document.getElementById('auditorName').value.trim();
+    const email   = document.getElementById('auditorEmail').value.trim();
+    const expires = document.getElementById('auditorExpiry').value;
+    const btn     = document.getElementById('inviteBtn');
+    const status  = document.getElementById('inviteStatus');
+
+    if (!name || !email) {
+        showInviteStatus('error', 'Please enter both name and email.');
+        return;
+    }
+
+    if (!email.includes('@')) {
+        showInviteStatus('error', 'Please enter a valid email address.');
+        return;
+    }
+
+    // Loading state
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+    fetch('/api/auditor/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            name        : name,
+            email       : email,
+            expires_days: parseInt(expires)
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Invite';
+
+        if (data.success) {
+            showInviteStatus('success',
+                `✅ Invite sent to ${email}! Access expires ${data.expires_at}.`);
+            document.getElementById('auditorName').value  = '';
+            document.getElementById('auditorEmail').value = '';
+            // Refresh the list
+            setTimeout(() => loadAuditors(), 800);
+        } else {
+            showInviteStatus('error', data.message || 'Failed to send invite.');
+        }
+    })
+    .catch(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Invite';
+        showInviteStatus('error', 'Network error. Please try again.');
+    });
+}
+
+function showInviteStatus(type, message) {
+    const el = document.getElementById('inviteStatus');
+    el.style.display = 'block';
+    el.className = type === 'success' ? 'invite-success' : 'invite-error';
+    el.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+    if (type === 'success') {
+        setTimeout(() => { el.style.display = 'none'; }, 5000);
+    }
+}
+
+function loadAuditors() {
+    const list = document.getElementById('auditorsList');
+    list.innerHTML = '<div class="auditors-loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+
+    fetch('/api/auditor/list')
+    .then(r => r.json())
+    .then(data => {
+        if (!data.success || data.auditors.length === 0) {
+            list.innerHTML = `
+                <div class="empty-auditors">
+                    <i class="fas fa-user-shield"></i>
+                    No auditors invited yet.<br>
+                    Use the form above to invite your first auditor.
+                </div>`;
+            return;
+        }
+
+        list.innerHTML = data.auditors.map(a => `
+            <div class="auditor-row" id="auditor-row-${a.id}">
+                <div class="auditor-avatar">${a.name[0].toUpperCase()}</div>
+                <div class="auditor-info">
+                    <div class="auditor-name">${a.name}</div>
+                    <div class="auditor-meta">
+                        ${a.email} · Expires ${a.expires_at}
+                        · Last login: ${a.last_login}
+                    </div>
+                </div>
+                <div class="auditor-status ${a.status}">${a.status}</div>
+                <div class="auditor-actions">
+                    ${a.status === 'pending' ? `
+                    <button class="btn-auditor-action"
+                            onclick="resendInvite(${a.id})">
+                        <i class="fas fa-redo"></i> Resend
+                    </button>` : ''}
+                    ${a.status === 'active' ? `
+                    <button class="btn-auditor-action"
+                            onclick="extendAccess(${a.id})">
+                        <i class="fas fa-calendar-plus"></i> Extend
+                    </button>` : ''}
+                    <button class="btn-auditor-action danger"
+                            onclick="revokeAccess(${a.id}, '${a.name}')">
+                        <i class="fas fa-ban"></i> Revoke
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    })
+    .catch(() => {
+        list.innerHTML = '<div class="auditors-loading">Failed to load auditors.</div>';
+    });
+}
+
+function resendInvite(accessId) {
+    fetch(`/api/auditor/resend/${accessId}`, { method: 'POST' })
+    .then(r => r.json())
+    .then(data => {
+        alert(data.success ? '✅ Invite resent successfully!' : '❌ ' + data.message);
+    });
+}
+
+function extendAccess(accessId) {
+    const days = prompt('Extend access by how many days?', '90');
+    if (!days) return;
+    
+    fetch(`/api/auditor/extend/${accessId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ days: parseInt(days) })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Access extended!');
+            loadAuditors();
+        } else {
+            alert('❌ ' + data.message);
+        }
+    });
+}
+
+function revokeAccess(accessId, name) {
+    if (!confirm(`Revoke access for ${name}? They will immediately lose access.`)) return;
+    
+    fetch(`/api/auditor/revoke/${accessId}`, { method: 'POST' })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById(`auditor-row-${accessId}`)?.remove();
+            alert('✅ Access revoked.');
+            loadAuditors();
+        } else {
+            alert('❌ ' + data.message);
+        }
+    });
+}
+
+// Load auditors on page load
+document.addEventListener('DOMContentLoaded', () => {
+    loadAuditors();
+});
+
+</script>
+
+{% endblock %}

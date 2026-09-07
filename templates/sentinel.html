@@ -1,0 +1,718 @@
+{% extends "base_auth.html" %}
+
+{% block title %}Carbon Sentinel - EmittiF.io{% endblock %}
+
+{% block content %}
+<!-- Sentinel Header -->
+<section class="pt-24 pb-12 bg-gradient-to-br from-emerald-900 to-cyan-900">
+    <div class="container mx-auto px-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-orbitron font-bold mb-2">Carbon Sentinel</h1>
+                <p class="text-gray-200 font-exo">AI-Powered Carbon Intelligence & Consultation</p>
+            </div>
+            <div class="flex space-x-4 mt-4 md:mt-0">
+                <button id="howToFixBtn" class="px-6 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-exo font-bold transition-all duration-300 hover-lift">
+                    <i class="fas fa-tools mr-2"></i>How to Fix?
+                </button>
+                <button id="newChatBtn" class="px-6 py-3 rounded-xl border border-emerald-500 text-emerald-300 hover:bg-emerald-500 hover:text-white font-exo font-bold transition-all duration-300 hover-lift">
+                    <i class="fas fa-plus mr-2"></i>New Chat
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-emerald-800/50 rounded-2xl p-6 border border-emerald-500/30">
+                <div class="text-center">
+                    <p class="text-gray-300 font-exo mb-1">Total Emissions</p>
+                    <h3 class="text-2xl font-orbitron font-bold text-emerald-400">
+                        {{ "%.1f"|format(analysis.total_emissions) }} kg CO₂e
+                    </h3>
+                </div>
+            </div>
+            
+            <div class="bg-cyan-800/50 rounded-2xl p-6 border border-cyan-500/30">
+                <div class="text-center">
+                    <p class="text-gray-300 font-exo mb-1">Reduction Potential</p>
+                    <h3 class="text-2xl font-orbitron font-bold text-cyan-400">
+                        {{ "%.1f"|format(analysis.reduction_potential) }} kg CO₂e
+                    </h3>
+                </div>
+            </div>
+            
+            <div class="bg-orange-800/50 rounded-2xl p-6 border border-orange-500/30">
+                <div class="text-center">
+                    <p class="text-gray-300 font-exo mb-1">Highest Scope</p>
+                    <h3 class="text-2xl font-orbitron font-bold text-orange-400">
+                        {{ analysis.highest_emission_scope.replace('scope', 'Scope ').title() }}
+                    </h3>
+                </div>
+            </div>
+            
+            <div class="bg-purple-800/50 rounded-2xl p-6 border border-purple-500/30">
+                <div class="text-center">
+                    <p class="text-gray-300 font-exo mb-1">Priority Areas</p>
+                    <h3 class="text-2xl font-orbitron font-bold text-purple-400">
+                        {{ analysis.top_emission_sources|length }}
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- AI Chat Interface -->
+<section class="py-12 bg-gray-900/80 min-h-screen">
+    <div class="container mx-auto px-6">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="bg-gray-800/50 rounded-2xl p-6 border border-emerald-500/30 sticky top-24">
+                    <h3 class="text-xl font-orbitron font-bold mb-4 text-emerald-300">Your Emission Profile</h3>
+                    
+                    <!-- Top Emission Sources -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-exo font-bold mb-3 text-cyan-300">Top Emission Sources</h4>
+                        <div class="space-y-3">
+                            {% for source in analysis.top_emission_sources %}
+                            <div class="bg-gray-700/50 rounded-lg p-3">
+                                <div class="flex justify-between items-start mb-1">
+                                    <span class="text-gray-200 font-exo text-sm font-medium">
+                                        {{ source.category.replace('_', ' ').title() }}
+                                    </span>
+                                    <span class="text-orange-400 font-orbitron text-sm">
+                                        {{ "%.1f"|format(source.co2e) }} kg
+                                    </span>
+                                </div>
+                                <div class="text-gray-400 font-exo text-xs">
+                                    {{ source.scope.replace('scope', 'Scope ').title() }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div>
+                        <h4 class="text-lg font-exo font-bold mb-3 text-green-300">Quick Actions</h4>
+                        <div class="space-y-2">
+                            <button class="quick-action w-full text-left px-3 py-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-exo text-sm transition-all duration-300" data-action="energy_efficiency">
+                                <i class="fas fa-bolt mr-2"></i>Energy Efficiency
+                            </button>
+                            <button class="quick-action w-full text-left px-3 py-2 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 font-exo text-sm transition-all duration-300" data-action="renewable_energy">
+                                <i class="fas fa-solar-panel mr-2"></i>Renewable Energy
+                            </button>
+                            <button class="quick-action w-full text-left px-3 py-2 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 font-exo text-sm transition-all duration-300" data-action="carbon_offsetting">
+                                <i class="fas fa-tree mr-2"></i>Carbon Offsetting
+                            </button>
+                            <button class="quick-action w-full text-left px-3 py-2 rounded-lg bg-orange-500/20 hover:bg-orange-500/30 text-orange-300 font-exo text-sm transition-all duration-300" data-action="progress_tracking">
+                                <i class="fas fa-chart-line mr-2"></i>Progress Tracking
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Interface -->
+            <div class="lg:col-span-3">
+                <div class="bg-gray-800/50 rounded-2xl p-6 border border-emerald-500/30">
+                    <!-- Chat Header -->
+                    <div class="flex items-center space-x-4 mb-6 pb-4 border-b border-gray-700">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 flex items-center justify-center">
+                            <i class="fas fa-robot text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-orbitron font-bold text-emerald-300">Carbon AI Assistant</h3>
+                            <p class="text-gray-400 font-exo text-sm">Powered by Gemini AI • SBTi & GHG Protocol Standards</p>
+                        </div>
+                    </div>
+
+                    <!-- Chat Messages -->
+                    <div id="chatMessages" class="space-y-6 mb-6 max-h-96 overflow-y-auto">
+                        <!-- Initial AI Message -->
+                        <div class="flex space-x-4">
+                            <div class="w-8 h-8 rounded-full bg-cyan-500 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-robot text-white text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="bg-gray-700/50 rounded-2xl rounded-tl-none p-4">
+                                    <h4 class="font-orbitron font-bold text-cyan-300 mb-2">🌱 Your Carbon Management Strategy</h4>
+                                    <p class="text-gray-200 font-exo mb-4">Hello! I'm your AI Carbon Consultant powered by Gemini AI. I've analyzed your emission data and I'm here to provide personalized recommendations based on SBTi, GHG Protocol, and ISO 14064 standards.</p>
+                                    <div class="mb-4">
+                                        <h5 class="font-exo font-bold text-emerald-300 mb-2">Your Current Profile:</h5>
+                                        <ul class="space-y-1">
+                                            <li class="text-gray-200 font-exo text-sm flex items-start">
+                                                <i class="fas fa-chart-bar text-cyan-400 mr-2 mt-1 text-xs"></i>
+                                                Total Emissions: {{ "%.1f"|format(analysis.total_emissions) }} kg CO₂e
+                                            </li>
+                                            <li class="text-gray-200 font-exo text-sm flex items-start">
+                                                <i class="fas fa-bullseye text-orange-400 mr-2 mt-1 text-xs"></i>
+                                                Highest Scope: {{ analysis.highest_emission_scope.replace('scope', 'Scope ').title() }}
+                                            </li>
+                                            <li class="text-gray-200 font-exo text-sm flex items-start">
+                                                <i class="fas fa-lightbulb text-yellow-400 mr-2 mt-1 text-xs"></i>
+                                                Reduction Potential: {{ "%.1f"|format(analysis.reduction_potential) }} kg CO₂e
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <p class="text-gray-200 font-exo text-sm">Ask me anything about reducing your carbon footprint, carbon trading, offsetting, or regulatory compliance!</p>
+                                </div>
+                                <div class="text-gray-500 font-exo text-xs mt-1 ml-4">Just now</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Question Buttons -->
+                    <div class="grid grid-cols-2 gap-3 mb-6">
+                        <button class="quick-question px-4 py-3 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 font-exo font-medium transition-all duration-300 hover:bg-emerald-500/30" data-question="reduction">
+                            <i class="fas fa-chart-line-down mr-2"></i>Reduction Strategies
+                        </button>
+                        <button class="quick-question px-4 py-3 rounded-xl bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 font-exo font-medium transition-all duration-300 hover:bg-cyan-500/30" data-question="crediting">
+                            <i class="fas fa-coins mr-2"></i>Carbon Crediting
+                        </button>
+                        <button class="quick-question px-4 py-3 rounded-xl bg-purple-500/20 border border-purple-500/30 text-purple-300 font-exo font-medium transition-all duration-300 hover:bg-purple-500/30" data-question="offsetting">
+                            <i class="fas fa-tree mr-2"></i>Offsetting Options
+                        </button>
+                        <button class="quick-question px-4 py-3 rounded-xl bg-orange-500/20 border border-orange-500/30 text-orange-300 font-exo font-medium transition-all duration-300 hover:bg-orange-500/30" data-question="compliance">
+                            <i class="fas fa-file-contract mr-2"></i>Regulatory Compliance
+                        </button>
+                    </div>
+
+                    <!-- Chat Input -->
+                    <div class="flex space-x-4">
+                        <input type="text" id="chatInput" placeholder="Ask about carbon reduction, trading, or offsetting..." class="flex-1 px-4 py-3 rounded-xl bg-gray-700 border border-gray-600 text-white font-exo outline-none transition-all duration-300 focus:border-emerald-500">
+                        <button id="sendMessage" class="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-600 hover:from-emerald-600 hover:to-cyan-700 text-white font-exo font-bold transition-all duration-300">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- How to Fix Results -->
+                <div id="fixResults" class="hidden mt-8">
+                    <!-- Results will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatMessages = document.getElementById('chatMessages');
+    const chatInput = document.getElementById('chatInput');
+    const sendMessage = document.getElementById('sendMessage');
+    const howToFixBtn = document.getElementById('howToFixBtn');
+    const newChatBtn = document.getElementById('newChatBtn');
+    const fixResults = document.getElementById('fixResults');
+    const quickQuestions = document.querySelectorAll('.quick-question');
+    const quickActions = document.querySelectorAll('.quick-action');
+
+    // How to Fix Button - USES GEMINI AI
+    howToFixBtn.addEventListener('click', function() {
+        getGeminiAdvice('how_to_fix', 'Analyze my emissions and provide specific reduction strategies based on my current emission data');
+    });
+
+    // New Chat Button
+    newChatBtn.addEventListener('click', function() {
+        chatMessages.innerHTML = '';
+        fixResults.classList.add('hidden');
+        addAIMessage(
+            '🌱 Your Carbon Management Strategy',
+            'Hello! I\'m your AI Carbon Consultant powered by Gemini AI. I\'ve analyzed your emission data and I\'m here to provide personalized recommendations based on SBTi, GHG Protocol, and ISO 14064 standards. How can I assist you today?',
+            'general'
+        );
+    });
+
+    // Quick Question Buttons - USES GEMINI AI
+    quickQuestions.forEach(button => {
+        button.addEventListener('click', function() {
+            const questionType = this.dataset.question;
+            const questionText = this.textContent.trim();
+            getGeminiAdvice(questionType, questionText);
+        });
+    });
+
+    // Quick Action Buttons - USES GEMINI AI
+    quickActions.forEach(button => {
+        button.addEventListener('click', function() {
+            const actionType = this.dataset.action;
+            const actionText = this.textContent.trim();
+            getGeminiAdvice('general', `Provide specific advice about ${actionText} based on my current emission profile`);
+        });
+    });
+
+    // Send Message - USES GEMINI AI
+    sendMessage.addEventListener('click', sendUserMessage);
+    chatInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendUserMessage();
+        }
+    });
+
+    function sendUserMessage() {
+        const message = chatInput.value.trim();
+        if (message) {
+            addUserMessage(message);
+            chatInput.value = '';
+            
+            // Use Gemini AI for all responses with user's actual message
+            getGeminiAdvice('general', message);
+        }
+    }
+
+    function addUserMessage(message) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'flex space-x-4 justify-end';
+        messageDiv.innerHTML = `
+            <div class="flex-1 max-w-3/4">
+                <div class="bg-emerald-500/20 rounded-2xl rounded-tr-none p-4 border border-emerald-500/30">
+                    <p class="text-gray-200 font-exo">${message}</p>
+                </div>
+                <div class="text-gray-500 font-exo text-xs mt-1 text-right">Just now</div>
+            </div>
+            <div class="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-user text-white text-sm"></i>
+            </div>
+        `;
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function addAIMessage(title, content, type = 'general') {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'flex space-x-4';
+        
+        let contentHTML = '';
+        if (type === 'fix_advice') {
+            contentHTML = `
+                <h4 class="font-orbitron font-bold text-cyan-300 mb-2">${title}</h4>
+                <p class="text-gray-200 font-exo mb-4">${content.summary}</p>
+                ${content.sections ? content.sections.map(section => `
+                    <div class="mb-6 p-4 bg-gray-700/30 rounded-xl border border-cyan-500/20">
+                        <h5 class="font-exo font-bold text-orange-300 mb-2 text-lg">${section.title}</h5>
+                        <div class="text-sm text-cyan-400 mb-3">Current emissions: ${section.emissions}</div>
+                        
+                        <h6 class="font-exo font-semibold text-emerald-300 mb-2">Reduction Tips:</h6>
+                        <ul class="space-y-2 mb-4">
+                            ${section.tips ? section.tips.map(tip => `
+                                <li class="text-gray-200 font-exo text-sm flex items-start">
+                                    <i class="fas fa-lightbulb text-yellow-400 mr-2 mt-1 text-xs"></i>
+                                    ${tip}
+                                </li>
+                            `).join('') : '<li class="text-gray-400 font-exo text-sm">No specific tips available</li>'}
+                        </ul>
+                        
+                        <h6 class="font-exo font-semibold text-purple-300 mb-2">Crediting Opportunities:</h6>
+                        <ul class="space-y-1">
+                            ${section.crediting_opportunities ? section.crediting_opportunities.map(opp => `
+                                <li class="text-gray-200 font-exo text-sm flex items-start">
+                                    <i class="fas fa-certificate text-purple-400 mr-2 mt-1 text-xs"></i>
+                                    ${opp}
+                                </li>
+                            `).join('') : '<li class="text-gray-400 font-exo text-sm">No specific opportunities available</li>'}
+                        </ul>
+                    </div>
+                `).join('') : '<p class="text-gray-400 text-center">No specific recommendations available</p>'}
+                ${content.general_tips ? `
+                    <div class="mt-4 p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+                        <h5 class="font-exo font-bold text-emerald-300 mb-2">General Recommendations</h5>
+                        <ul class="space-y-1">
+                            ${content.general_tips.map(tip => `
+                                <li class="text-gray-200 font-exo text-sm">• ${tip}</li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+            `;
+        } else {
+            contentHTML = `
+                <h4 class="font-orbitron font-bold text-cyan-300 mb-2">${title}</h4>
+                <p class="text-gray-200 font-exo">${content}</p>
+            `;
+        }
+
+        messageDiv.innerHTML = `
+            <div class="w-8 h-8 rounded-full bg-cyan-500 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-robot text-white text-sm"></i>
+            </div>
+            <div class="flex-1">
+                <div class="bg-gray-700/50 rounded-2xl rounded-tl-none p-4">
+                    ${contentHTML}
+                </div>
+                <div class="text-gray-500 font-exo text-xs mt-1 ml-4">Just now</div>
+            </div>
+        `;
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // MAIN FUNCTION: GET GEMINI AI ADVICE
+    function getGeminiAdvice(questionType, userMessage = '') {
+        // Show loading with standards mention
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'flex space-x-4';
+        loadingDiv.innerHTML = `
+            <div class="w-8 h-8 rounded-full bg-cyan-500 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-robot text-white text-sm"></i>
+            </div>
+            <div class="flex-1">
+                <div class="bg-gray-700/50 rounded-2xl rounded-tl-none p-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-4 h-4 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+                        <span class="text-cyan-300 font-exo">Gemini AI analyzing your emission data with SBTi standards...</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        chatMessages.appendChild(loadingDiv);
+
+        // Call the GEMINI AI endpoint - THIS IS THE KEY CHANGE!
+        fetch('/api/gemini-advice', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                question_type: questionType,
+                message: userMessage
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Remove loading message
+            chatMessages.removeChild(loadingDiv);
+
+            if (data.success) {
+                const advice = data.advice;
+                
+                if (questionType === 'how_to_fix') {
+                    // Show in dedicated results section
+                    showGeminiFixResults(advice);
+                } else {
+                    displayGeminiAdvice(advice, questionType);
+                }
+            } else {
+                // Fallback to old system if Gemini fails
+                console.log('Gemini failed, using fallback');
+                getFallbackAdvice(questionType, userMessage);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            chatMessages.removeChild(loadingDiv);
+            // Fallback to old system
+            getFallbackAdvice(questionType, userMessage);
+        });
+    }
+
+    // FALLBACK: Old advice system (only used if Gemini fails)
+    function getFallbackAdvice(questionType, userMessage = '') {
+        fetch('/api/ai-advice', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                question_type: questionType
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const advice = data.advice;
+                
+                if (questionType === 'how_to_fix') {
+                    showFixResults(advice);
+                } else {
+                    addAIMessage(advice.title, advice.summary, advice.type);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Fallback error:', error);
+            addAIMessage('Error', 'Unable to generate recommendations. Please try again.', 'error');
+        });
+    }
+
+    // DISPLAY GEMINI AI ADVICE
+    function displayGeminiAdvice(advice, questionType) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'flex space-x-4';
+        
+        // Create standards badges
+        let standardsBadges = '';
+        if (advice.standards_used && advice.standards_used.length > 0) {
+            standardsBadges = `
+                <div class="flex flex-wrap gap-2 mb-3">
+                    ${advice.standards_used.map(std => `
+                        <span class="px-2 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs font-exo border border-blue-500/30">${std}</span>
+                    `).join('')}
+                </div>
+            `;
+        } else {
+            // Default standards if none provided
+            standardsBadges = `
+                <div class="flex flex-wrap gap-2 mb-3">
+                    <span class="px-2 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs font-exo border border-blue-500/30">SBTi</span>
+                    <span class="px-2 py-1 bg-green-500/20 text-green-300 rounded-full text-xs font-exo border border-green-500/30">GHG Protocol</span>
+                    <span class="px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs font-exo border border-purple-500/30">ISO 14064</span>
+                </div>
+            `;
+        }
+
+        // Create sections HTML
+        let sectionsHTML = '';
+        if (advice.sections && advice.sections.length > 0) {
+            sectionsHTML = advice.sections.map(section => `
+                <div class="mb-4 p-4 bg-gray-700/30 rounded-xl border-l-4 border-cyan-500">
+                    <div class="flex justify-between items-start mb-2">
+                        <h5 class="font-exo font-bold text-orange-300">${section.title || 'Recommendation'}</h5>
+                        ${section.emissions ? `<span class="text-cyan-400 text-sm font-orbitron">${section.emissions}</span>` : ''}
+                    </div>
+                    ${section.standards ? `
+                        <div class="flex flex-wrap gap-1 mb-3">
+                            ${section.standards.map(std => `
+                                <span class="px-2 py-1 bg-purple-500/20 text-purple-300 rounded text-xs border border-purple-500/30">${std}</span>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    <div class="space-y-2">
+                        ${section.recommendations ? section.recommendations.map(rec => `
+                            <div class="flex items-start text-sm">
+                                <i class="fas fa-check-circle text-emerald-400 mr-2 mt-1 flex-shrink-0"></i>
+                                <span class="text-gray-200 font-exo">${rec}</span>
+                            </div>
+                        `).join('') : 
+                        section.tips ? section.tips.map(tip => `
+                            <div class="flex items-start text-sm">
+                                <i class="fas fa-lightbulb text-yellow-400 mr-2 mt-1 flex-shrink-0"></i>
+                                <span class="text-gray-200 font-exo">${tip}</span>
+                            </div>
+                        `).join('') : 
+                        '<div class="text-gray-400 font-exo text-sm">No specific recommendations available</div>'}
+                    </div>
+                    ${section.compliance_notes ? `
+                        <div class="mt-3 p-2 bg-yellow-500/10 rounded border border-yellow-500/20">
+                            <p class="text-yellow-300 text-xs font-exo"><strong>Compliance Note:</strong> ${section.compliance_notes}</p>
+                        </div>
+                    ` : ''}
+                    ${section.timeline ? `
+                        <div class="mt-2 text-xs text-cyan-300 font-exo">
+                            <strong>Timeline:</strong> ${section.timeline}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        messageDiv.innerHTML = `
+            <div class="w-8 h-8 rounded-full bg-cyan-500 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-robot text-white text-sm"></i>
+            </div>
+            <div class="flex-1">
+                <div class="bg-gray-700/50 rounded-2xl rounded-tl-none p-4">
+                    ${standardsBadges}
+                    <h4 class="font-orbitron font-bold text-cyan-300 mb-2">${advice.title || 'AI Carbon Analysis'}</h4>
+                    <p class="text-gray-200 font-exo mb-4">${advice.summary || 'Based on your emission data analysis:'}</p>
+                    ${sectionsHTML}
+                    ${advice.priority_actions ? `
+                        <div class="mt-4 p-3 bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 rounded-xl border border-emerald-500/30">
+                            <h5 class="font-exo font-bold text-emerald-300 mb-2">🚀 Priority Actions</h5>
+                            <ul class="space-y-1">
+                                ${advice.priority_actions.map(action => `
+                                    <li class="text-gray-200 font-exo text-sm">• ${action}</li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+                </div>
+                <div class="text-gray-500 font-exo text-xs mt-1 ml-4">
+                    Powered by Gemini AI • Standards Compliant
+                </div>
+            </div>
+        `;
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // SHOW GEMINI FIX RESULTS
+    function showGeminiFixResults(advice) {
+        fixResults.innerHTML = `
+            <div class="bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-2xl p-6 border border-orange-500/30">
+                <div class="flex items-center space-x-3 mb-4">
+                    <i class="fas fa-tools text-2xl text-orange-400"></i>
+                    <h3 class="text-2xl font-orbitron font-bold text-orange-300">${advice.title || 'Carbon Reduction Plan'}</h3>
+                </div>
+                <p class="text-gray-200 font-exo mb-6">${advice.summary || 'Based on your emission analysis:'}</p>
+                
+                <div class="space-y-6">
+                    ${advice.sections ? advice.sections.map((section, index) => `
+                        <div class="bg-gray-800/50 rounded-xl p-5 border-l-4 border-orange-500">
+                            <div class="flex items-start justify-between mb-3">
+                                <h4 class="text-xl font-orbitron font-bold text-orange-300">${section.title}</h4>
+                                ${section.emissions ? `
+                                <span class="bg-orange-500/20 text-orange-300 px-3 py-1 rounded-full text-sm font-exo">
+                                    ${section.emissions}
+                                </span>
+                                ` : ''}
+                            </div>
+                            
+                            ${section.standards ? `
+                                <div class="flex flex-wrap gap-2 mb-4">
+                                    ${section.standards.map(std => `
+                                        <span class="px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-xs border border-blue-500/30">${std}</span>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                            
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div>
+                                    <h5 class="font-exo font-bold text-emerald-300 mb-2 flex items-center">
+                                        <i class="fas fa-bullseye mr-2"></i>Reduction Strategies
+                                    </h5>
+                                    <ul class="space-y-2">
+                                        ${section.recommendations ? section.recommendations.map(tip => `
+                                            <li class="text-gray-200 font-exo text-sm flex items-start">
+                                                <i class="fas fa-check text-emerald-400 mr-2 mt-1"></i>
+                                                ${tip}
+                                            </li>
+                                        `).join('') : 
+                                        section.tips ? section.tips.map(tip => `
+                                            <li class="text-gray-200 font-exo text-sm flex items-start">
+                                                <i class="fas fa-check text-emerald-400 mr-2 mt-1"></i>
+                                                ${tip}
+                                            </li>
+                                        `).join('') : 
+                                        '<li class="text-gray-400 font-exo text-sm">No specific recommendations available</li>'}
+                                    </ul>
+                                </div>
+                                
+                                <div>
+                                    <h5 class="font-exo font-bold text-purple-300 mb-2 flex items-center">
+                                        <i class="fas fa-coins mr-2"></i>Implementation Guidance
+                                    </h5>
+                                    <ul class="space-y-2">
+                                        ${section.compliance_notes ? `
+                                            <li class="text-gray-200 font-exo text-sm flex items-start">
+                                                <i class="fas fa-certificate text-purple-400 mr-2 mt-1"></i>
+                                                ${section.compliance_notes}
+                                            </li>
+                                        ` : ''}
+                                        ${section.timeline ? `
+                                            <li class="text-gray-200 font-exo text-sm flex items-start">
+                                                <i class="fas fa-clock text-cyan-400 mr-2 mt-1"></i>
+                                                Timeline: ${section.timeline}
+                                            </li>
+                                        ` : ''}
+                                        ${section.crediting_opportunities ? section.crediting_opportunities.map(opp => `
+                                            <li class="text-gray-200 font-exo text-sm flex items-start">
+                                                <i class="fas fa-leaf text-green-400 mr-2 mt-1"></i>
+                                                ${opp}
+                                            </li>
+                                        `).join('') : ''}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('') : '<p class="text-gray-400 text-center py-8">No specific recommendations generated. Please try asking a more specific question.</p>'}
+                </div>
+                
+                ${advice.priority_actions ? `
+                    <div class="mt-6 bg-emerald-500/10 rounded-xl p-5 border border-emerald-500/30">
+                        <h4 class="text-lg font-orbitron font-bold text-emerald-300 mb-3">🚀 Priority Actions</h4>
+                        <ul class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            ${advice.priority_actions.map(tip => `
+                                <li class="text-gray-200 font-exo text-sm flex items-center">
+                                    <i class="fas fa-star text-yellow-400 mr-2"></i>
+                                    ${tip}
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+                
+                <div class="mt-4 text-center">
+                    <span class="text-cyan-400 text-sm font-exo">Powered by Gemini AI • Standards Compliant</span>
+                </div>
+            </div>
+        `;
+        fixResults.classList.remove('hidden');
+        
+        // Scroll to results
+        fixResults.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Keep the original showFixResults as fallback
+    function showFixResults(advice) {
+        fixResults.innerHTML = `
+            <div class="bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-2xl p-6 border border-orange-500/30">
+                <div class="flex items-center space-x-3 mb-4">
+                    <i class="fas fa-tools text-2xl text-orange-400"></i>
+                    <h3 class="text-2xl font-orbitron font-bold text-orange-300">${advice.title}</h3>
+                </div>
+                <p class="text-gray-200 font-exo mb-6">${advice.summary}</p>
+                
+                <div class="space-y-6">
+                    ${advice.sections.map((section, index) => `
+                        <div class="bg-gray-800/50 rounded-xl p-5 border-l-4 border-orange-500">
+                            <div class="flex items-start justify-between mb-3">
+                                <h4 class="text-xl font-orbitron font-bold text-orange-300">${section.title}</h4>
+                                <span class="bg-orange-500/20 text-orange-300 px-3 py-1 rounded-full text-sm font-exo">
+                                    ${section.emissions}
+                                </span>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div>
+                                    <h5 class="font-exo font-bold text-emerald-300 mb-2 flex items-center">
+                                        <i class="fas fa-bullseye mr-2"></i>Reduction Strategies
+                                    </h5>
+                                    <ul class="space-y-2">
+                                        ${section.tips.map(tip => `
+                                            <li class="text-gray-200 font-exo text-sm flex items-start">
+                                                <i class="fas fa-check text-emerald-400 mr-2 mt-1"></i>
+                                                ${tip}
+                                            </li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+                                
+                                <div>
+                                    <h5 class="font-exo font-bold text-purple-300 mb-2 flex items-center">
+                                        <i class="fas fa-coins mr-2"></i>Crediting Opportunities
+                                    </h5>
+                                    <ul class="space-y-2">
+                                        ${section.crediting_opportunities.map(opp => `
+                                            <li class="text-gray-200 font-exo text-sm flex items-start">
+                                                <i class="fas fa-certificate text-purple-400 mr-2 mt-1"></i>
+                                                ${opp}
+                                            </li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                ${advice.general_tips ? `
+                    <div class="mt-6 bg-emerald-500/10 rounded-xl p-5 border border-emerald-500/30">
+                        <h4 class="text-lg font-orbitron font-bold text-emerald-300 mb-3">Overall Strategy</h4>
+                        <ul class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            ${advice.general_tips.map(tip => `
+                                <li class="text-gray-200 font-exo text-sm flex items-center">
+                                    <i class="fas fa-star text-yellow-400 mr-2"></i>
+                                    ${tip}
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+        fixResults.classList.remove('hidden');
+    }
+});
+</script>
+{% endblock %}

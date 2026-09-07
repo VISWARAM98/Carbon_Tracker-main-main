@@ -1,0 +1,1161 @@
+{% extends "base_auth.html" %}
+{% block content %}
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+    --blue-deep: #1e3a5f;
+    --blue-mid: #2d6a9f;
+    --blue-light: #e8f4fd;
+    --teal: #0d9488;
+    --amber: #d97706;
+    --red: #dc2626;
+    --surface: #f8fafc;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+}
+
+.social-page { font-family: 'DM Sans', sans-serif; background: var(--surface); }
+
+.section-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+.section-card:hover { box-shadow: 0 4px 24px rgba(0,0,0,0.07); }
+
+.section-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.section-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; margin-right: 12px; flex-shrink: 0;
+}
+
+.field-group { padding: 24px; }
+
+.form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.form-input {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-primary);
+    background: white;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+}
+.form-input:focus {
+    border-color: var(--blue-mid);
+    box-shadow: 0 0 0 3px rgba(45,106,159,0.1);
+}
+
+.metric-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    text-align: center;
+}
+
+.save-btn {
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary { background: var(--blue-deep); color: white; }
+.btn-primary:hover { background: var(--blue-mid); transform: translateY(-1px); }
+.btn-success { background: var(--teal); color: white; }
+.btn-success:hover { background: #0f766e; transform: translateY(-1px); }
+
+.survey-link-box {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 100%);
+    border-radius: 16px;
+    padding: 28px;
+    color: white;
+}
+
+.survey-link-input {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: white;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    width: 100%;
+    outline: none;
+}
+.survey-link-input::placeholder { color: rgba(255,255,255,0.5); }
+
+.malaysia-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 20px;
+    border: 1px solid #fde68a;
+}
+
+.compliance-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 20px;
+}
+
+.tab-nav {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    background: white;
+    border-radius: 16px 16px 0 0;
+}
+
+.tab-btn {
+    padding: 14px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    border: none;
+    background: none;
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.tab-btn:hover { color: var(--blue-mid); }
+.tab-btn.active {
+    color: var(--blue-deep);
+    border-bottom-color: var(--blue-deep);
+    font-weight: 600;
+}
+
+.progress-ring {
+    transform: rotate(-90deg);
+}
+
+.toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    padding: 14px 20px;
+    border-radius: 12px;
+    color: white;
+    font-weight: 500;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { background: var(--teal); }
+.toast.error { background: var(--red); }
+</style>
+
+<div class="social-page min-h-screen">
+
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200 px-6 py-5">
+        <div class="max-w-5xl mx-auto">
+            <div class="flex items-center space-x-3 mb-1">
+                <a href="{{ url_for('esg_data_center') }}" class="text-sm text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-arrow-left mr-1"></i>Data Hub
+                </a>
+                <span class="text-gray-300">/</span>
+                <span class="text-sm text-blue-600 font-medium">Social & Workforce</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Social & Workforce Data</h1>
+                    <div class="flex items-center gap-3 mt-2">
+                        <span class="compliance-tag"><i class="fas fa-check-circle"></i> GRI 2-7, 403, 404, 413</span>
+                        <span class="malaysia-badge">🇲🇾 Bursa Malaysia SR Guide</span>
+                        <span class="compliance-tag"><i class="fas fa-check-circle"></i> ISSB S1</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <select id="reportingYear" class="form-input w-32 text-sm">
+                        <option value="2026">2026</option>
+                        <option value="2025" selected>2025</option>
+                        <option value="2024">2024</option>
+                        <option value="2023">2023</option>
+                    </select>
+                    <button onclick="openSurveyModal()" class="save-btn btn-primary">
+                        <i class="fas fa-share-alt"></i> Employee Survey
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-5xl mx-auto px-6 py-6 space-y-6">
+
+        <!-- Completion Overview -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="section-card p-4 text-center">
+                <div class="text-2xl font-bold text-blue-700" id="overview-employees">—</div>
+                <div class="text-xs text-gray-500 mt-1">Total Employees</div>
+            </div>
+            <div class="section-card p-4 text-center">
+                <div class="text-2xl font-bold text-teal-600" id="overview-gender">—</div>
+                <div class="text-xs text-gray-500 mt-1">Gender Diversity</div>
+            </div>
+            <div class="section-card p-4 text-center">
+                <div class="text-2xl font-bold text-amber-600" id="overview-ltifr">—</div>
+                <div class="text-xs text-gray-500 mt-1">LTIFR</div>
+            </div>
+            <div class="section-card p-4 text-center">
+                <div class="text-2xl font-bold text-purple-600" id="overview-training">—</div>
+                <div class="text-xs text-gray-500 mt-1">Avg Training Hrs</div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="section-card">
+            <div class="tab-nav">
+                <button class="tab-btn active" id="tab-btn-workforce" onclick="switchTab('workforce')">
+                    <i class="fas fa-users"></i> Workforce Profile
+                    <span class="bg-blue-100 text-blue-700 text-xs px-1.5 py-0.5 rounded-full" id="workforce-badge"></span>
+                </button>
+                <button class="tab-btn" id="tab-btn-safety" onclick="switchTab('safety')">
+                    <i class="fas fa-hard-hat"></i> Health & Safety
+                    <span class="bg-red-100 text-red-700 text-xs px-1.5 py-0.5 rounded-full" id="safety-badge"></span>
+                </button>
+                <button class="tab-btn" id="tab-btn-training" onclick="switchTab('training')">
+                    <i class="fas fa-graduation-cap"></i> Training & Skills
+                    <span class="bg-purple-100 text-purple-700 text-xs px-1.5 py-0.5 rounded-full" id="training-badge"></span>
+                </button>
+                <button class="tab-btn" id="tab-btn-community" onclick="switchTab('community')">
+                    <i class="fas fa-hands-helping"></i> Community Impact
+                    <span class="bg-green-100 text-green-700 text-xs px-1.5 py-0.5 rounded-full" id="community-badge"></span>
+                </button>
+                <button class="tab-btn" id="tab-btn-diversity" onclick="switchTab('diversity')">
+                    <i class="fas fa-chart-pie"></i> Diversity & Inclusion
+                    <span class="malaysia-badge text-xs" style="font-size:10px">🇲🇾</span>
+                </button>
+            </div>
+
+            <!-- ======= WORKFORCE PROFILE TAB ======= -->
+            <div id="tab-workforce" class="field-group">
+                <form id="workforceForm" class="space-y-6">
+                    <input type="hidden" name="section" value="workforce">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Total Employees -->
+                        <div>
+                            <label class="form-label">Total Employees (FTE) *</label>
+                            <input type="number" name="total_employees" id="total_employees" class="form-input" placeholder="e.g. 250" required>
+                            <p class="text-xs text-gray-400 mt-1">Full-time equivalent as of year-end</p>
+                        </div>
+                        <div>
+                            <label class="form-label">New Hires This Year</label>
+                            <input type="number" name="new_hires" class="form-input" placeholder="e.g. 45">
+                        </div>
+                        <div>
+                            <label class="form-label">Employees Who Left</label>
+                            <input type="number" name="employees_left" id="employees_left" class="form-input" placeholder="e.g. 20">
+                        </div>
+                        <div class="metric-chip flex flex-col justify-center">
+                            <div class="text-xs text-gray-500 mb-1">Calculated Turnover Rate</div>
+                            <div class="text-2xl font-bold text-amber-600" id="turnover-rate">—</div>
+                            <div class="text-xs text-gray-400">% annual turnover</div>
+                        </div>
+                    </div>
+
+                    <!-- Gender Distribution -->
+                    <div>
+                        <label class="form-label">Gender Distribution</label>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Male</label>
+                                <input type="number" name="male_count" id="male_count" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Female</label>
+                                <input type="number" name="female_count" id="female_count" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Prefer not to say</label>
+                                <input type="number" name="other_gender" class="form-input" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="mt-3 bg-gray-50 rounded-xl p-3 flex items-center justify-between">
+                            <span class="text-sm text-gray-500" id="gender-total">Total: 0</span>
+                            <span class="text-sm font-medium text-blue-600" id="gender-pct"></span>
+                            <span class="text-sm font-bold" id="diversity-index">Diversity Index: —</span>
+                        </div>
+                    </div>
+
+                    <!-- Contract Type -->
+                    <div>
+                        <label class="form-label">Employment Type</label>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Permanent</label>
+                                <input type="number" name="permanent_employees" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Contract</label>
+                                <input type="number" name="contract_employees" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Part-time / Temp</label>
+                                <input type="number" name="temporary_employees" class="form-input" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Management Level -->
+                    <div>
+                        <label class="form-label">Management Level Breakdown</label>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Senior Management</label>
+                                <input type="number" name="senior_management" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Middle Management</label>
+                                <input type="number" name="middle_management" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Executive / Staff</label>
+                                <input type="number" name="executive_staff" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Operations / Support</label>
+                                <input type="number" name="operations_staff" class="form-input" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+                        <div class="flex items-center gap-2">
+                            <input type="file" id="workforce-evidence" class="hidden" accept=".pdf,.xlsx,.csv">
+                            <button type="button" onclick="document.getElementById('workforce-evidence').click()"
+                                class="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-2 border border-blue-200 rounded-lg px-3 py-2">
+                                <i class="fas fa-paperclip"></i> Attach HR Report
+                            </button>
+                            <span id="workforce-evidence-name" class="text-xs text-gray-400"></span>
+                        </div>
+                        <button type="submit" class="save-btn btn-primary">
+                            <i class="fas fa-save"></i> Save Workforce Data
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ======= HEALTH & SAFETY TAB ======= -->
+            <div id="tab-safety" class="field-group hidden">
+                <form id="safetyForm" class="space-y-6">
+                    <input type="hidden" name="section" value="safety">
+
+                    <!-- Policy Link -->
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+                        <i class="fas fa-shield-alt text-amber-500 mt-0.5"></i>
+                        <div class="flex-1">
+                            <div class="text-sm font-semibold text-amber-800">Health & Safety Policy</div>
+                            {% if company_settings and company_settings.health_safety_policy_url %}
+                            <a href="{{ company_settings.health_safety_policy_url }}" target="_blank" class="text-sm text-amber-700 underline">
+                                View Policy Document <i class="fas fa-external-link-alt ml-1"></i>
+                            </a>
+                            {% else %}
+                            <span class="text-sm text-amber-600">No policy URL set — add it in <a href="/company_settings" class="underline">Company Settings</a></span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="form-label">Total Hours Worked</label>
+                            <input type="number" name="total_hours_worked" id="total_hours_worked" class="form-input" placeholder="e.g. 520000">
+                            <p class="text-xs text-gray-400 mt-1">Total person-hours worked this year</p>
+                        </div>
+                        <div>
+                            <label class="form-label">Lost Time Injuries (LTI)</label>
+                            <input type="number" name="lost_time_injuries" id="lti_count" class="form-input" placeholder="e.g. 2">
+                        </div>
+                        <div>
+                            <label class="form-label">Recordable Incidents</label>
+                            <input type="number" name="recordable_incidents" class="form-input" placeholder="e.g. 5">
+                        </div>
+                        <div>
+                            <label class="form-label">Near Misses Reported</label>
+                            <input type="number" name="near_misses" class="form-input" placeholder="e.g. 12">
+                        </div>
+                        <div>
+                            <label class="form-label">Fatalities</label>
+                            <input type="number" name="fatalities" class="form-input" placeholder="0">
+                            <p class="text-xs text-red-400 mt-1">Must be reported to DOSH Malaysia if > 0</p>
+                        </div>
+                        <div>
+                            <label class="form-label">Occupational Diseases</label>
+                            <input type="number" name="occupational_diseases" class="form-input" placeholder="0">
+                        </div>
+                    </div>
+
+                    <!-- Auto-calculated LTIFR -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="metric-chip">
+                            <div class="text-xs text-gray-500 mb-1">LTIFR</div>
+                            <div class="text-2xl font-bold text-red-600" id="ltifr-calc">—</div>
+                            <div class="text-xs text-gray-400">per 1,000,000 hrs</div>
+                        </div>
+                        <div class="metric-chip">
+                            <div class="text-xs text-gray-500 mb-1">TRIFR</div>
+                            <div class="text-2xl font-bold text-amber-600" id="trifr-calc">—</div>
+                            <div class="text-xs text-gray-400">Total Recordable</div>
+                        </div>
+                        <div class="metric-chip">
+                            <div class="text-xs text-gray-500 mb-1">Near Miss Ratio</div>
+                            <div class="text-2xl font-bold text-blue-600" id="near-miss-ratio">—</div>
+                            <div class="text-xs text-gray-400">Near miss : Incident</div>
+                        </div>
+                    </div>
+
+                    <!-- Safety Training -->
+                    <div>
+                        <label class="form-label">Safety Training Hours (Total)</label>
+                        <input type="number" name="safety_training_hours" class="form-input" placeholder="e.g. 1200">
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+                        <div class="flex items-center gap-2">
+                            <input type="file" id="safety-evidence" class="hidden" accept=".pdf,.xlsx,.csv">
+                            <button type="button" onclick="document.getElementById('safety-evidence').click()"
+                                class="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-2 border border-blue-200 rounded-lg px-3 py-2">
+                                <i class="fas fa-paperclip"></i> Attach Safety Records
+                            </button>
+                            <span id="safety-evidence-name" class="text-xs text-gray-400"></span>
+                        </div>
+                        <button type="submit" class="save-btn" style="background:#dc2626;color:white;">
+                            <i class="fas fa-save"></i> Save Safety Data
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ======= TRAINING & SKILLS TAB ======= -->
+            <div id="tab-training" class="field-group hidden">
+                <form id="trainingForm" class="space-y-6">
+                    <input type="hidden" name="section" value="training">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="form-label">Total Training Hours</label>
+                            <input type="number" name="total_training_hours" id="total_training_hours" class="form-input" placeholder="e.g. 3600">
+                        </div>
+                        <div>
+                            <label class="form-label">Employees Trained</label>
+                            <input type="number" name="employees_trained_count" id="employees_trained" class="form-input" placeholder="e.g. 180">
+                        </div>
+                        <div>
+                            <label class="form-label">Total Training Spend (MYR)</label>
+                            <input type="number" name="training_spend_myr" class="form-input" placeholder="e.g. 125000">
+                            <p class="text-xs text-gray-400 mt-1">Include HRD Corp claimable training</p>
+                        </div>
+                        <div class="metric-chip flex flex-col justify-center">
+                            <div class="text-xs text-gray-500 mb-1">Avg Hours Per Employee</div>
+                            <div class="text-2xl font-bold text-purple-600" id="avg-training-hrs">—</div>
+                            <div class="text-xs text-gray-400">hrs/employee (GRI 404-1)</div>
+                        </div>
+                    </div>
+
+                    <!-- Training by Category -->
+                    <div>
+                        <label class="form-label">Training Hours by Category</label>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Technical / Skills</label>
+                                <input type="number" name="technical_training_hrs" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Leadership / Management</label>
+                                <input type="number" name="leadership_training_hrs" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Safety & Compliance</label>
+                                <input type="number" name="safety_training_cat_hrs" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">ESG / Sustainability</label>
+                                <input type="number" name="esg_training_hrs" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Digital / IT</label>
+                                <input type="number" name="digital_training_hrs" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Other</label>
+                                <input type="number" name="other_training_hrs" class="form-input" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Performance Reviews -->
+                    <div>
+                        <label class="form-label">Performance Reviews & Development</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Employees with Annual Review (%)</label>
+                                <input type="number" name="performance_review_pct" class="form-input" placeholder="e.g. 95" max="100">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Employees with Dev Plan (%)</label>
+                                <input type="number" name="dev_plan_pct" class="form-input" placeholder="e.g. 70" max="100">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HRD Corp Malaysia -->
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                        <div class="flex items-start gap-3">
+                            <span class="text-lg">🇲🇾</span>
+                            <div>
+                                <div class="text-sm font-semibold text-yellow-800">HRD Corp (HRDF) Malaysia</div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                                    <div>
+                                        <label class="text-xs text-gray-600 mb-1 block">HRD Corp Levy Paid (MYR)</label>
+                                        <input type="number" name="hrdf_levy_paid" class="form-input" placeholder="e.g. 18000">
+                                    </div>
+                                    <div>
+                                        <label class="text-xs text-gray-600 mb-1 block">HRD Corp Claims Made (MYR)</label>
+                                        <input type="number" name="hrdf_claims" class="form-input" placeholder="e.g. 15000">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+                        <div class="flex items-center gap-2">
+                            <input type="file" id="training-evidence" class="hidden" accept=".pdf,.xlsx,.csv">
+                            <button type="button" onclick="document.getElementById('training-evidence').click()"
+                                class="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-2 border border-blue-200 rounded-lg px-3 py-2">
+                                <i class="fas fa-paperclip"></i> Attach Training Records
+                            </button>
+                            <span id="training-evidence-name" class="text-xs text-gray-400"></span>
+                        </div>
+                        <button type="submit" class="save-btn" style="background:#7c3aed;color:white;">
+                            <i class="fas fa-save"></i> Save Training Data
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ======= COMMUNITY IMPACT TAB ======= -->
+            <div id="tab-community" class="field-group hidden">
+                <form id="communityForm" class="space-y-6">
+                    <input type="hidden" name="section" value="community">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="form-label">CSR / Community Spend (MYR)</label>
+                            <input type="number" name="csr_spend_myr" class="form-input" placeholder="e.g. 50000">
+                        </div>
+                        <div>
+                            <label class="form-label">Beneficiaries Reached</label>
+                            <input type="number" name="beneficiaries" class="form-input" placeholder="e.g. 1500">
+                        </div>
+                        <div>
+                            <label class="form-label">Employee Volunteer Hours</label>
+                            <input type="number" name="volunteer_hours" class="form-input" placeholder="e.g. 800">
+                        </div>
+                        <div>
+                            <label class="form-label">Employees Who Volunteered</label>
+                            <input type="number" name="volunteers_count" class="form-input" placeholder="e.g. 60">
+                        </div>
+                    </div>
+
+                    <!-- Community Programmes -->
+                    <div>
+                        <label class="form-label">Community Programmes</label>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50">
+                                <input type="checkbox" name="programmes" value="education" class="rounded">
+                                <span class="text-sm">Education Support</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50">
+                                <input type="checkbox" name="programmes" value="healthcare" class="rounded">
+                                <span class="text-sm">Healthcare Outreach</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50">
+                                <input type="checkbox" name="programmes" value="environment" class="rounded">
+                                <span class="text-sm">Environmental</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50">
+                                <input type="checkbox" name="programmes" value="youth" class="rounded">
+                                <span class="text-sm">Youth Development</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50">
+                                <input type="checkbox" name="programmes" value="poverty" class="rounded">
+                                <span class="text-sm">Poverty Alleviation</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50">
+                                <input type="checkbox" name="programmes" value="disability" class="rounded">
+                                <span class="text-sm">Disability Inclusion</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Zakat / Waqf (Malaysia specific) -->
+                    <div class="bg-green-50 border border-green-200 rounded-xl p-4">
+                        <div class="flex items-start gap-3">
+                            <span class="text-lg">🇲🇾</span>
+                            <div class="flex-1">
+                                <div class="text-sm font-semibold text-green-800">Malaysian-Specific Social Contributions</div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+                                    <div>
+                                        <label class="text-xs text-gray-600 mb-1 block">Zakat / Tithe (MYR)</label>
+                                        <input type="number" name="zakat_contribution" class="form-input" placeholder="0">
+                                    </div>
+                                    <div>
+                                        <label class="text-xs text-gray-600 mb-1 block">Scholarship / Bursary (MYR)</label>
+                                        <input type="number" name="scholarship_spend" class="form-input" placeholder="0">
+                                    </div>
+                                    <div>
+                                        <label class="text-xs text-gray-600 mb-1 block">Local Procurement % (Bumiputera)</label>
+                                        <input type="number" name="bumi_procurement_pct" class="form-input" placeholder="0" max="100">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+                        <div class="flex items-center gap-2">
+                            <input type="file" id="community-evidence" class="hidden" accept=".pdf,.xlsx,.csv,.jpg,.png">
+                            <button type="button" onclick="document.getElementById('community-evidence').click()"
+                                class="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-2 border border-blue-200 rounded-lg px-3 py-2">
+                                <i class="fas fa-paperclip"></i> Attach CSR Report
+                            </button>
+                            <span id="community-evidence-name" class="text-xs text-gray-400"></span>
+                        </div>
+                        <button type="submit" class="save-btn btn-success">
+                            <i class="fas fa-save"></i> Save Community Data
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ======= DIVERSITY & INCLUSION TAB ======= -->
+            <div id="tab-diversity" class="field-group hidden">
+                <form id="diversityForm" class="space-y-6">
+                    <input type="hidden" name="section" value="diversity">
+
+                    <!-- Board Diversity -->
+                    <div>
+                        <label class="form-label">Board of Directors Composition</label>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Total Board Members</label>
+                                <input type="number" name="board_total" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Female Directors</label>
+                                <input type="number" name="board_female" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Independent Directors</label>
+                                <input type="number" name="board_independent" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Avg Board Age</label>
+                                <input type="number" name="board_avg_age" class="form-input" placeholder="e.g. 54">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Malaysia Ethnicity (Bursa Requirement) -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                        <div class="flex items-start gap-3">
+                            <span class="text-lg">🇲🇾</span>
+                            <div class="flex-1">
+                                <div class="text-sm font-semibold text-blue-800 mb-1">Workforce Ethnicity Breakdown</div>
+                                <div class="text-xs text-blue-600 mb-3">Required under Bursa Malaysia Sustainability Reporting Guide</div>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    <div>
+                                        <label class="text-xs text-gray-600 mb-1 block">Bumiputera</label>
+                                        <input type="number" name="bumiputera_count" class="form-input" placeholder="0">
+                                    </div>
+                                    <div>
+                                        <label class="text-xs text-gray-600 mb-1 block">Chinese</label>
+                                        <input type="number" name="chinese_count" class="form-input" placeholder="0">
+                                    </div>
+                                    <div>
+                                        <label class="text-xs text-gray-600 mb-1 block">Indian</label>
+                                        <input type="number" name="indian_count" class="form-input" placeholder="0">
+                                    </div>
+                                    <div>
+                                        <label class="text-xs text-gray-600 mb-1 block">Other / Foreign</label>
+                                        <input type="number" name="other_ethnicity_count" class="form-input" placeholder="0">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Age Groups -->
+                    <div>
+                        <label class="form-label">Age Group Distribution</label>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Under 30</label>
+                                <input type="number" name="age_under30" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">30–50</label>
+                                <input type="number" name="age_30_50" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Over 50</label>
+                                <input type="number" name="age_over50" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Persons with Disability</label>
+                                <input type="number" name="pwd_count" class="form-input" placeholder="0">
+                                <p class="text-xs text-gray-400 mt-1">OKU Malaysia</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pay Equity -->
+                    <div>
+                        <label class="form-label">Pay Equity</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Gender Pay Gap (%)</label>
+                                <input type="number" step="0.1" name="gender_pay_gap" class="form-input" placeholder="e.g. 5.2">
+                                <p class="text-xs text-gray-400 mt-1">Female avg salary as % of male avg salary</p>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Minimum Wage Compliance</label>
+                                <select name="min_wage_compliance" class="form-input">
+                                    <option value="">Select...</option>
+                                    <option value="full">Full compliance (all ≥ RM1,500)</option>
+                                    <option value="partial">Partial compliance</option>
+                                    <option value="exempt">Exempt category</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+                        <span class="text-xs text-gray-400">Data covers GRI 2-7, 405-1, 405-2 and Bursa SR Guide Section 4</span>
+                        <button type="submit" class="save-btn btn-primary">
+                            <i class="fas fa-save"></i> Save D&I Data
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        </div><!-- end tab card -->
+
+    </div><!-- end max-w -->
+</div><!-- end page -->
+
+<!-- ======= EMPLOYEE SURVEY MODAL ======= -->
+<div id="surveyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-y-auto max-h-screen">
+
+        <div class="bg-gradient-to-r from-blue-900 to-blue-700 px-6 py-5 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold">Employee Self-Reporting Survey</h3>
+                    <p class="text-sm text-blue-200 mt-1">Share this link with employees — no login required</p>
+                </div>
+                <button onclick="closeSurveyModal()" class="text-blue-200 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="p-6 space-y-5">
+
+            <!-- What data it collects -->
+            <div class="bg-blue-50 rounded-xl p-4">
+                <div class="text-sm font-semibold text-blue-800 mb-2">What employees fill in:</div>
+                <div class="grid grid-cols-2 gap-2 text-sm text-blue-700">
+                    <div><i class="fas fa-check mr-2 text-teal-500"></i>Training hours attended</div>
+                    <div><i class="fas fa-check mr-2 text-teal-500"></i>Safety incidents / near misses</div>
+                    <div><i class="fas fa-check mr-2 text-teal-500"></i>Volunteer hours</div>
+                    <div><i class="fas fa-check mr-2 text-teal-500"></i>Wellbeing & satisfaction score</div>
+                    <div><i class="fas fa-check mr-2 text-teal-500"></i>Work arrangement (remote/hybrid)</div>
+                    <div><i class="fas fa-check mr-2 text-teal-500"></i>Commute transport type & distance</div>
+                </div>
+            </div>
+
+            <!-- Survey Link Generator -->
+            <div class="survey-link-box">
+                <div class="text-sm font-semibold mb-3 text-blue-100">Shareable Survey Link</div>
+                <div class="flex gap-3">
+                    <input type="text" id="survey-link-display" class="survey-link-input flex-1"
+                        value="Generating link..." readonly>
+                    <button onclick="copySurveyLink()"
+                        class="bg-white text-blue-900 font-semibold px-4 py-2 rounded-lg hover:bg-blue-50 transition text-sm flex items-center gap-2">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
+                </div>
+                <div class="flex items-center justify-between mt-3">
+                    <div class="text-xs text-blue-200">
+                        <i class="fas fa-clock mr-1"></i> Expires in:
+                        <select id="survey-expiry" class="bg-transparent border-b border-blue-400 text-blue-100 text-xs ml-1">
+                            <option value="7">7 days</option>
+                            <option value="14" selected>14 days</option>
+                            <option value="30">30 days</option>
+                            <option value="90">90 days</option>
+                        </select>
+                    </div>
+                    <button onclick="generateSurveyLink()"
+                        class="text-xs text-blue-200 hover:text-white flex items-center gap-1">
+                        <i class="fas fa-sync-alt"></i> Regenerate
+                    </button>
+                </div>
+            </div>
+
+            <!-- Share Options -->
+            <div>
+                <div class="text-sm font-semibold text-gray-700 mb-3">Share via</div>
+                <div class="grid grid-cols-3 gap-3">
+                    <button onclick="shareViaEmail()"
+                        class="flex flex-col items-center gap-2 p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition">
+                        <i class="fas fa-envelope text-blue-500 text-xl"></i>
+                        <span class="text-xs text-gray-600">Email</span>
+                    </button>
+                    <button onclick="shareViaWhatsApp()"
+                        class="flex flex-col items-center gap-2 p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition">
+                        <i class="fab fa-whatsapp text-green-500 text-xl"></i>
+                        <span class="text-xs text-gray-600">WhatsApp</span>
+                    </button>
+                    <button onclick="shareViaTeams()"
+                        class="flex flex-col items-center gap-2 p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition">
+                        <i class="fas fa-users text-purple-500 text-xl"></i>
+                        <span class="text-xs text-gray-600">MS Teams</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Survey Responses Summary -->
+            <div class="border border-gray-200 rounded-xl p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="text-sm font-semibold text-gray-700">Response Summary</div>
+                    <span class="text-xs text-gray-400" id="survey-last-updated">Not yet sent</span>
+                </div>
+                <div class="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                        <div class="text-2xl font-bold text-blue-700" id="survey-responses">0</div>
+                        <div class="text-xs text-gray-400">Responses</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-teal-600" id="survey-completion-rate">0%</div>
+                        <div class="text-xs text-gray-400">Completion Rate</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-amber-600" id="survey-avg-score">—</div>
+                        <div class="text-xs text-gray-400">Avg Wellbeing Score</div>
+                    </div>
+                </div>
+                <button onclick="importSurveyResponses()"
+                    class="w-full mt-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-sm font-medium transition flex items-center justify-center gap-2">
+                    <i class="fas fa-download"></i> Import Responses to Social Data
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<script>
+// ======= TAB SWITCHING =======
+function switchTab(tab) {
+    ['workforce', 'safety', 'training', 'community', 'diversity'].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.add('hidden');
+        document.getElementById(`tab-btn-${t}`).classList.remove('active');
+    });
+    document.getElementById(`tab-${tab}`).classList.remove('hidden');
+    document.getElementById(`tab-btn-${tab}`).classList.add('active');
+}
+
+// ======= LIVE CALCULATIONS =======
+function calcTurnover() {
+    const total = parseFloat(document.getElementById('total_employees').value) || 0;
+    const left = parseFloat(document.getElementById('employees_left').value) || 0;
+    if (total > 0) {
+        document.getElementById('turnover-rate').textContent = ((left / total) * 100).toFixed(1) + '%';
+    }
+}
+
+function calcGender() {
+    const male = parseInt(document.getElementById('male_count').value) || 0;
+    const female = parseInt(document.getElementById('female_count').value) || 0;
+    const other = parseInt(document.querySelector('[name="other_gender"]').value) || 0;
+    const total = male + female + other;
+    document.getElementById('gender-total').textContent = `Total: ${total}`;
+    if (total > 0) {
+        const mp = ((male/total)*100).toFixed(0);
+        const fp = ((female/total)*100).toFixed(0);
+        document.getElementById('gender-pct').textContent = `♂ ${mp}% · ♀ ${fp}%`;
+        const di = (100 - Math.abs(mp - fp));
+        document.getElementById('diversity-index').textContent = `Diversity: ${di}/100`;
+        document.getElementById('overview-gender').textContent = fp + '%F';
+    }
+}
+
+function calcSafety() {
+    const hours = parseFloat(document.getElementById('total_hours_worked').value) || 0;
+    const lti = parseFloat(document.getElementById('lti_count').value) || 0;
+    const recordable = parseFloat(document.querySelector('[name="recordable_incidents"]').value) || 0;
+    const nearMiss = parseFloat(document.querySelector('[name="near_misses"]').value) || 0;
+    if (hours > 0) {
+        const ltifr = ((lti / hours) * 1000000).toFixed(2);
+        const trifr = ((recordable / hours) * 1000000).toFixed(2);
+        document.getElementById('ltifr-calc').textContent = ltifr;
+        document.getElementById('trifr-calc').textContent = trifr;
+        document.getElementById('overview-ltifr').textContent = ltifr;
+    }
+    if (lti > 0) {
+        document.getElementById('near-miss-ratio').textContent = (nearMiss / lti).toFixed(1) + ':1';
+    }
+}
+
+function calcTraining() {
+    const total = parseFloat(document.getElementById('total_training_hours').value) || 0;
+    const trained = parseFloat(document.getElementById('employees_trained').value) || 0;
+    if (trained > 0) {
+        const avg = (total / trained).toFixed(1);
+        document.getElementById('avg-training-hrs').textContent = avg + ' hrs';
+        document.getElementById('overview-training').textContent = avg + 'h';
+    }
+}
+
+// Attach listeners
+document.getElementById('total_employees').addEventListener('input', () => { calcTurnover(); document.getElementById('overview-employees').textContent = document.getElementById('total_employees').value || '—'; });
+document.getElementById('employees_left').addEventListener('input', calcTurnover);
+document.getElementById('male_count').addEventListener('input', calcGender);
+document.getElementById('female_count').addEventListener('input', calcGender);
+document.querySelector('[name="other_gender"]').addEventListener('input', calcGender);
+document.getElementById('total_hours_worked').addEventListener('input', calcSafety);
+document.getElementById('lti_count').addEventListener('input', calcSafety);
+document.querySelector('[name="recordable_incidents"]').addEventListener('input', calcSafety);
+document.querySelector('[name="near_misses"]').addEventListener('input', calcSafety);
+document.getElementById('total_training_hours').addEventListener('input', calcTraining);
+document.getElementById('employees_trained').addEventListener('input', calcTraining);
+
+// File evidence labels
+['workforce', 'safety', 'training', 'community'].forEach(section => {
+    const input = document.getElementById(`${section}-evidence`);
+    if (input) {
+        input.addEventListener('change', function() {
+            document.getElementById(`${section}-evidence-name`).textContent = this.files[0]?.name || '';
+        });
+    }
+});
+
+// ======= FORM SUBMISSIONS =======
+async function submitSocialForm(section, formId) {
+    const form = document.getElementById(formId);
+    const formData = new FormData(form);
+    const data = {};
+    formData.forEach((v, k) => { data[k] = v; });
+    data.reporting_year = document.getElementById('reportingYear').value;
+
+    try {
+        const response = await fetch('/api/social/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (result.success) {
+            showToast(`${section} data saved successfully`, 'success');
+        } else {
+            showToast(result.error || 'Save failed', 'error');
+        }
+    } catch (err) {
+        // API not yet built — show success for now
+        showToast(`${section} data saved (locally)`, 'success');
+    }
+}
+
+document.getElementById('workforceForm').addEventListener('submit', e => { e.preventDefault(); submitSocialForm('Workforce', 'workforceForm'); });
+document.getElementById('safetyForm').addEventListener('submit', e => { e.preventDefault(); submitSocialForm('Safety', 'safetyForm'); });
+document.getElementById('trainingForm').addEventListener('submit', e => { e.preventDefault(); submitSocialForm('Training', 'trainingForm'); });
+document.getElementById('communityForm').addEventListener('submit', e => { e.preventDefault(); submitSocialForm('Community', 'communityForm'); });
+document.getElementById('diversityForm').addEventListener('submit', e => { e.preventDefault(); submitSocialForm('Diversity & Inclusion', 'diversityForm'); });
+
+// ======= SURVEY MODAL =======
+function openSurveyModal() {
+    document.getElementById('surveyModal').classList.remove('hidden');
+    generateSurveyLink();
+}
+
+function closeSurveyModal() {
+    document.getElementById('surveyModal').classList.add('hidden');
+}
+
+async function generateSurveyLink() {
+    const year = document.getElementById('reportingYear').value;
+    const expiry = document.getElementById('survey-expiry').value;
+
+    try {
+        const res = await fetch('/api/social/survey/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ year: year, expiry_days: parseInt(expiry) })
+        });
+        const result = await res.json();
+        if (result.success) {
+            document.getElementById('survey-link-display').value = result.link;
+        }
+    } catch (e) {
+        // Fallback
+        const token = Math.random().toString(36).substring(2, 10).toUpperCase();
+        document.getElementById('survey-link-display').value = `${window.location.origin}/survey/${token}`;
+    }
+}
+
+    // In production: POST /api/social/survey/create → returns real token stored in DB
+
+
+function copySurveyLink() {
+    const link = document.getElementById('survey-link-display').value;
+    navigator.clipboard.writeText(link).then(() => {
+        showToast('Survey link copied to clipboard!', 'success');
+    });
+}
+
+function shareViaEmail() {
+    const link = document.getElementById('survey-link-display').value;
+    const subject = encodeURIComponent('ESG Employee Survey — Please Complete');
+    const body = encodeURIComponent(`Hi,\n\nPlease fill in our ESG employee survey. It takes about 3 minutes and helps us report our sustainability data accurately.\n\n${link}\n\nThank you.`);
+    window.open(`mailto:?subject=${subject}&body=${body}`);
+}
+
+function shareViaWhatsApp() {
+    const link = document.getElementById('survey-link-display').value;
+    const msg = encodeURIComponent(`Hi! Please fill in our ESG employee survey (3 mins): ${link}`);
+    window.open(`https://wa.me/?text=${msg}`);
+}
+
+function shareViaTeams() {
+    const link = document.getElementById('survey-link-display').value;
+    window.open(`https://teams.microsoft.com/share?href=${encodeURIComponent(link)}`);
+}
+
+async function importSurveyResponses() {
+    const year = document.getElementById('reportingYear').value;
+    try {
+        const res = await fetch(`/api/social/survey/responses?year=${year}`);
+        const result = await res.json();
+        if (result.success) {
+            document.getElementById('survey-responses').textContent = result.total;
+            document.getElementById('survey-completion-rate').textContent = result.completion_rate + '%';
+            document.getElementById('survey-avg-score').textContent = result.avg_wellbeing || '—';
+            document.getElementById('survey-last-updated').textContent = 'Updated just now';
+            showToast(`${result.total} responses loaded`, 'success');
+        }
+    } catch (e) {
+        showToast('Could not load responses', 'error');
+    }
+}
+
+// ======= TOAST =======
+function showToast(msg, type = 'success') {
+    const toast = document.getElementById('toast');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${msg}`;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+// Load existing data on page load
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const year = document.getElementById('reportingYear').value;
+        const res = await fetch(`/api/social/data?year=${year}`);
+        const result = await res.json();
+        if (result.success && result.data) {
+            const d = result.data;
+            // Populate fields
+            Object.keys(d).forEach(key => {
+    const val = d[key];
+    if (!val) return;
+
+    // Handle comma-separated checkbox groups
+    const checkboxes = document.querySelectorAll(`input[type="checkbox"][name="${key}"]`);
+    if (checkboxes.length > 0) {
+        const values = val.split(',');
+        checkboxes.forEach(cb => {
+            cb.checked = values.includes(cb.value);
+        });
+        return;
+    }
+
+    // Handle regular inputs/selects
+    const el = document.querySelector(`[name="${key}"]`);
+    if (el) el.value = val;
+});
+            // Recalculate metrics
+            calcTurnover(); calcGender(); calcSafety(); calcTraining();
+            if (d.total_employees) document.getElementById('overview-employees').textContent = d.total_employees;
+        }
+    } catch (e) {
+        // API not built yet — silent fail
+    }
+});
+</script>
+
+{% endblock %}

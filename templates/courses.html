@@ -1,0 +1,75 @@
+{% extends "base_auth.html" %}
+
+{% block title %}Courses & Training - EmittiF.io{% endblock %}
+
+{% block content %}
+<section class="pt-24 pb-16 bg-[#0F3B2E]">
+    <div class="container mx-auto px-6">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-orbitron font-bold mb-4 text-white">Courses & Training</h1>
+            <p class="text-xl text-[#CFE7D3] font-exo max-w-3xl mx-auto">
+                Professional development in ESG, carbon accounting, and sustainability management
+            </p>
+        </div>
+    </div>
+</section>
+
+<section class="py-16 bg-white">
+    <div class="container mx-auto px-6">
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-r from-emerald-100 to-cyan-100 mb-6">
+                <i class="fas fa-graduation-cap text-4xl text-[#0F3B2E]"></i>
+            </div>
+            <h2 class="text-3xl font-orbitron font-bold text-[#0F3B2E] mb-4">Coming Soon</h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                We're developing comprehensive training programs on ESG reporting, carbon accounting fundamentals, 
+                and sustainability management tailored for Malaysian businesses.
+            </p>
+        </div>
+        
+        <div class="max-w-3xl mx-auto bg-gradient-to-r from-[#F5EBD9] to-[#E8F5E9] rounded-2xl p-8 border border-[#0F3B2E]/20">
+            <div class="text-center">
+                <h3 class="text-2xl font-orbitron font-bold text-[#0F3B2E] mb-4">Planned Course Modules</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-white rounded-xl p-6 border border-[#CFE7D3]">
+                        <div class="text-emerald-600 text-2xl mb-3">📘</div>
+                        <h4 class="font-exo font-bold text-lg text-gray-800 mb-2">GHG Protocol Fundamentals</h4>
+                        <p class="text-gray-600 text-sm">Scope 1, 2, 3 accounting principles</p>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-6 border border-[#CFE7D3]">
+                        <div class="text-emerald-600 text-2xl mb-3">📊</div>
+                        <h4 class="font-exo font-bold text-lg text-gray-800 mb-2">IFRS S1/S2 Compliance</h4>
+                        <p class="text-gray-600 text-sm">International sustainability standards</p>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-6 border border-[#CFE7D3]">
+                        <div class="text-emerald-600 text-2xl mb-3">🇲🇾</div>
+                        <h4 class="font-exo font-bold text-lg text-gray-800 mb-2">Malaysian Regulatory Framework</h4>
+                        <p class="text-gray-600 text-sm">NSRF, SEDG, Bursa requirements</p>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-6 border border-[#CFE7D3]">
+                        <div class="text-emerald-600 text-2xl mb-3">🔍</div>
+                        <h4 class="font-exo font-bold text-lg text-gray-800 mb-2">Audit Readiness Training</h4>
+                        <p class="text-gray-600 text-sm">Preparing for third-party verification</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 border border-[#0F3B2E]">
+                    <h4 class="font-orbitron font-bold text-xl text-[#0F3B2E] mb-3">Get Notified</h4>
+                    <p class="text-gray-600 mb-4">Be the first to know when our courses launch</p>
+                    <div class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+                        <input type="email" placeholder="Your email address" 
+                               class="flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:border-[#0F3B2E] focus:ring-2 focus:ring-[#0F3B2E]/20 outline-none">
+                        <button class="px-6 py-3 rounded-lg bg-[#0F3B2E] text-white font-exo font-bold hover:bg-[#1A5C48] transition-all duration-300">
+                            Notify Me
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

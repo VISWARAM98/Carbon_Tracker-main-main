@@ -1,0 +1,540 @@
+{% extends "base.html" %}
+
+{% block title %}Source Documents - EmittiF{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h2 mb-0">📁 Source Document Repository</h1>
+                <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                    <i class="bi bi-upload"></i> Upload Document
+                </button>
+            </div>
+            <p class="text-muted">Upload and link source documents (utility bills, receipts, invoices) to emission data for audit proofing.</p>
+        </div>
+    </div>
+
+    <!-- Upload Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Total Documents</h6>
+                    <h2 class="mb-0">{{ documents|length }}</h2>
+                    <small>All uploaded files</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Linked to Data</h6>
+                    <h2 class="mb-0">{{ documents|selectattr('linked_to_record_id')|list|length }}</h2>
+                    <small>Connected to emission records</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Verified</h6>
+                    <h2 class="mb-0">{{ documents|selectattr('verified')|list|length }}</h2>
+                    <small>Auditor verified</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Total Size</h6>
+                    <h2 class="mb-0">{{ (documents|sum(attribute='file_size') / 1048576)|round(2) }} MB</h2>
+                    <small>Storage used</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Uploaded Documents</h5>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-light" onclick="filterDocuments('all')">All</button>
+                        <button class="btn btn-sm btn-outline-light" onclick="filterDocuments('linked')">Linked</button>
+                        <button class="btn btn-sm btn-outline-light" onclick="filterDocuments('unlinked')">Unlinked</button>
+                        <button class="btn btn-sm btn-outline-light" onclick="filterDocuments('verified')">Verified</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if documents %}
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="documentsTable">
+                            <thead>
+                                <tr>
+                                    <th>File Name</th>
+                                    <th>Type</th>
+                                    <th>Upload Date</th>
+                                    <th>Size</th>
+                                    <th>Linked To</th>
+                                    <th>Status</th>
+                                    <th>Checksum</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for doc in documents %}
+                                {% set file_type = doc.filename.split('.')[-1].upper() if '.' in doc.filename else 'UNKNOWN' %}
+                                <tr data-status="{{ 'linked' if doc.linked_to_record_id else 'unlinked' }} {{ 'verified' if doc.verified else 'unverified' }}">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if file_type in ['PDF', 'DOC', 'DOCX'] %}
+                                            <i class="bi bi-file-text text-primary me-2"></i>
+                                            {% elif file_type in ['JPG', 'JPEG', 'PNG', 'GIF'] %}
+                                            <i class="bi bi-image text-success me-2"></i>
+                                            {% elif file_type in ['XLS', 'XLSX', 'CSV'] %}
+                                            <i class="bi bi-file-spreadsheet text-warning me-2"></i>
+                                            {% else %}
+                                            <i class="bi bi-file-earmark text-secondary me-2"></i>
+                                            {% endif %}
+                                            <div>
+                                                <strong>{{ doc.filename }}</strong>
+                                                {% if doc.description %}
+                                                <br><small class="text-muted">{{ doc.description[:50] }}{% if doc.description|length > 50 %}...{% endif %}</small>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ file_type }}</span>
+                                    </td>
+                                    <td>{{ doc.upload_date[:10] }}</td>
+                                    <td>
+                                        {% if doc.file_size > 1048576 %}
+                                        {{ "%.2f"|format(doc.file_size / 1048576) }} MB
+                                        {% elif doc.file_size > 1024 %}
+                                        {{ "%.1f"|format(doc.file_size / 1024) }} KB
+                                        {% else %}
+                                        {{ doc.file_size }} B
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if doc.linked_to_record_id %}
+                                        <span class="badge bg-success">
+                                            {{ doc.linked_to_table }}/{{ doc.linked_to_record_id[:8] }}...
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-warning text-dark">Not Linked</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if doc.verified %}
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle"></i> Verified
+                                        </span>
+                                        <br><small>{{ doc.verification_date[:10] if doc.verification_date }}</small>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted" title="{{ doc.checksum }}">
+                                            {{ doc.checksum[:16] }}...
+                                        </small>
+                                        <button class="btn btn-sm btn-link" onclick="copyChecksum('{{ doc.checksum }}')">
+                                            <i class="bi bi-copy"></i>
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            {% if file_type in ['PDF', 'JPG', 'JPEG', 'PNG'] %}
+                                            <button class="btn btn-outline-primary" 
+                                                    onclick="previewDocument('{{ doc.document_id }}')"
+                                                    title="Preview">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            {% endif %}
+                                            <button class="btn btn-outline-success" 
+                                                    onclick="linkDocument('{{ doc.document_id }}')"
+                                                    title="Link to Data">
+                                                <i class="bi bi-link"></i>
+                                            </button>
+                                            <a href="/api/download-document/{{ doc.document_id }}" 
+                                               class="btn btn-outline-dark"
+                                               title="Download">
+                                                <i class="bi bi-download"></i>
+                                            </a>
+                                            <button class="btn btn-outline-danger" 
+                                                    onclick="deleteDocument('{{ doc.document_id }}')"
+                                                    title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-cloud-upload display-1 text-muted"></i>
+                        <h4 class="mt-3">No documents uploaded yet</h4>
+                        <p class="text-muted">Upload your first source document to link it to emission data.</p>
+                        <button class="btn btn-dark mt-2" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                            <i class="bi bi-upload"></i> Upload First Document
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload Source Document</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label">Select Document</label>
+                        <input type="file" class="form-control" id="documentFile" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" required>
+                        <div class="form-text">Upload bills, receipts, invoices, or any emission source document (Max 10MB)</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <input type="text" class="form-control" id="documentDescription" 
+                               placeholder="e.g., January 2024 Electricity Bill">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Link to Emission Data (Optional)</label>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <select class="form-select" id="linkTable">
+                                    <option value="">Select Table</option>
+                                    <option value="emission_data">Emission Data</option>
+                                    <option value="scope1_entries">Scope 1 Entries</option>
+                                    <option value="scope2_entries">Scope 2 Entries</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" id="linkRecordId" 
+                                       placeholder="Record ID (optional)">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Tags (comma separated)</label>
+                        <input type="text" class="form-control" id="documentTags" 
+                               placeholder="electricity, utility, january-2024">
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Note:</strong> Documents are automatically checksum-verified and stored immutably for audit purposes.
+                    </div>
+                </form>
+                
+                <!-- Upload Progress -->
+                <div id="uploadProgress" class="d-none">
+                    <div class="progress mb-3">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             id="progressBar" style="width: 0%"></div>
+                    </div>
+                    <div class="text-center">
+                        <span id="progressText">Uploading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-dark" onclick="uploadDocument()" id="uploadButton">
+                    Upload Document
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Link Document Modal -->
+<div class="modal fade" id="linkModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Link Document to Emission Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="linkingDocumentId">
+                <div class="mb-3">
+                    <label class="form-label">Select Emission Record</label>
+                    <select class="form-select" id="emissionRecordSelect">
+                        <option value="">-- Select a record --</option>
+                        <!-- Will be populated by JavaScript -->
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Or Enter Record ID Manually</label>
+                    <input type="text" class="form-control" id="manualRecordId" 
+                           placeholder="e.g., emission_123456">
+                </div>
+                <div class="alert alert-success d-none" id="linkSuccess">
+                    <i class="bi bi-check-circle"></i> Document linked successfully!
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-dark" onclick="saveDocumentLink()">Save Link</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Document Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="previewTitle">Document Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="previewContent" class="text-center">
+                    <!-- Preview will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+let currentDocumentId = null;
+
+function filterDocuments(filter) {
+    const rows = document.querySelectorAll('#documentsTable tbody tr');
+    rows.forEach(row => {
+        const status = row.getAttribute('data-status');
+        switch(filter) {
+            case 'all':
+                row.style.display = '';
+                break;
+            case 'linked':
+                row.style.display = status.includes('linked') ? '' : 'none';
+                break;
+            case 'unlinked':
+                row.style.display = status.includes('unlinked') ? '' : 'none';
+                break;
+            case 'verified':
+                row.style.display = status.includes('verified') ? '' : 'none';
+                break;
+        }
+    });
+}
+
+function uploadDocument() {
+    const fileInput = document.getElementById('documentFile');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        alert('Please select a file to upload');
+        return;
+    }
+    
+    if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        alert('File size exceeds 10MB limit');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('description', document.getElementById('documentDescription').value);
+    formData.append('linked_table', document.getElementById('linkTable').value);
+    formData.append('linked_record_id', document.getElementById('linkRecordId').value);
+    
+    // Show progress
+    document.getElementById('uploadProgress').classList.remove('d-none');
+    document.getElementById('uploadButton').disabled = true;
+    
+    // Simulate progress updates
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+        progress += 10;
+        if (progress > 90) progress = 90;
+        document.getElementById('progressBar').style.width = progress + '%';
+    }, 200);
+    
+    fetch('/api/upload-source-document', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        clearInterval(progressInterval);
+        document.getElementById('progressBar').style.width = '100%';
+        document.getElementById('progressText').textContent = 'Processing...';
+        
+        setTimeout(() => {
+            if (data.success) {
+                alert('✅ Document uploaded successfully!');
+                location.reload(); // Refresh to show new document
+            } else {
+                alert('❌ Upload failed: ' + data.message);
+                document.getElementById('uploadProgress').classList.add('d-none');
+                document.getElementById('uploadButton').disabled = false;
+            }
+        }, 1000);
+    })
+    .catch(error => {
+        clearInterval(progressInterval);
+        alert('Upload failed: ' + error);
+        document.getElementById('uploadProgress').classList.add('d-none');
+        document.getElementById('uploadButton').disabled = false;
+    });
+}
+
+function linkDocument(documentId) {
+    currentDocumentId = documentId;
+    
+    // Load user's emission records
+    fetch('/api/user-emission-records')
+        .then(response => response.json())
+        .then(data => {
+            const select = document.getElementById('emissionRecordSelect');
+            select.innerHTML = '<option value="">-- Select a record --</option>';
+            
+            if (data.success && data.records.length > 0) {
+                data.records.forEach(record => {
+                    const option = document.createElement('option');
+                    option.value = record.record_id;
+                    option.textContent = `${record.scope} - ${record.category} - ${record.amount} ${record.unit} (${record.date})`;
+                    select.appendChild(option);
+                });
+            }
+            
+            const modal = new bootstrap.Modal(document.getElementById('linkModal'));
+            modal.show();
+        });
+}
+
+function saveDocumentLink() {
+    const recordSelect = document.getElementById('emissionRecordSelect');
+    const manualInput = document.getElementById('manualRecordId');
+    
+    const recordId = recordSelect.value || manualInput.value;
+    
+    if (!recordId) {
+        alert('Please select or enter a record ID');
+        return;
+    }
+    
+    fetch(`/api/link-document/${currentDocumentId}`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            record_id: recordId,
+            table_name: 'emission_data'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('linkSuccess').classList.remove('d-none');
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            alert('Link failed: ' + data.message);
+        }
+    });
+}
+
+function previewDocument(documentId) {
+    fetch(`/api/document-preview/${documentId}`)
+        .then(response => response.json())
+        .then(data => {
+            const previewContent = document.getElementById('previewContent');
+            const previewTitle = document.getElementById('previewTitle');
+            
+            if (data.success) {
+                if (data.file_type === 'pdf') {
+                    previewContent.innerHTML = `
+                        <iframe src="${data.preview_url}" 
+                                width="100%" 
+                                height="600px" 
+                                style="border: none;"></iframe>
+                    `;
+                } else if (['jpg', 'jpeg', 'png', 'gif'].includes(data.file_type)) {
+                    previewContent.innerHTML = `
+                        <img src="${data.preview_url}" 
+                             class="img-fluid" 
+                             alt="Document preview">
+                    `;
+                } else {
+                    previewContent.innerHTML = `
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            Preview not available for ${data.file_type.toUpperCase()} files.
+                            Please download the file to view it.
+                        </div>
+                    `;
+                }
+                previewTitle.textContent = data.filename;
+            } else {
+                previewContent.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-circle"></i>
+                        Could not load preview: ${data.message}
+                    </div>
+                `;
+            }
+            
+            const modal = new bootstrap.Modal(document.getElementById('previewModal'));
+            modal.show();
+        });
+}
+
+function deleteDocument(documentId) {
+    if (confirm('Are you sure you want to delete this document? This action cannot be undone.')) {
+        fetch(`/api/delete-document/${documentId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Document deleted successfully');
+                location.reload();
+            } else {
+                alert('Delete failed: ' + data.message);
+            }
+        });
+    }
+}
+
+function copyChecksum(checksum) {
+    navigator.clipboard.writeText(checksum).then(() => {
+        alert('Checksum copied to clipboard');
+    });
+}
+
+// Initialize tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    const tooltips = document.querySelectorAll('[title]');
+    tooltips.forEach(el => {
+        new bootstrap.Tooltip(el);
+    });
+});
+</script>
+{% endblock %}

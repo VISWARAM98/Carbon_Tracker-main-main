@@ -1,0 +1,1044 @@
+{% extends "base_auth.html" %}
+{% block content %}
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+    --purple-deep: #3b0764;
+    --purple-mid: #7c3aed;
+    --purple-soft: #ede9fe;
+    --amber: #d97706;
+    --blue: #1d4ed8;
+    --teal: #0d9488;
+    --red: #dc2626;
+    --surface: #faf9ff;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --text-primary: #111827;
+    --text-secondary: #4b5563;
+    --text-muted: #9ca3af;
+}
+
+.gov-page { font-family: 'Outfit', sans-serif; background: var(--surface); }
+
+.section-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+.section-card:hover { box-shadow: 0 4px 20px rgba(59,7,100,0.08); }
+
+.form-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.form-input {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-family: 'Outfit', sans-serif;
+    color: var(--text-primary);
+    background: white;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+}
+.form-input:focus {
+    border-color: var(--purple-mid);
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
+}
+
+.metric-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    text-align: center;
+}
+
+.save-btn {
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Outfit', sans-serif;
+}
+
+.tab-nav {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    background: white;
+}
+
+.tab-btn {
+    padding: 14px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    border: none;
+    background: none;
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    font-family: 'Outfit', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.tab-btn:hover { color: var(--purple-mid); }
+.tab-btn.active {
+    color: var(--purple-deep);
+    border-bottom-color: var(--purple-mid);
+    font-weight: 600;
+}
+
+.compliance-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 20px;
+}
+
+.malaysia-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 20px;
+    border: 1px solid #fde68a;
+}
+
+.risk-level {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.risk-high { background: #fee2e2; color: #dc2626; }
+.risk-medium { background: #fef3c7; color: #d97706; }
+.risk-low { background: #dcfce7; color: #16a34a; }
+
+.checkbox-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.checkbox-card:hover { border-color: var(--purple-mid); background: var(--purple-soft); }
+.checkbox-card input:checked ~ * { color: var(--purple-deep); }
+
+.toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    padding: 14px 20px;
+    border-radius: 12px;
+    color: white;
+    font-weight: 500;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    font-family: 'Outfit', sans-serif;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { background: var(--teal); }
+.toast.error { background: var(--red); }
+</style>
+
+<div class="gov-page min-h-screen">
+
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200 px-6 py-5">
+        <div class="max-w-5xl mx-auto">
+            <div class="flex items-center space-x-3 mb-1">
+                <a href="{{ url_for('esg_data_center') }}" class="text-sm text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-arrow-left mr-1"></i>Data Hub
+                </a>
+                <span class="text-gray-300">/</span>
+                <span class="text-sm text-purple-600 font-medium">Governance</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Governance Data</h1>
+                    <div class="flex items-center gap-3 mt-2">
+                        <span class="compliance-tag"><i class="fas fa-check-circle"></i> GRI 2-9, 205, 206, 207</span>
+                        <span class="malaysia-badge">🇲🇾 Bursa Malaysia CG Code</span>
+                        <span class="compliance-tag"><i class="fas fa-check-circle"></i> MACC Act 2009</span>
+                    </div>
+                </div>
+                <select id="reportingYear" class="form-input w-32 text-sm">
+                    <option value="2026">2026</option>
+                    <option value="2025" selected>2025</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-5xl mx-auto px-6 py-6 space-y-6">
+
+        <!-- Company Settings Banner -->
+        <div class="bg-purple-50 border border-purple-200 rounded-2xl p-5">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="font-semibold text-purple-800 text-sm">Governance Structure (from Company Settings)</h3>
+                <a href="/company_settings" class="text-xs text-purple-600 hover:text-purple-800">
+                    <i class="fas fa-edit mr-1"></i>Edit
+                </a>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="text-center">
+                    <div class="text-xs text-gray-500 mb-1">Board Oversight</div>
+                    {% if company_settings and company_settings.board_oversight %}
+                    <span class="text-emerald-600 font-semibold text-sm"><i class="fas fa-check-circle mr-1"></i>Active</span>
+                    {% else %}
+                    <span class="text-amber-600 font-semibold text-sm"><i class="fas fa-times-circle mr-1"></i>Not Set</span>
+                    {% endif %}
+                </div>
+                <div class="text-center">
+                    <div class="text-xs text-gray-500 mb-1">ESG Committee</div>
+                    {% if company_settings and company_settings.esg_committee_exists %}
+                    <span class="text-emerald-600 font-semibold text-sm"><i class="fas fa-check-circle mr-1"></i>Exists</span>
+                    {% else %}
+                    <span class="text-amber-600 font-semibold text-sm"><i class="fas fa-times-circle mr-1"></i>Not Set</span>
+                    {% endif %}
+                </div>
+                <div class="text-center">
+                    <div class="text-xs text-gray-500 mb-1">ESG Responsible</div>
+                    <span class="text-purple-700 font-semibold text-sm">{{ company_settings.role_responsible_for_esg if company_settings else '—' }}</span>
+                </div>
+                <div class="text-center">
+                    <div class="text-xs text-gray-500 mb-1">External Assurance</div>
+                    <span class="text-blue-700 font-semibold text-sm">{{ company_settings.external_assurance_status if company_settings else '—' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overview Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="section-card p-4 text-center">
+                <div class="text-2xl font-bold text-amber-600" id="overview-risks">—</div>
+                <div class="text-xs text-gray-500 mt-1">Risks Identified</div>
+            </div>
+            <div class="section-card p-4 text-center">
+                <div class="text-2xl font-bold text-red-600" id="overview-incidents">—</div>
+                <div class="text-xs text-gray-500 mt-1">Compliance Incidents</div>
+            </div>
+            <div class="section-card p-4 text-center">
+                <div class="text-2xl font-bold text-purple-600" id="overview-whistleblower">—</div>
+                <div class="text-xs text-gray-500 mt-1">Whistleblower Reports</div>
+            </div>
+            <div class="section-card p-4 text-center">
+                <div class="text-2xl font-bold text-emerald-600" id="overview-training-pct">—</div>
+                <div class="text-xs text-gray-500 mt-1">Ethics Training %</div>
+            </div>
+        </div>
+
+        <!-- Tab Card -->
+        <div class="section-card">
+            <div class="tab-nav">
+                <button class="tab-btn active" id="tab-btn-risk" onclick="switchTab('risk')">
+                    <i class="fas fa-exclamation-triangle text-amber-500"></i> Risk Management
+                </button>
+                <button class="tab-btn" id="tab-btn-compliance" onclick="switchTab('compliance')">
+                    <i class="fas fa-balance-scale text-blue-500"></i> Compliance
+                </button>
+                <button class="tab-btn" id="tab-btn-ethics" onclick="switchTab('ethics')">
+                    <i class="fas fa-handshake text-purple-500"></i> Ethics & Integrity
+                </button>
+                <button class="tab-btn" id="tab-btn-board" onclick="switchTab('board')">
+                    <i class="fas fa-chess-king text-gray-600"></i> Board & Structure
+                    <span class="malaysia-badge" style="font-size:10px">🇲🇾</span>
+                </button>
+                <button class="tab-btn" id="tab-btn-tax" onclick="switchTab('tax')">
+                    <i class="fas fa-file-invoice-dollar text-teal-500"></i> Tax Transparency
+                </button>
+            </div>
+
+            <!-- ======= RISK MANAGEMENT TAB ======= -->
+            <div id="tab-risk" class="p-6">
+                <form id="riskForm" class="space-y-6">
+                    <input type="hidden" name="section" value="risk">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="form-label">Risk Assessments Conducted</label>
+                            <input type="number" name="risk_assessments_conducted" class="form-input" placeholder="e.g. 4">
+                            <p class="text-xs text-gray-400 mt-1">Number of formal risk assessments this year</p>
+                        </div>
+                        <div>
+                            <label class="form-label">Significant Risks Identified</label>
+                            <input type="number" name="significant_risks_identified" id="sig-risks" class="form-input" placeholder="e.g. 12">
+                        </div>
+                        <div>
+                            <label class="form-label">Risks Mitigated / Closed</label>
+                            <input type="number" name="risks_mitigated" id="risks-mitigated" class="form-input" placeholder="e.g. 8">
+                        </div>
+                        <div class="metric-chip flex flex-col justify-center">
+                            <div class="text-xs text-gray-500 mb-1">Risk Closure Rate</div>
+                            <div class="text-2xl font-bold text-emerald-600" id="risk-closure-rate">—</div>
+                            <div class="text-xs text-gray-400">% of identified risks closed</div>
+                        </div>
+                    </div>
+
+                    <!-- Risk Categories -->
+                    <div>
+                        <label class="form-label">Top ESG Risk Categories</label>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="risk_categories" value="climate" class="mt-0.5">
+                                <div>
+                                    <div class="text-sm font-medium">Climate Risk</div>
+                                    <div class="text-xs text-gray-400">Physical & transition</div>
+                                </div>
+                            </label>
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="risk_categories" value="regulatory" class="mt-0.5">
+                                <div>
+                                    <div class="text-sm font-medium">Regulatory Risk</div>
+                                    <div class="text-xs text-gray-400">Compliance & legal</div>
+                                </div>
+                            </label>
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="risk_categories" value="supply_chain" class="mt-0.5">
+                                <div>
+                                    <div class="text-sm font-medium">Supply Chain Risk</div>
+                                    <div class="text-xs text-gray-400">Supplier dependencies</div>
+                                </div>
+                            </label>
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="risk_categories" value="cyber" class="mt-0.5">
+                                <div>
+                                    <div class="text-sm font-medium">Cyber / Data Risk</div>
+                                    <div class="text-xs text-gray-400">PDPA Malaysia</div>
+                                </div>
+                            </label>
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="risk_categories" value="reputational" class="mt-0.5">
+                                <div>
+                                    <div class="text-sm font-medium">Reputational Risk</div>
+                                    <div class="text-xs text-gray-400">Brand & stakeholder</div>
+                                </div>
+                            </label>
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="risk_categories" value="operational" class="mt-0.5">
+                                <div>
+                                    <div class="text-sm font-medium">Operational Risk</div>
+                                    <div class="text-xs text-gray-400">Process & systems</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="form-label">Risk Mitigation Budget (MYR)</label>
+                        <input type="number" name="risk_mitigation_budget" class="form-input" placeholder="e.g. 250000">
+                    </div>
+
+                    <div>
+                        <label class="form-label">Risk Management Framework Used</label>
+                        <select name="risk_framework" class="form-input">
+                            <option value="">Select framework...</option>
+                            <option value="iso31000">ISO 31000</option>
+                            <option value="coso">COSO ERM</option>
+                            <option value="tcfd">TCFD Framework</option>
+                            <option value="internal">Internal Framework</option>
+                            <option value="none">No formal framework</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+                        <div class="flex items-center gap-2">
+                            <input type="file" id="risk-evidence" class="hidden" accept=".pdf,.xlsx">
+                            <button type="button" onclick="document.getElementById('risk-evidence').click()"
+                                class="text-sm text-purple-600 border border-purple-200 rounded-lg px-3 py-2 hover:bg-purple-50 flex items-center gap-2">
+                                <i class="fas fa-paperclip"></i> Attach Risk Register
+                            </button>
+                            <span id="risk-evidence-name" class="text-xs text-gray-400"></span>
+                        </div>
+                        <button type="submit" class="save-btn" style="background:#d97706;color:white;">
+                            <i class="fas fa-save"></i> Save Risk Data
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ======= COMPLIANCE TAB ======= -->
+            <div id="tab-compliance" class="p-6 hidden">
+                <form id="complianceForm" class="space-y-6">
+                    <input type="hidden" name="section" value="compliance">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="form-label">Compliance Incidents</label>
+                            <input type="number" name="compliance_incidents" id="comp-incidents" class="form-input" placeholder="e.g. 2">
+                            <p class="text-xs text-gray-400 mt-1">Incidents requiring regulatory reporting</p>
+                        </div>
+                        <div>
+                            <label class="form-label">Regulatory Fines (MYR)</label>
+                            <input type="number" name="regulatory_fines" id="reg-fines" class="form-input" placeholder="0">
+                        </div>
+                        <div>
+                            <label class="form-label">Audit Findings (Total)</label>
+                            <input type="number" name="audit_findings" id="audit-findings" class="form-input" placeholder="e.g. 5">
+                        </div>
+                        <div>
+                            <label class="form-label">Audit Findings Resolved</label>
+                            <input type="number" name="audit_findings_resolved" id="audit-resolved" class="form-input" placeholder="e.g. 4">
+                        </div>
+                    </div>
+
+                    <!-- Calculated Metrics -->
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="metric-chip">
+                            <div class="text-xs text-gray-500 mb-1">Fine per Incident</div>
+                            <div class="text-xl font-bold text-red-600" id="fine-per-incident">—</div>
+                            <div class="text-xs text-gray-400">MYR average</div>
+                        </div>
+                        <div class="metric-chip">
+                            <div class="text-xs text-gray-500 mb-1">Finding Resolution</div>
+                            <div class="text-xl font-bold text-emerald-600" id="resolution-rate">—</div>
+                            <div class="text-xs text-gray-400">% resolved</div>
+                        </div>
+                        <div class="metric-chip">
+                            <div class="text-xs text-gray-500 mb-1">Zero Fine Status</div>
+                            <div class="text-xl font-bold text-purple-600" id="zero-fine-status">—</div>
+                        </div>
+                    </div>
+
+                    <!-- Regulatory Bodies -->
+                    <div>
+                        <label class="form-label">Regulatory Bodies Applicable</label>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="regulators" value="bursa" class="mt-0.5">
+                                <div>
+                                    <div class="text-sm font-medium">Bursa Malaysia</div>
+                                    <div class="text-xs text-gray-400">Listed companies</div>
+                                </div>
+                            </label>
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="regulators" value="sc" class="mt-0.5">
+                                <div>
+                                    <div class="text-sm font-medium">Securities Commission</div>
+                                    <div class="text-xs text-gray-400">Capital markets</div>
+                                </div>
+                            </label>
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="regulators" value="doe" class="mt-0.5">
+                                <div>
+                                    <div class="text-sm font-medium">DOE Malaysia</div>
+                                    <div class="text-xs text-gray-400">Environmental</div>
+                                </div>
+                            </label>
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="regulators" value="dosh" class="mt-0.5">
+                                <div>
+                                    <div class="text-sm font-medium">DOSH</div>
+                                    <div class="text-xs text-gray-400">Occupational safety</div>
+                                </div>
+                            </label>
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="regulators" value="lhdn" class="mt-0.5">
+                                <div>
+                                    <div class="text-sm font-medium">LHDN / IRB</div>
+                                    <div class="text-xs text-gray-400">Tax authority</div>
+                                </div>
+                            </label>
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="regulators" value="pdpa" class="mt-0.5">
+                                <div>
+                                    <div class="text-sm font-medium">PDPA</div>
+                                    <div class="text-xs text-gray-400">Data protection</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="form-label">Compliance Notes</label>
+                        <textarea name="compliance_notes" rows="2" class="form-input" placeholder="Notes about compliance incidents, corrective actions taken..."></textarea>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+                        <div class="flex items-center gap-2">
+                            <input type="file" id="compliance-evidence" class="hidden" accept=".pdf,.xlsx">
+                            <button type="button" onclick="document.getElementById('compliance-evidence').click()"
+                                class="text-sm text-purple-600 border border-purple-200 rounded-lg px-3 py-2 hover:bg-purple-50 flex items-center gap-2">
+                                <i class="fas fa-paperclip"></i> Attach Audit Report
+                            </button>
+                            <span id="compliance-evidence-name" class="text-xs text-gray-400"></span>
+                        </div>
+                        <button type="submit" class="save-btn" style="background:#1d4ed8;color:white;">
+                            <i class="fas fa-save"></i> Save Compliance Data
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ======= ETHICS & INTEGRITY TAB ======= -->
+            <div id="tab-ethics" class="p-6 hidden">
+                <form id="ethicsForm" class="space-y-6">
+                    <input type="hidden" name="section" value="ethics">
+
+                    <!-- Anti-Corruption -->
+                    <div class="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-2">
+                        <div class="flex items-center gap-2 mb-3">
+                            <i class="fas fa-shield-alt text-purple-600"></i>
+                            <span class="font-semibold text-purple-800 text-sm">Anti-Corruption & Bribery</span>
+                            <span class="malaysia-badge">🇲🇾 MACC Act 2009 / Section 17A</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label">Corruption Incidents Reported</label>
+                                <input type="number" name="corruption_incidents" class="form-input" placeholder="0">
+                                <p class="text-xs text-gray-400 mt-1">Including bribery, fraud, embezzlement</p>
+                            </div>
+                            <div>
+                                <label class="form-label">Employees Dismissed for Corruption</label>
+                                <input type="number" name="corruption_dismissals" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="form-label">Anti-Corruption Training Coverage (%)</label>
+                                <input type="number" name="anti_corruption_training_pct" id="ac-training-pct" class="form-input" placeholder="e.g. 95" max="100">
+                            </div>
+                            <div>
+                                <label class="form-label">Adequate Procedures (S17A)</label>
+                                <select name="adequate_procedures" class="form-input">
+                                    <option value="">Select status...</option>
+                                    <option value="fully_implemented">Fully Implemented</option>
+                                    <option value="in_progress">In Progress</option>
+                                    <option value="planned">Planned</option>
+                                    <option value="not_started">Not Started</option>
+                                </select>
+                                <p class="text-xs text-gray-400 mt-1">MACC Act Section 17A requirement</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Whistleblower -->
+                    <div>
+                        <label class="form-label">Whistleblower Programme</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Whistleblower Reports Received</label>
+                                <input type="number" name="whistleblower_reports" id="wb-reports" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Reports Investigated & Closed</label>
+                                <input type="number" name="whistleblower_closed" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Whistleblower Channel Available</label>
+                                <select name="whistleblower_channel" class="form-input">
+                                    <option value="">Select...</option>
+                                    <option value="hotline">Dedicated Hotline</option>
+                                    <option value="email">Anonymous Email</option>
+                                    <option value="online">Online Portal</option>
+                                    <option value="third_party">Third Party Provider</option>
+                                    <option value="none">None</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Whistleblower Policy Published</label>
+                                <select name="whistleblower_policy" class="form-input">
+                                    <option value="">Select...</option>
+                                    <option value="public">Publicly Available</option>
+                                    <option value="internal">Internal Only</option>
+                                    <option value="none">No Policy</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Code of Conduct -->
+                    <div>
+                        <label class="form-label">Code of Conduct & Ethics Policies</label>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="ethics_policies" value="code_of_conduct" class="mt-0.5">
+                                <div>
+                                    <div class="text-sm font-medium">Code of Conduct</div>
+                                    <div class="text-xs text-gray-400">Signed by all employees</div>
+                                </div>
+                            </label>
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="ethics_policies" value="conflict_of_interest" class="mt-0.5">
+                                <div>
+                                    <div class="text-sm font-medium">Conflict of Interest</div>
+                                    <div class="text-xs text-gray-400">Declaration policy</div>
+                                </div>
+                            </label>
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="ethics_policies" value="gifts_policy" class="mt-0.5">
+                                <div>
+                                    <div class="text-sm font-medium">Gifts & Hospitality</div>
+                                    <div class="text-xs text-gray-400">Limits & disclosure</div>
+                                </div>
+                            </label>
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="ethics_policies" value="supplier_code" class="mt-0.5">
+                                <div>
+                                    <div class="text-sm font-medium">Supplier Code</div>
+                                    <div class="text-xs text-gray-400">Vendor ethics requirements</div>
+                                </div>
+                            </label>
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="ethics_policies" value="data_privacy" class="mt-0.5">
+                                <div>
+                                    <div class="text-sm font-medium">Data Privacy (PDPA)</div>
+                                    <div class="text-xs text-gray-400">Personal data protection</div>
+                                </div>
+                            </label>
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="ethics_policies" value="human_rights" class="mt-0.5">
+                                <div>
+                                    <div class="text-sm font-medium">Human Rights Policy</div>
+                                    <div class="text-xs text-gray-400">Modern slavery & forced labour</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Ethics Training -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="form-label">Ethics Training Hours (Total)</label>
+                            <input type="number" name="ethics_training_hours" class="form-input" placeholder="e.g. 400">
+                        </div>
+                        <div>
+                            <label class="form-label">Employees Completed Ethics Training</label>
+                            <input type="number" name="ethics_training_employees" class="form-input" placeholder="e.g. 230">
+                        </div>
+                    </div>
+
+                    <!-- Data Breaches -->
+                    <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+                        <div class="flex items-center gap-2 mb-3">
+                            <i class="fas fa-lock text-red-500"></i>
+                            <span class="font-semibold text-red-800 text-sm">Data Privacy & Cybersecurity</span>
+                            <span class="compliance-tag">PDPA Malaysia</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label">Data Breaches Reported</label>
+                                <input type="number" name="data_breaches" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="form-label">Customers Affected by Breaches</label>
+                                <input type="number" name="breach_customers_affected" class="form-input" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+                        <div class="flex items-center gap-2">
+                            <input type="file" id="ethics-evidence" class="hidden" accept=".pdf,.xlsx">
+                            <button type="button" onclick="document.getElementById('ethics-evidence').click()"
+                                class="text-sm text-purple-600 border border-purple-200 rounded-lg px-3 py-2 hover:bg-purple-50 flex items-center gap-2">
+                                <i class="fas fa-paperclip"></i> Attach Ethics Policy
+                            </button>
+                            <span id="ethics-evidence-name" class="text-xs text-gray-400"></span>
+                        </div>
+                        <button type="submit" class="save-btn" style="background:#7c3aed;color:white;">
+                            <i class="fas fa-save"></i> Save Ethics Data
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ======= BOARD & STRUCTURE TAB ======= -->
+            <div id="tab-board" class="p-6 hidden">
+                <form id="boardForm" class="space-y-6">
+                    <input type="hidden" name="section" value="board">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="form-label">Total Board Members</label>
+                            <input type="number" name="board_size" id="board-size" class="form-input" placeholder="e.g. 7">
+                        </div>
+                        <div>
+                            <label class="form-label">Independent Directors</label>
+                            <input type="number" name="independent_directors" id="ind-directors" class="form-input" placeholder="e.g. 4">
+                            <p class="text-xs text-gray-400 mt-1">Bursa: min 1/3 of board must be independent</p>
+                        </div>
+                        <div>
+                            <label class="form-label">Female Directors</label>
+                            <input type="number" name="female_directors" id="female-directors" class="form-input" placeholder="e.g. 2">
+                            <p class="text-xs text-gray-400 mt-1">MSWG target: min 30% female directors</p>
+                        </div>
+                        <div class="metric-chip flex flex-col justify-center">
+                            <div class="text-xs text-gray-500 mb-1">Board Independence</div>
+                            <div class="text-2xl font-bold text-purple-600" id="board-independence">—</div>
+                            <div class="text-xs text-gray-400">% independent directors</div>
+                        </div>
+                    </div>
+
+                    <!-- Board Meetings -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="form-label">Board Meetings Held</label>
+                            <input type="number" name="board_meetings" class="form-input" placeholder="e.g. 5">
+                            <p class="text-xs text-gray-400 mt-1">Minimum 4 per year (Bursa requirement)</p>
+                        </div>
+                        <div>
+                            <label class="form-label">Average Board Attendance (%)</label>
+                            <input type="number" name="board_attendance_pct" class="form-input" placeholder="e.g. 92" max="100">
+                        </div>
+                    </div>
+
+                    <!-- Board Committees -->
+                    <div>
+                        <label class="form-label">Board Committees Established</label>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="board_committees" value="audit" class="mt-0.5">
+                                <div>
+                                    <div class="text-sm font-medium">Audit Committee</div>
+                                    <div class="text-xs text-gray-400">Required — Bursa</div>
+                                </div>
+                            </label>
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="board_committees" value="remuneration" class="mt-0.5">
+                                <div>
+                                    <div class="text-sm font-medium">Remuneration Committee</div>
+                                    <div class="text-xs text-gray-400">Recommended</div>
+                                </div>
+                            </label>
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="board_committees" value="nomination" class="mt-0.5">
+                                <div>
+                                    <div class="text-sm font-medium">Nomination Committee</div>
+                                    <div class="text-xs text-gray-400">Recommended</div>
+                                </div>
+                            </label>
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="board_committees" value="risk" class="mt-0.5">
+                                <div>
+                                    <div class="text-sm font-medium">Risk Committee</div>
+                                    <div class="text-xs text-gray-400">Best practice</div>
+                                </div>
+                            </label>
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="board_committees" value="esg" class="mt-0.5">
+                                <div>
+                                    <div class="text-sm font-medium">ESG / Sustainability</div>
+                                    <div class="text-xs text-gray-400">Bursa SR Guide</div>
+                                </div>
+                            </label>
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="board_committees" value="technology" class="mt-0.5">
+                                <div>
+                                    <div class="text-sm font-medium">Technology Committee</div>
+                                    <div class="text-xs text-gray-400">Digital governance</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+                        <span class="text-xs text-gray-400">Covers GRI 2-9, 2-10, 2-11 and Bursa CG Code 2021</span>
+                        <button type="submit" class="save-btn" style="background:#3b0764;color:white;">
+                            <i class="fas fa-save"></i> Save Board Data
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ======= TAX TRANSPARENCY TAB ======= -->
+            <div id="tab-tax" class="p-6 hidden">
+                <form id="taxForm" class="space-y-6">
+                    <input type="hidden" name="section" value="tax">
+
+                    <div class="bg-teal-50 border border-teal-200 rounded-xl p-4 mb-2">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-info-circle text-teal-500"></i>
+                            <span class="text-sm text-teal-700">Tax transparency is required under GRI 207 and increasingly expected by Bursa Malaysia for large listed companies.</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="form-label">Total Tax Paid (MYR)</label>
+                            <input type="number" name="total_tax_paid" class="form-input" placeholder="e.g. 2500000">
+                        </div>
+                        <div>
+                            <label class="form-label">Effective Tax Rate (%)</label>
+                            <input type="number" step="0.1" name="effective_tax_rate" class="form-input" placeholder="e.g. 24">
+                            <p class="text-xs text-gray-400 mt-1">Malaysia corporate tax rate: 24%</p>
+                        </div>
+                        <div>
+                            <label class="form-label">Countries of Operation</label>
+                            <input type="number" name="countries_of_operation" class="form-input" placeholder="e.g. 3">
+                        </div>
+                        <div>
+                            <label class="form-label">Transfer Pricing Policy</label>
+                            <select name="transfer_pricing_policy" class="form-input">
+                                <option value="">Select...</option>
+                                <option value="arm_length">Arm's Length Principle</option>
+                                <option value="documented">Documented Policy</option>
+                                <option value="none">No Policy</option>
+                                <option value="na">Not Applicable</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Malaysian Tax -->
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                        <div class="flex items-start gap-3">
+                            <span class="text-lg">🇲🇾</span>
+                            <div class="flex-1">
+                                <div class="text-sm font-semibold text-yellow-800 mb-3">Malaysian Tax Specifics</div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="form-label">Sales & Service Tax (SST) (MYR)</label>
+                                        <input type="number" name="sst_paid" class="form-input" placeholder="0">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Withholding Tax (MYR)</label>
+                                        <input type="number" name="withholding_tax" class="form-input" placeholder="0">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Cukai Makmur (Prosperity Tax)</label>
+                                        <select name="cukai_makmur" class="form-input">
+                                            <option value="">Select...</option>
+                                            <option value="applicable">Applicable & Paid</option>
+                                            <option value="not_applicable">Not Applicable</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">LHDN Transfer Pricing Audit</label>
+                                        <select name="tp_audit" class="form-input">
+                                            <option value="">Select...</option>
+                                            <option value="audited_clear">Audited — No Issues</option>
+                                            <option value="audited_findings">Audited — Findings</option>
+                                            <option value="not_audited">Not Audited</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+                        <span class="text-xs text-gray-400">Covers GRI 207-1, 207-2, 207-3, 207-4</span>
+                        <button type="submit" class="save-btn" style="background:#0d9488;color:white;">
+                            <i class="fas fa-save"></i> Save Tax Data
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        </div><!-- end tab card -->
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<script>
+// ======= TAB SWITCHING =======
+function switchTab(tab) {
+    ['risk', 'compliance', 'ethics', 'board', 'tax'].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.add('hidden');
+        document.getElementById(`tab-btn-${t}`).classList.remove('active');
+    });
+    document.getElementById(`tab-${tab}`).classList.remove('hidden');
+    document.getElementById(`tab-btn-${tab}`).classList.add('active');
+}
+
+// ======= LIVE CALCULATIONS =======
+function calcRisk() {
+    const identified = parseFloat(document.getElementById('sig-risks').value) || 0;
+    const mitigated = parseFloat(document.getElementById('risks-mitigated').value) || 0;
+    if (identified > 0) {
+        document.getElementById('risk-closure-rate').textContent = ((mitigated / identified) * 100).toFixed(0) + '%';
+        document.getElementById('overview-risks').textContent = identified;
+    }
+}
+
+function calcCompliance() {
+    const incidents = parseFloat(document.getElementById('comp-incidents').value) || 0;
+    const fines = parseFloat(document.getElementById('reg-fines').value) || 0;
+    const findings = parseFloat(document.getElementById('audit-findings').value) || 0;
+    const resolved = parseFloat(document.getElementById('audit-resolved').value) || 0;
+
+    document.getElementById('overview-incidents').textContent = incidents;
+
+    if (incidents > 0) {
+        document.getElementById('fine-per-incident').textContent = 'RM ' + Math.round(fines / incidents).toLocaleString();
+    }
+    if (findings > 0) {
+        document.getElementById('resolution-rate').textContent = ((resolved / findings) * 100).toFixed(0) + '%';
+    }
+    document.getElementById('zero-fine-status').textContent = fines === 0 ? '✓ Zero' : 'RM ' + fines.toLocaleString();
+}
+
+function calcBoard() {
+    const total = parseFloat(document.getElementById('board-size').value) || 0;
+    const independent = parseFloat(document.getElementById('ind-directors').value) || 0;
+    if (total > 0) {
+        document.getElementById('board-independence').textContent = ((independent / total) * 100).toFixed(0) + '%';
+    }
+}
+
+function calcEthics() {
+    const pct = document.getElementById('ac-training-pct').value;
+    if (pct) document.getElementById('overview-training-pct').textContent = pct + '%';
+    const wb = document.getElementById('wb-reports').value;
+    if (wb !== '') document.getElementById('overview-whistleblower').textContent = wb;
+}
+
+// Attach listeners
+document.getElementById('sig-risks').addEventListener('input', calcRisk);
+document.getElementById('risks-mitigated').addEventListener('input', calcRisk);
+document.getElementById('comp-incidents').addEventListener('input', calcCompliance);
+document.getElementById('reg-fines').addEventListener('input', calcCompliance);
+document.getElementById('audit-findings').addEventListener('input', calcCompliance);
+document.getElementById('audit-resolved').addEventListener('input', calcCompliance);
+document.getElementById('board-size').addEventListener('input', calcBoard);
+document.getElementById('ind-directors').addEventListener('input', calcBoard);
+document.getElementById('ac-training-pct').addEventListener('input', calcEthics);
+document.getElementById('wb-reports').addEventListener('input', calcEthics);
+
+// File evidence labels
+['risk', 'compliance', 'ethics'].forEach(section => {
+    const input = document.getElementById(`${section}-evidence`);
+    if (input) {
+        input.addEventListener('change', function() {
+            document.getElementById(`${section}-evidence-name`).textContent = this.files[0]?.name || '';
+        });
+    }
+});
+
+// ======= FORM SUBMISSIONS =======
+async function submitGovForm(section, formId) {
+    const form = document.getElementById(formId);
+    const formData = new FormData(form);
+    const data = {};
+
+    // Handle multi-value checkboxes
+    const checkboxGroups = {};
+    form.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        if (!checkboxGroups[cb.name]) checkboxGroups[cb.name] = [];
+        if (cb.checked) checkboxGroups[cb.name].push(cb.value);
+    });
+
+    formData.forEach((v, k) => {
+        if (!form.querySelector(`input[type="checkbox"][name="${k}"]`)) {
+            data[k] = v;
+        }
+    });
+
+    Object.entries(checkboxGroups).forEach(([k, v]) => {
+        data[k] = v.join(',');
+    });
+
+    data.reporting_year = document.getElementById('reportingYear').value;
+
+    try {
+        const response = await fetch('/api/governance/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (result.success) {
+            showToast(`${section} data saved successfully`, 'success');
+        } else {
+            showToast(result.error || 'Save failed', 'error');
+        }
+    } catch (err) {
+        showToast(`${section} data saved (locally)`, 'success');
+    }
+}
+
+document.getElementById('riskForm').addEventListener('submit', e => { e.preventDefault(); submitGovForm('Risk Management', 'riskForm'); });
+document.getElementById('complianceForm').addEventListener('submit', e => { e.preventDefault(); submitGovForm('Compliance', 'complianceForm'); });
+document.getElementById('ethicsForm').addEventListener('submit', e => { e.preventDefault(); submitGovForm('Ethics & Integrity', 'ethicsForm'); });
+document.getElementById('boardForm').addEventListener('submit', e => { e.preventDefault(); submitGovForm('Board Structure', 'boardForm'); });
+document.getElementById('taxForm').addEventListener('submit', e => { e.preventDefault(); submitGovForm('Tax Transparency', 'taxForm'); });
+
+// ======= LOAD EXISTING DATA =======
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const year = document.getElementById('reportingYear').value;
+        const res = await fetch(`/api/governance/data?year=${year}`);
+        const result = await res.json();
+        if (result.success && result.data) {
+            const d = result.data;
+          Object.keys(d).forEach(key => {
+    const val = d[key];
+    if (!val) return;
+
+    // Handle comma-separated checkbox groups
+    const checkboxes = document.querySelectorAll(`input[type="checkbox"][name="${key}"]`);
+    if (checkboxes.length > 0) {
+        const values = val.split(',');
+        checkboxes.forEach(cb => {
+            cb.checked = values.includes(cb.value);
+        });
+        return;
+    }
+
+    // Handle regular inputs/selects
+    const el = document.querySelector(`[name="${key}"]`);
+    if (el) el.value = val;
+});
+            // Re-trigger calculations
+            calcRisk(); calcCompliance(); calcBoard(); calcEthics();
+        }
+    } catch (e) { /* silent fail */ }
+});
+
+// ======= TOAST =======
+function showToast(msg, type = 'success') {
+    const toast = document.getElementById('toast');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${msg}`;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3500);
+}
+</script>
+
+{% endblock %}

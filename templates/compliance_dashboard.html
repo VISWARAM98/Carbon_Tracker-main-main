@@ -1,0 +1,369 @@
+{% extends "base.html" %}
+
+{% block title %}Compliance Dashboard - EmittiF{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header with Compliance Score -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-2">🔐 Compliance & Standards Dashboard</h1>
+                    <p class="text-muted">Track regulatory compliance across ESG and climate reporting standards</p>
+                </div>
+                <div class="text-end">
+                    <div class="display-4 fw-bold text-primary">{{ overall_compliance.overall_score }}%</div>
+                    <small class="text-muted">Overall Compliance Score</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compliance Overview Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-title">✅ Compliant</h6>
+                    <h2 class="mb-0">{{ overall_compliance.compliant }}</h2>
+                    <small>{{ overall_compliance.compliant }} of {{ overall_compliance.total_standards }} standards</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h6 class="card-title">⚠️ Partial</h6>
+                    <h2 class="mb-0">{{ overall_compliance.partial }}</h2>
+                    <small>Standards with partial compliance</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h6 class="card-title">🚨 Action Needed</h6>
+                    <h2 class="mb-0">{{ overall_compliance.action_needed }}</h2>
+                    <small>Standards requiring attention</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-title">📋 Evidence Files</h6>
+                    <h2 class="mb-0">{{ evidence_data|length }}</h2>
+                    <small>Documents uploaded as evidence</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-success" onclick="generateComplianceReport()">
+                    📋 Generate Compliance Report
+                </button>
+                <button class="btn btn-info" onclick="viewGuidelines()">
+                    🎓 View Guidelines
+                </button>
+                <button class="btn btn-warning" onclick="setReminders()">
+                    🔔 Set Reminders
+                </button>
+                <button class="btn btn-dark" onclick="contactConsultant()">
+                    📞 Contact Consultant
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Standards Compliance Section -->
+    <div class="row">
+        <div class="col-md-8">
+            <!-- International Standards -->
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">🌍 International Standards</h5>
+                    <span class="badge bg-light text-dark">{{ overall_compliance.compliant + overall_compliance.partial }}/{{ overall_compliance.total_standards }} Complete</span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Standard</th>
+                                    <th>Status</th>
+                                    <th>Compliance</th>
+                                    <th>Category</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for standard in standards_status %}
+                                {% if standard.jurisdiction == 'Global' %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ standard.name }}</strong><br>
+                                        <small class="text-muted">{{ standard.description|truncate(50) }}</small>
+                                    </td>
+                                    <td>
+                                        {% if standard.status == 'compliant' %}
+                                        <span class="badge bg-success">✅ Compliant</span>
+                                        {% elif standard.status == 'partial' %}
+                                        <span class="badge bg-warning">⚠️ Partial</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">🚨 Action Needed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar 
+                                                {% if standard.status == 'compliant' %}bg-success
+                                                {% elif standard.status == 'partial' %}bg-warning
+                                                {% else %}bg-danger{% endif %}" 
+                                                style="width: {{ standard.compliance_percentage }}%">
+                                                {{ standard.compliance_percentage }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ standard.category }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                onclick="viewMapping('{{ standard.short_name }}')">
+                                            🔍 View Mapping
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Malaysia-Specific Standards -->
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">🇲🇾 Malaysia-Specific Standards</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Standard</th>
+                                    <th>Status</th>
+                                    <th>Compliance</th>
+                                    <th>Category</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for standard in standards_status %}
+                                {% if standard.jurisdiction == 'Malaysia' %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ standard.name }}</strong><br>
+                                        <small class="text-muted">{{ standard.description|truncate(50) }}</small>
+                                    </td>
+                                    <td>
+                                        {% if standard.status == 'compliant' %}
+                                        <span class="badge bg-success">✅ Compliant</span>
+                                        {% elif standard.status == 'partial' %}
+                                        <span class="badge bg-warning">⚠️ Partial</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">🚨 Action Needed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar 
+                                                {% if standard.status == 'compliant' %}bg-success
+                                                {% elif standard.status == 'partial' %}bg-warning
+                                                {% else %}bg-danger{% endif %}" 
+                                                style="width: {{ standard.compliance_percentage }}%">
+                                                {{ standard.compliance_percentage }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ standard.category }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                onclick="viewMapping('{{ standard.short_name }}')">
+                                            🔍 View Mapping
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar with Evidence and Deadlines -->
+        <div class="col-md-4">
+            <!-- Evidence Status -->
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">📁 Evidence Status</h5>
+                </div>
+                <div class="card-body">
+                    {% for evidence in evidence_data %}
+                    <div class="mb-3 p-3 border rounded">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <strong>{{ evidence.standard }} - {{ evidence.clause }}</strong><br>
+                                <small class="text-muted">{{ evidence.title }}</small>
+                            </div>
+                            <span class="badge 
+                                {% if evidence.status == 'compliant' %}bg-success
+                                {% elif evidence.status == 'partial' %}bg-warning
+                                {% else %}bg-danger{% endif %}">
+                                {{ evidence.status|title }}
+                            </span>
+                        </div>
+                        <div class="mt-2">
+                            {% if evidence.evidence_files %}
+                                {% for file in evidence.evidence_files %}
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <small><i class="fas fa-file-pdf text-danger"></i> {{ file }}</small>
+                                    <button class="btn btn-sm btn-outline-secondary">View</button>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <small class="text-danger">No evidence uploaded</small><br>
+                                <button class="btn btn-sm btn-outline-primary mt-1">Upload Evidence</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Upcoming Deadlines -->
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">⏰ Upcoming Deadlines</h5>
+                </div>
+                <div class="card-body">
+                    {% for deadline in deadlines %}
+                    <div class="mb-3 p-3 border rounded 
+                        {% if deadline.status == 'urgent' %}border-danger
+                        {% elif deadline.status == 'warning' %}border-warning
+                        {% else %}border-success{% endif %}">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <strong>{{ deadline.title }}</strong>
+                            <span class="badge 
+                                {% if deadline.status == 'urgent' %}bg-danger
+                                {% elif deadline.status == 'warning' %}bg-warning
+                                {% else %}bg-success{% endif %}">
+                                {{ deadline.date }}
+                            </span>
+                        </div>
+                        <small class="text-muted">{{ deadline.description }}</small><br>
+                        <small class="text-muted">Status: 
+                            {% if deadline.status == 'urgent' %}
+                            <span class="text-danger">Urgent Action Needed</span>
+                            {% elif deadline.status == 'warning' %}
+                            <span class="text-warning">In Progress</span>
+                            {% else %}
+                            <span class="text-success">On Track</span>
+                            {% endif %}
+                        </small>
+                    </div>
+                    {% endfor %}
+                    <button class="btn btn-outline-warning w-100" onclick="setReminders()">
+                        🔔 Set All Reminders
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Existing Audit Features -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">🛠️ Audit & Verification Tools</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <h5>📝 Audit Trail</h5>
+                                    <p class="small">Immutable logging of all data changes</p>
+                                    <a href="{{ url_for('view_audit_trail') }}" class="btn btn-dark">View</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <h5>📁 Source Documents</h5>
+                                    <p class="small">Upload and verify source documents</p>
+                                    <a href="{{ url_for('source_documents') }}" class="btn btn-dark">Manage</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <h5>🇲🇾 Malaysian Reports</h5>
+                                    <p class="small">Generate NSRF & SEDG reports</p>
+                                    <a href="{{ url_for('malaysian_reports') }}" class="btn btn-dark">Generate</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <h5>🔗 Supplier Portal</h5>
+                                    <p class="small">Collect Scope 3 data</p>
+                                    <a href="{{ url_for('supplier_portal') }}" class="btn btn-dark">Manage</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+function generateComplianceReport() {
+    alert('Generating comprehensive compliance report...');
+    window.location.href = '/api/compliance/generate-report';
+}
+
+function viewGuidelines() {
+    alert('Opening guidelines library...');
+    // Implement modal or new page
+}
+
+function setReminders() {
+    alert('Setting calendar reminders for compliance deadlines...');
+    // Implement calendar integration
+}
+
+function contactConsultant() {
+    alert('Connecting you with a compliance consultant...');
+    // Implement contact form
+}
+
+function viewMapping(standard) {
+    alert(`Opening detailed mapping for ${standard}...`);
+    window.location.href = `/api/compliance/mapping/${standard}`;
+}
+</script>
+{% endblock %}

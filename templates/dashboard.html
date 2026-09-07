@@ -1,0 +1,881 @@
+{% extends "base_auth.html" %}
+{% block content %}
+
+<style>
+@import url('https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --bg:       #0b0f0c;
+    --surface:  #111612;
+    --card:     #141a15;
+    --border:   #1e2d21;
+    --border2:  #253029;
+    --green:    #22c55e;
+    --green-dim:#16a34a;
+    --green-dk: #052e16;
+    --mint:     #4ade80;
+    --amber:    #f59e0b;
+    --red:      #ef4444;
+    --blue:     #3b82f6;
+    --purple:   #a78bfa;
+    --teal:     #2dd4bf;
+    --text:     #e8f5eb;
+    --muted:    #6b8f72;
+    --sub:      #3a5c40;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+.db { font-family: 'Satoshi', sans-serif; background: var(--bg); min-height: 100vh; color: var(--text); }
+.db h1,.db h2,.db h3,.db h4 { font-family: 'ClashDisplay','Satoshi',sans-serif; }
+
+/* ── HEADER ── */
+.db-header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 24px 32px; }
+.db-header-inner { max-width: 1400px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+.db-title { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+.db-subtitle { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.db-actions { display: flex; gap: 10px; align-items: center; }
+
+.btn-outline { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border: 1px solid var(--border2); background: transparent; color: var(--text); border-radius: 8px; font-family: 'Satoshi',sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; text-decoration: none; }
+.btn-outline:hover { border-color: var(--green); color: var(--green); }
+.btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border: 1px solid var(--green-dim); background: var(--green-dk); color: var(--mint); border-radius: 8px; font-family: 'Satoshi',sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; text-decoration: none; }
+.btn-primary:hover { background: var(--green-dim); border-color: var(--green); color: white; }
+
+/* ── KPI STRIP ── */
+.kpi-strip { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 32px; }
+.kpi-strip-inner { max-width: 1400px; margin: 0 auto; display: flex; align-items: stretch; }
+.kpi-item { flex: 1; padding: 14px 20px; border-right: 1px solid var(--border); display: flex; align-items: center; gap: 12px; cursor: pointer; transition: background 0.2s; }
+.kpi-item:last-child { border-right: none; }
+.kpi-item:hover { background: rgba(34,197,94,0.04); }
+.kpi-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+.kpi-icon.green  { background: rgba(34,197,94,0.12); color: var(--green); }
+.kpi-icon.amber  { background: rgba(245,158,11,0.12); color: var(--amber); }
+.kpi-icon.blue   { background: rgba(59,130,246,0.12); color: var(--blue); }
+.kpi-icon.red    { background: rgba(239,68,68,0.12); color: var(--red); }
+.kpi-icon.purple { background: rgba(167,139,250,0.12); color: var(--purple); }
+.kpi-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+.kpi-val { font-family: 'ClashDisplay','Satoshi',sans-serif; font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1; margin-top: 2px; }
+.kpi-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+/* ── BODY ── */
+.db-body { max-width: 1400px; margin: 0 auto; padding: 24px 32px 64px; }
+
+/* ── SECTION LABEL ── */
+.section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 12px; margin-top: 24px; padding-left: 2px; display: flex; align-items: center; gap: 8px; }
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── GRID LAYOUTS ── */
+.grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 12px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 12px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 12px; }
+.grid-1-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; margin-bottom: 12px; }
+
+/* ── CARDS ── */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: border-color 0.2s; }
+.card:hover { border-color: var(--border2); }
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.card-title { font-size: 13px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
+.card-badge { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 4px; }
+.badge-green  { background: rgba(34,197,94,0.1);  color: var(--green);  border: 1px solid rgba(34,197,94,0.2); }
+.badge-amber  { background: rgba(245,158,11,0.1); color: var(--amber);  border: 1px solid rgba(245,158,11,0.2); }
+.badge-blue   { background: rgba(59,130,246,0.1); color: var(--blue);   border: 1px solid rgba(59,130,246,0.2); }
+.badge-red    { background: rgba(239,68,68,0.1);  color: var(--red);    border: 1px solid rgba(239,68,68,0.2); }
+.badge-purple { background: rgba(167,139,250,0.1);color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+.badge-teal   { background: rgba(45,212,191,0.1); color: var(--teal);   border: 1px solid rgba(45,212,191,0.2); }
+.badge-muted  { background: rgba(107,143,114,0.1);color: var(--muted);  border: 1px solid rgba(107,143,114,0.2); }
+
+/* ── STAT CARDS ── */
+.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; position: relative; overflow: hidden; transition: border-color 0.2s; }
+.stat-card:hover { border-color: var(--border2); }
+.stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.stat-card.green::before { background: var(--green); }
+.stat-card.amber::before { background: var(--amber); }
+.stat-card.blue::before  { background: var(--blue); }
+.stat-card.red::before   { background: var(--red); }
+.stat-card.purple::before{ background: var(--purple); }
+.stat-card.teal::before  { background: var(--teal); }
+.stat-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 8px; }
+.stat-val { font-family: 'ClashDisplay','Satoshi',sans-serif; font-size: 26px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1; }
+.stat-unit { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.stat-icon { position: absolute; top: 16px; right: 16px; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.stat-icon.green  { background: rgba(34,197,94,0.12); color: var(--green); }
+.stat-icon.amber  { background: rgba(245,158,11,0.12); color: var(--amber); }
+.stat-icon.blue   { background: rgba(59,130,246,0.12); color: var(--blue); }
+.stat-icon.red    { background: rgba(239,68,68,0.12); color: var(--red); }
+.stat-icon.purple { background: rgba(167,139,250,0.12); color: var(--purple); }
+.stat-icon.teal   { background: rgba(45,212,191,0.12); color: var(--teal); }
+
+/* ── CHART ── */
+.chart-wrap { height: 200px; position: relative; }
+.chart-wrap.sm { height: 160px; }
+
+/* ── ESG PILLAR CARDS ── */
+.pillar-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; transition: border-color 0.2s; }
+.pillar-card:hover { border-color: var(--border2); }
+.pillar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.pillar-name { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; }
+.pillar-name.env  { color: var(--green); }
+.pillar-name.soc  { color: var(--purple); }
+.pillar-name.gov  { color: var(--teal); }
+.pillar-score { font-family: 'ClashDisplay','Satoshi',sans-serif; font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
+.pillar-score.env  { color: var(--green); }
+.pillar-score.soc  { color: var(--purple); }
+.pillar-score.gov  { color: var(--teal); }
+.pillar-bar-track { width: 100%; height: 4px; background: var(--border2); border-radius: 100px; overflow: hidden; margin-bottom: 10px; }
+.pillar-bar-fill { height: 100%; border-radius: 100px; transition: width 1s ease; }
+.pillar-bar-fill.env  { background: var(--green); }
+.pillar-bar-fill.soc  { background: var(--purple); }
+.pillar-bar-fill.gov  { background: var(--teal); }
+.pillar-metrics { display: flex; flex-direction: column; gap: 6px; }
+.pillar-metric { display: flex; justify-content: space-between; align-items: center; font-size: 11px; }
+.pillar-metric-label { color: var(--muted); }
+.pillar-metric-val { font-weight: 600; color: var(--text); }
+
+/* ── ALERT ITEMS ── */
+.alert-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); margin-bottom: 8px; transition: border-color 0.15s; }
+.alert-item:hover { border-color: var(--border2); }
+.alert-item:last-child { margin-bottom: 0; }
+.alert-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+.alert-dot.red    { background: var(--red); }
+.alert-dot.amber  { background: var(--amber); }
+.alert-dot.green  { background: var(--green); }
+.alert-dot.blue   { background: var(--blue); }
+.alert-text { font-size: 12px; font-weight: 500; color: var(--text); line-height: 1.4; }
+.alert-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* ── PROGRESS ── */
+.progress-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+.progress-track { width: 100%; height: 5px; background: var(--border2); border-radius: 100px; overflow: hidden; margin-bottom: 12px; }
+.progress-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg, var(--green-dim), var(--green)); transition: width 1.2s cubic-bezier(0.4,0,0.2,1); }
+.progress-pct { font-family: 'ClashDisplay','Satoshi',sans-serif; font-size: 32px; font-weight: 700; color: var(--green); letter-spacing: -0.03em; text-align: center; display: block; }
+.progress-sub { text-align: center; font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+/* ── RECENT ENTRIES ── */
+.entry-list { max-height: 220px; overflow-y: auto; padding-right: 4px; }
+.entry-list::-webkit-scrollbar { width: 3px; }
+.entry-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+.entry-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 11px; border-radius: 8px; margin-bottom: 5px; border: 1px solid var(--border); background: var(--surface); transition: border-color 0.15s; }
+.entry-item:hover { border-color: var(--border2); }
+.entry-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-right: 9px; }
+.entry-dot.s1 { background: var(--green); }
+.entry-dot.s2 { background: var(--amber); }
+.entry-dot.s3 { background: var(--blue); }
+.entry-name { font-size: 12px; font-weight: 500; color: var(--text); }
+.entry-meta { font-size: 10px; color: var(--muted); margin-top: 1px; }
+.entry-val { font-family: 'ClashDisplay','Satoshi',sans-serif; font-size: 12px; font-weight: 600; color: var(--green); text-align: right; }
+.entry-date { font-size: 10px; color: var(--muted); text-align: right; margin-top: 1px; }
+
+/* ── BURSA READINESS ── */
+.readiness-bar { margin-bottom: 12px; }
+.readiness-bar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+.readiness-bar-label { font-size: 12px; font-weight: 500; color: var(--text); }
+.readiness-bar-pct { font-size: 11px; font-weight: 700; color: var(--muted); }
+.readiness-track { width: 100%; height: 4px; background: var(--border2); border-radius: 100px; overflow: hidden; }
+.readiness-fill { height: 100%; border-radius: 100px; transition: width 1s ease; }
+.readiness-fill.green  { background: var(--green); }
+.readiness-fill.amber  { background: var(--amber); }
+.readiness-fill.red    { background: var(--red); }
+.readiness-fill.blue   { background: var(--blue); }
+.readiness-fill.purple { background: var(--purple); }
+.readiness-fill.teal   { background: var(--teal); }
+
+/* ── SUPPLY CHAIN ── */
+.supply-stat { text-align: center; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+.supply-stat-val { font-family: 'ClashDisplay','Satoshi',sans-serif; font-size: 22px; font-weight: 700; color: var(--text); }
+.supply-stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; }
+
+/* ── QUICK ACTIONS ── */
+.action-btn { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid var(--border2); border-radius: 10px; background: var(--surface); cursor: pointer; transition: all 0.2s; font-family: 'Satoshi',sans-serif; font-size: 12px; font-weight: 500; color: var(--text); width: 100%; margin-bottom: 8px; text-decoration: none; }
+.action-btn:hover { border-color: var(--green); color: var(--green); }
+.action-btn:last-child { margin-bottom: 0; }
+.action-btn i { width: 14px; text-align: center; font-size: 13px; }
+
+/* ── EMPTY STATE ── */
+.empty-state { text-align: center; padding: 24px 16px; color: var(--muted); font-size: 12px; }
+.empty-state i { font-size: 24px; display: block; margin-bottom: 8px; opacity: 0.4; }
+
+/* ── MODAL ── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 50; display: none; align-items: center; justify-content: center; padding: 16px; }
+.modal-overlay.active { display: flex; }
+.modal-box { background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; width: 100%; max-width: 680px; max-height: 90vh; overflow-y: auto; animation: modalIn 0.25s ease; }
+@keyframes modalIn { from { opacity:0; transform:translateY(16px) scale(0.98); } to { opacity:1; transform:none; } }
+.modal-head { position: sticky; top: 0; background: var(--surface); border-bottom: 1px solid var(--border); padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; border-radius: 16px 16px 0 0; z-index: 1; }
+.modal-head h3 { font-size: 17px; font-weight: 700; color: var(--text); }
+.modal-close { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; padding: 4px; }
+.modal-close:hover { color: var(--text); }
+.modal-body { padding: 22px; }
+.m-label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 7px; }
+.m-input, .m-select { width: 100%; padding: 10px 14px; background: var(--card); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); font-family: 'Satoshi',sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; appearance: none; }
+.m-input:focus, .m-select:focus { border-color: var(--green); }
+.m-input::placeholder { color: var(--muted); }
+.method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+.method-card { padding: 14px; border: 1px solid var(--border2); border-radius: 10px; background: var(--card); cursor: pointer; text-align: center; transition: all 0.2s; }
+.method-card:hover { border-color: var(--green); }
+.method-card.active { border-color: var(--green); background: rgba(34,197,94,0.06); }
+.method-card i { font-size: 18px; color: var(--green); display: block; margin-bottom: 7px; }
+.method-card-title { font-weight: 700; font-size: 12px; color: var(--text); }
+.method-card-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.scope-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 18px; }
+.scope-btn { padding: 12px 8px; border: 1px solid var(--border2); border-radius: 10px; background: var(--card); cursor: pointer; text-align: center; transition: all 0.2s; font-family: 'Satoshi',sans-serif; }
+.scope-btn:hover { border-color: var(--green); }
+.scope-btn.active { border-color: var(--green); background: rgba(34,197,94,0.06); }
+.scope-btn i { font-size: 16px; color: var(--green); display: block; margin-bottom: 5px; }
+.scope-btn-title { font-weight: 700; font-size: 11px; color: var(--text); }
+.scope-btn-sub { font-size: 10px; color: var(--muted); margin-top: 1px; }
+.co2e-result { background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.2); border-radius: 10px; padding: 14px; text-align: center; margin-top: 14px; display: none; }
+.co2e-result-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 5px; }
+.co2e-result-val { font-family: 'ClashDisplay','Satoshi',sans-serif; font-size: 26px; font-weight: 700; color: var(--green); }
+.co2e-result-sub { font-size: 10px; color: var(--muted); margin-top: 3px; }
+.upload-zone { border: 2px dashed var(--border2); border-radius: 10px; padding: 36px 20px; text-align: center; cursor: pointer; transition: border-color 0.2s; }
+.upload-zone:hover { border-color: var(--green); }
+.upload-zone i { font-size: 28px; color: var(--muted); display: block; margin-bottom: 8px; }
+.upload-zone p { font-size: 12px; color: var(--muted); }
+.ai-result-box { background: var(--card); border: 1px solid var(--border2); border-radius: 10px; padding: 14px; display: none; }
+.ai-result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.ai-result-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px; text-align: center; }
+.ai-result-item-val { font-weight: 700; font-size: 14px; color: var(--green); }
+.ai-result-item-label { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.ai-spinner-wrap { display: none; text-align: center; padding: 36px; }
+.ai-spinner { width: 36px; height: 36px; border: 3px solid var(--border2); border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 14px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.form-group { margin-bottom: 14px; }
+.report-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin: 18px 0; }
+.report-stat { background: var(--card); border: 1px solid var(--border2); border-radius: 10px; padding: 14px; text-align: center; }
+.report-stat-val { font-family: 'ClashDisplay','Satoshi',sans-serif; font-size: 22px; font-weight: 700; color: var(--green); }
+.report-stat-label { font-size: 10px; color: var(--muted); margin-top: 3px; }
+
+@media (max-width: 1100px) {
+    .grid-4 { grid-template-columns: 1fr 1fr; }
+    .grid-3 { grid-template-columns: 1fr 1fr; }
+    .grid-2-1,.grid-1-2 { grid-template-columns: 1fr; }
+    .kpi-strip-inner { flex-wrap: wrap; }
+    .kpi-item { min-width: 50%; border-bottom: 1px solid var(--border); }
+}
+@media (max-width: 700px) {
+    .db-body { padding: 16px; }
+    .grid-4,.grid-3,.grid-2 { grid-template-columns: 1fr; }
+    .db-header { padding: 16px; }
+    .kpi-strip { padding: 0 16px; }
+}
+</style>
+
+<div class="db">
+
+<!-- ── HEADER ── -->
+<div class="db-header">
+    <div class="db-header-inner">
+        <div>
+            <div class="db-title">Carbon Dashboard</div>
+            <div class="db-subtitle">Welcome back, {{ username }}! — {{ "now()"|strftime("%d %b %Y") if false else "Sustainability Command Centre" }}</div>
+        </div>
+        <div class="db-actions">
+            <button onclick="openAddDataModal()" class="btn-outline"><i class="fas fa-plus"></i> Add Data</button>
+            <a href="/carboniq" class="btn-outline"><i class="fas fa-atom"></i> CarbonIQ</a>
+            <a href="/carbon_roadmap" class="btn-outline"><i class="fas fa-route"></i> Roadmap</a>
+            <a href="/report" class="btn-primary"><i class="fas fa-file-alt"></i> My Report</a>
+        </div>
+    </div>
+</div>
+
+<!-- ── KPI STRIP ── -->
+<div class="kpi-strip">
+    <div class="kpi-strip-inner">
+        <div class="kpi-item" onclick="document.getElementById('carbon-section').scrollIntoView({behavior:'smooth'})">
+            <div class="kpi-icon green"><i class="fas fa-leaf"></i></div>
+            <div>
+                <div class="kpi-label">Total Emissions</div>
+                <div class="kpi-val" id="kpi-total">{{ "%.1f"|format(chart_data.scope_totals[0] + chart_data.scope_totals[1] + chart_data.scope_totals[2]) }} kg</div>
+                <div class="kpi-sub">CO₂e this year</div>
+            </div>
+        </div>
+        <div class="kpi-item" onclick="document.getElementById('esg-section').scrollIntoView({behavior:'smooth'})">
+            <div class="kpi-icon purple"><i class="fas fa-star"></i></div>
+            <div>
+                <div class="kpi-label">ESG Score</div>
+                <div class="kpi-val" id="kpi-esg">—</div>
+                <div class="kpi-sub">Overall rating</div>
+            </div>
+        </div>
+        <div class="kpi-item" onclick="document.getElementById('carbon-section').scrollIntoView({behavior:'smooth'})">
+            <div class="kpi-icon amber"><i class="fas fa-bullseye"></i></div>
+            <div>
+                <div class="kpi-label">Reduction Progress</div>
+                <div class="kpi-val">{{ "%.0f"|format(chart_data.annual_progress.progress) }}%</div>
+                <div class="kpi-sub">of annual target</div>
+            </div>
+        </div>
+        <div class="kpi-item" onclick="document.getElementById('bursa-section').scrollIntoView({behavior:'smooth'})">
+            <div class="kpi-icon blue"><i class="fas fa-clipboard-check"></i></div>
+            <div>
+                <div class="kpi-label">Bursa Readiness</div>
+                <div class="kpi-val" id="kpi-bursa">—</div>
+                <div class="kpi-sub">Reporting compliance</div>
+            </div>
+        </div>
+        <div class="kpi-item" onclick="document.getElementById('alerts-section').scrollIntoView({behavior:'smooth'})">
+            <div class="kpi-icon red"><i class="fas fa-bell"></i></div>
+            <div>
+                <div class="kpi-label">Active Alerts</div>
+                <div class="kpi-val" id="kpi-alerts">—</div>
+                <div class="kpi-sub">Needs attention</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="db-body">
+
+<!-- ── CARBON SECTION ── -->
+<div class="section-label" id="carbon-section">Carbon Emissions</div>
+<div class="grid-4">
+    <div class="stat-card green">
+        <div class="stat-label">Total Emissions</div>
+        <div class="stat-val">{{ "%.1f"|format(chart_data.scope_totals[0] + chart_data.scope_totals[1] + chart_data.scope_totals[2]) }}</div>
+        <div class="stat-unit">kg CO₂e</div>
+        <div class="stat-icon green"><i class="fas fa-leaf"></i></div>
+    </div>
+    <div class="stat-card amber">
+        <div class="stat-label">Carbon Traded</div>
+        <div class="stat-val">{{ "%.1f"|format(chart_data.carbon_traded or 0) }}</div>
+        <div class="stat-unit">kg CO₂e</div>
+        <div class="stat-icon amber"><i class="fas fa-exchange-alt"></i></div>
+    </div>
+    <div class="stat-card blue">
+        <div class="stat-label">Carbon Offset</div>
+        <div class="stat-val">{{ "%.1f"|format(chart_data.carbon_offset or 0) }}</div>
+        <div class="stat-unit">kg CO₂e</div>
+        <div class="stat-icon blue"><i class="fas fa-tree"></i></div>
+    </div>
+    <div class="stat-card red">
+        <div class="stat-label">Carbon Credited</div>
+        <div class="stat-val">{{ "%.1f"|format(chart_data.carbon_credited or 0) }}</div>
+        <div class="stat-unit">kg CO₂e</div>
+        <div class="stat-icon red"><i class="fas fa-certificate"></i></div>
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card-header"><span class="card-title">Carbon Activities Overview</span><span class="card-badge badge-green">Scope 1–3</span></div>
+        <div class="chart-wrap"><canvas id="carbonActivitiesChart"></canvas></div>
+    </div>
+    <div class="card">
+        <div class="card-header"><span class="card-title">Monthly Emission Trends</span><span class="card-badge badge-muted">12 months</span></div>
+        <div class="chart-wrap"><canvas id="monthlyTrendChart"></canvas></div>
+    </div>
+</div>
+
+<div class="grid-3">
+    <div class="card">
+        <div class="card-header"><span class="card-title">Scope 1 Sources</span><span class="card-badge badge-green">Direct</span></div>
+        <div class="chart-wrap sm"><canvas id="scope1PieChart"></canvas></div>
+    </div>
+    <div class="card">
+        <div class="card-header"><span class="card-title">Scope 2 Sources</span><span class="card-badge badge-amber">Energy</span></div>
+        <div class="chart-wrap sm"><canvas id="scope2PieChart"></canvas></div>
+    </div>
+    <div class="card">
+        <div class="card-header"><span class="card-title">Scope 3 Sources</span><span class="card-badge badge-blue">Value Chain</span></div>
+        <div class="chart-wrap sm"><canvas id="scope3PieChart"></canvas></div>
+    </div>
+</div>
+
+<!-- ── ESG SCORECARD ── -->
+<div class="section-label" id="esg-section">ESG Performance</div>
+<div class="grid-1-2">
+    <div class="card" style="display:flex;flex-direction:column;justify-content:center;align-items:center;padding:32px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);margin-bottom:12px;">Overall ESG Score</div>
+        <div id="esg-score-ring" style="position:relative;width:120px;height:120px;margin-bottom:16px;">
+            <svg width="120" height="120" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="50" fill="none" stroke="#1e2d21" stroke-width="8"/>
+                <circle id="esg-ring-fill" cx="60" cy="60" r="50" fill="none" stroke="#22c55e" stroke-width="8" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="314" transform="rotate(-90 60 60)" style="transition:stroke-dashoffset 1.2s ease;"/>
+            </svg>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;">
+                <div id="esg-score-num" style="font-family:'ClashDisplay','Satoshi',sans-serif;font-size:28px;font-weight:700;color:var(--green);line-height:1;">—</div>
+                <div style="font-size:10px;color:var(--muted);margin-top:2px;">/100</div>
+            </div>
+        </div>
+        <div id="esg-score-label" style="font-size:13px;font-weight:600;color:var(--text);">Loading...</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">Based on E + S + G data completeness</div>
+    </div>
+    <div class="grid-3" style="margin-bottom:0;align-content:start;">
+        <div class="pillar-card">
+            <div class="pillar-header">
+                <span class="pillar-name env">Environmental</span>
+                <span id="env-pct" class="pillar-score env">—</span>
+            </div>
+            <div class="pillar-bar-track"><div id="env-bar" class="pillar-bar-fill env" style="width:0%"></div></div>
+            <div class="pillar-metrics">
+                <div class="pillar-metric"><span class="pillar-metric-label">GHG Records</span><span class="pillar-metric-val" id="env-records">—</span></div>
+                <div class="pillar-metric"><span class="pillar-metric-label">Energy tracked</span><span class="pillar-metric-val" id="env-energy">—</span></div>
+                <div class="pillar-metric"><span class="pillar-metric-label">Waste tracked</span><span class="pillar-metric-val" id="env-waste">—</span></div>
+            </div>
+        </div>
+        <div class="pillar-card">
+            <div class="pillar-header">
+                <span class="pillar-name soc">Social</span>
+                <span id="soc-pct" class="pillar-score soc">—</span>
+            </div>
+            <div class="pillar-bar-track"><div id="soc-bar" class="pillar-bar-fill soc" style="width:0%"></div></div>
+            <div class="pillar-metrics">
+                <div class="pillar-metric"><span class="pillar-metric-label">Fields filled</span><span class="pillar-metric-val" id="soc-fields">—</span></div>
+                <div class="pillar-metric"><span class="pillar-metric-label">Survey responses</span><span class="pillar-metric-val" id="soc-surveys">—</span></div>
+                <div class="pillar-metric"><span class="pillar-metric-label">Status</span><span class="pillar-metric-val" id="soc-status">—</span></div>
+            </div>
+        </div>
+        <div class="pillar-card">
+            <div class="pillar-header">
+                <span class="pillar-name gov">Governance</span>
+                <span id="gov-pct" class="pillar-score gov">—</span>
+            </div>
+            <div class="pillar-bar-track"><div id="gov-bar" class="pillar-bar-fill gov" style="width:0%"></div></div>
+            <div class="pillar-metrics">
+                <div class="pillar-metric"><span class="pillar-metric-label">Fields filled</span><span class="pillar-metric-val" id="gov-fields">—</span></div>
+                <div class="pillar-metric"><span class="pillar-metric-label">Policies tracked</span><span class="pillar-metric-val" id="gov-policies">—</span></div>
+                <div class="pillar-metric"><span class="pillar-metric-label">Status</span><span class="pillar-metric-val" id="gov-status">—</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── ALERTS + SUPPLY + PROGRESS + RECENT ── -->
+<div class="section-label" id="alerts-section">Operational Overview</div>
+<div class="grid-4">
+
+    <!-- Alerts -->
+    <div class="card">
+        <div class="card-header"><span class="card-title">Alerts & Deadlines</span><span class="card-badge badge-red" id="alert-count-badge">—</span></div>
+        <div id="alerts-list">
+            <div class="empty-state"><i class="fas fa-bell"></i>Loading alerts...</div>
+        </div>
+    </div>
+
+    <!-- Supply Chain -->
+    <div class="card">
+        <div class="card-header"><span class="card-title">Supply Chain</span><span class="card-badge badge-amber">Scope 3</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+            <div class="supply-stat"><div class="supply-stat-val" id="sc-total">—</div><div class="supply-stat-label">Suppliers</div></div>
+            <div class="supply-stat"><div class="supply-stat-val" id="sc-responded">—</div><div class="supply-stat-label">Responded</div></div>
+            <div class="supply-stat"><div class="supply-stat-val" id="sc-pending">—</div><div class="supply-stat-label">Pending</div></div>
+            <div class="supply-stat"><div class="supply-stat-val" id="sc-pct">—</div><div class="supply-stat-label">Response Rate</div></div>
+        </div>
+        <a href="/supply_chain" class="action-btn"><i class="fas fa-truck" style="color:var(--amber)"></i>Manage Suppliers</a>
+    </div>
+
+    <!-- Progress -->
+    <div class="card">
+        <div class="card-header"><span class="card-title">Annual Target Progress</span><span class="card-badge badge-green">{{ "%.0f"|format(chart_data.annual_progress.progress) }}%</span></div>
+        <div>
+            <div class="progress-labels">
+                <span>{{ "%.1f"|format(chart_data.annual_progress.current) }} kg</span>
+                <span>Target: {{ "%.1f"|format(chart_data.annual_progress.target) }} kg</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill" style="width:{{ chart_data.annual_progress.progress }}%"></div></div>
+            <span class="progress-pct">{{ "%.1f"|format(chart_data.annual_progress.progress) }}%</span>
+            <div class="progress-sub">of annual target achieved</div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card">
+        <div class="card-header"><span class="card-title">Quick Actions</span></div>
+        <a onclick="openAddDataModal()" class="action-btn" style="cursor:pointer;"><i class="fas fa-plus" style="color:var(--green)"></i>Add Emission Data</a>
+        <a href="/esg_environmental" class="action-btn"><i class="fas fa-leaf" style="color:var(--green)"></i>Environmental Module</a>
+        <a href="/social_module" class="action-btn"><i class="fas fa-users" style="color:var(--purple)"></i>Social Module</a>
+        <a href="/governance_module" class="action-btn"><i class="fas fa-shield-alt" style="color:var(--teal)"></i>Governance Module</a>
+        <a href="/report" class="action-btn"><i class="fas fa-file-alt" style="color:var(--blue)"></i>Generate Report</a>
+    </div>
+</div>
+
+<!-- ── BURSA READINESS ── -->
+<div class="section-label" id="bursa-section">Bursa Malaysia Reporting Readiness</div>
+<div class="grid-2">
+    <div class="card">
+        <div class="card-header"><span class="card-title">GRI & GHG Protocol Checklist</span><span class="card-badge badge-blue" id="bursa-overall-badge">—</span></div>
+        <div id="bursa-bars">
+            <div class="readiness-bar"><div class="readiness-bar-header"><span class="readiness-bar-label">Scope 1 & 2 GHG Measurement</span><span class="readiness-bar-pct" id="b1-pct">—</span></div><div class="readiness-track"><div id="b1-fill" class="readiness-fill green" style="width:0%"></div></div></div>
+            <div class="readiness-bar"><div class="readiness-bar-header"><span class="readiness-bar-label">Environmental Data (GRI 302-305)</span><span class="readiness-bar-pct" id="b2-pct">—</span></div><div class="readiness-track"><div id="b2-fill" class="readiness-fill green" style="width:0%"></div></div></div>
+            <div class="readiness-bar"><div class="readiness-bar-header"><span class="readiness-bar-label">Social & Workforce (GRI 401-416)</span><span class="readiness-bar-pct" id="b3-pct">—</span></div><div class="readiness-track"><div id="b3-fill" class="readiness-fill purple" style="width:0%"></div></div></div>
+            <div class="readiness-bar"><div class="readiness-bar-header"><span class="readiness-bar-label">Governance (GRI 102, 205)</span><span class="readiness-bar-pct" id="b4-pct">—</span></div><div class="readiness-track"><div id="b4-fill" class="readiness-fill teal" style="width:0%"></div></div></div>
+            <div class="readiness-bar"><div class="readiness-bar-header"><span class="readiness-bar-label">Supply Chain Scope 3 (GRI 308, 414)</span><span class="readiness-bar-pct" id="b5-pct">—</span></div><div class="readiness-track"><div id="b5-fill" class="readiness-fill amber" style="width:0%"></div></div></div>
+            <div class="readiness-bar"><div class="readiness-bar-header"><span class="readiness-bar-label">TCFD Climate Disclosure</span><span class="readiness-bar-pct" id="b6-pct">—</span></div><div class="readiness-track"><div id="b6-fill" class="readiness-fill blue" style="width:0%"></div></div></div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header"><span class="card-title">Recent Emission Entries</span><span class="card-badge badge-muted">Latest</span></div>
+        <div class="entry-list">
+            {% for scope in ['scope1','scope2','scope3'] %}
+                {% for item in user_data[scope] %}
+                <div class="entry-item">
+                    <div style="display:flex;align-items:center;flex:1;min-width:0;">
+                        <div class="entry-dot {% if scope=='scope1' %}s1{% elif scope=='scope2' %}s2{% else %}s3{% endif %}"></div>
+                        <div style="min-width:0;">
+                            <div class="entry-name">{{ item.category.replace('_',' ').title() }}{% if item.region %} <span style="font-size:10px;color:var(--muted);">({{ item.region.replace('_',' ').title() }})</span>{% endif %}</div>
+                            <div class="entry-meta">{{ item.amount }} {{ item.unit }}</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="entry-val">{{ "%.1f"|format(item.co2e) }} kg</div>
+                        <div class="entry-date">{{ item.date }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% endfor %}
+            {% if not user_data.scope1 and not user_data.scope2 and not user_data.scope3 %}
+            <div class="empty-state"><i class="fas fa-chart-bar"></i>No emission data yet.<br>Add your first entry above.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+</div><!-- end db-body -->
+</div><!-- end db -->
+
+<!-- ── ADD DATA MODAL ── -->
+<div id="addDataModal" class="modal-overlay">
+    <div class="modal-box" style="max-width:700px;">
+        <div class="modal-head">
+            <h3>Add Emission Data</h3>
+            <button class="modal-close" onclick="closeAddDataModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="method-grid">
+                <div class="method-card active" onclick="toggleInputMethod('manual');this.parentElement.querySelectorAll('.method-card').forEach(c=>c.classList.remove('active'));this.classList.add('active');">
+                    <i class="fas fa-keyboard"></i><div class="method-card-title">Manual Input</div><div class="method-card-sub">Enter data manually</div>
+                </div>
+                <div class="method-card" onclick="toggleInputMethod('upload');this.parentElement.querySelectorAll('.method-card').forEach(c=>c.classList.remove('active'));this.classList.add('active');">
+                    <i class="fas fa-robot"></i><div class="method-card-title">AI Analysis</div><div class="method-card-sub">Upload bill/receipt</div>
+                </div>
+            </div>
+            <div id="manualInput">
+                <form id="emissionForm">
+                    <label class="m-label">Select Scope</label>
+                    <div class="scope-grid" style="margin-bottom:16px;">
+                        <div class="scope-btn" onclick="handleScopeChange('scope1');this.parentElement.querySelectorAll('.scope-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active');"><input type="radio" name="scope" value="scope1" style="display:none;"><i class="fas fa-industry"></i><div class="scope-btn-title">Scope 1</div><div class="scope-btn-sub">Direct</div></div>
+                        <div class="scope-btn" onclick="handleScopeChange('scope2');this.parentElement.querySelectorAll('.scope-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active');"><input type="radio" name="scope" value="scope2" style="display:none;"><i class="fas fa-bolt"></i><div class="scope-btn-title">Scope 2</div><div class="scope-btn-sub">Indirect</div></div>
+                        <div class="scope-btn" onclick="handleScopeChange('scope3');this.parentElement.querySelectorAll('.scope-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active');"><input type="radio" name="scope" value="scope3" style="display:none;"><i class="fas fa-truck"></i><div class="scope-btn-title">Scope 3</div><div class="scope-btn-sub">Value Chain</div></div>
+                    </div>
+                    <div class="form-group"><label class="m-label">Category</label><select id="category" name="category" class="m-select" required onchange="handleCategoryChange()"><option value="">Select a category</option></select></div>
+                    <div class="form-row">
+                        <div><label class="m-label">Amount</label><input type="number" id="amount" name="amount" step="0.01" placeholder="Enter amount" class="m-input" required oninput="calculateCO2e()"></div>
+                        <div><label class="m-label">Unit</label><select id="unit" name="unit" class="m-select" required onchange="calculateCO2e()"><option value="">Select unit</option><option value="liters">Liters</option><option value="m3">Cubic Meters (m³)</option><option value="kWh">Kilowatt-hours (kWh)</option><option value="kg">Kilograms (kg)</option><option value="km">Kilometers (km)</option><option value="RM">Malaysian Ringgit (RM)</option></select></div>
+                    </div>
+                    <div id="regionSelection" class="form-group" style="display:none;"><label class="m-label">Electricity Region</label><select id="region" name="region" class="m-select" onchange="calculateCO2e()"><option value="peninsular_malaysia">Peninsular Malaysia</option><option value="sabah">Sabah</option><option value="sarawak">Sarawak</option></select><div style="font-size:10px;color:var(--muted);margin-top:4px;">Select region for accurate calculation</div></div>
+                    <div id="co2eResult" class="co2e-result"><div class="co2e-result-label">Estimated Carbon Emissions</div><div class="co2e-result-val"><span id="calculatedCO2e">0.0</span> kg CO₂e</div><div class="co2e-result-sub">Based on GHG Protocol & MGTC Malaysia factors</div></div>
+                    <button type="submit" class="btn-primary" style="width:100%;justify-content:center;margin-top:16px;padding:12px;"><i class="fas fa-calculator"></i> Calculate & Add Emission</button>
+                </form>
+            </div>
+            <div id="uploadInput" style="display:none;">
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <div class="upload-zone" onclick="document.getElementById('fileUpload').click()"><i class="fas fa-cloud-upload-alt"></i><p>Drag & drop files or click to upload</p><span style="font-size:10px;color:var(--sub);display:block;margin-top:4px;">Supports PNG, JPG, PDF (Max 10MB)</span><input type="file" id="fileUpload" name="file" style="display:none;" accept=".png,.jpg,.jpeg,.pdf" onchange="handleFileUpload(this.files)"></div>
+                    <div id="fileName" style="text-align:center;margin-top:8px;font-size:11px;color:var(--muted);"></div>
+                    <div id="aiProcessing" class="ai-spinner-wrap"><div class="ai-spinner"></div><div style="font-weight:700;color:var(--text);font-size:14px;">AI is analysing your document...</div><div style="font-size:11px;color:var(--muted);margin-top:5px;">Extracting data and calculating emissions</div></div>
+                    <div id="aiAnalysisResult" class="ai-result-box" style="margin-top:14px;">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><i class="fas fa-check-circle" style="color:var(--green);font-size:16px;"></i><span style="font-weight:700;font-size:14px;color:var(--text);">AI Analysis Complete</span></div>
+                        <div class="ai-result-grid"><div class="ai-result-item"><div class="ai-result-item-val" id="aiScope">—</div><div class="ai-result-item-label">Detected Scope</div></div><div class="ai-result-item"><div class="ai-result-item-val" id="aiCategory">—</div><div class="ai-result-item-label">Category</div></div></div>
+                        <div id="aiRegionContainer" class="ai-result-item" style="display:none;margin-bottom:8px;"><div class="ai-result-item-val" id="aiRegion">—</div><div class="ai-result-item-label">Detected Region</div></div>
+                        <div class="ai-result-grid"><div class="ai-result-item"><div class="ai-result-item-val" id="aiAmount">—</div><div class="ai-result-item-label">Amount</div></div><div class="ai-result-item"><div class="ai-result-item-val" id="aiUnit">—</div><div class="ai-result-item-label">Unit</div></div></div>
+                        <div class="co2e-result" style="display:block;margin:10px 0;"><div class="co2e-result-label">Calculated Carbon Emissions</div><div class="co2e-result-val"><span id="aiCalculatedCO2e">0.0</span> kg CO₂e</div></div>
+                        <button type="button" onclick="confirmAIAnalysis()" class="btn-primary" style="width:100%;justify-content:center;padding:11px;"><i class="fas fa-check"></i> Confirm & Add Emission</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── REPORT MODAL ── -->
+<div id="reportPreviewModal" class="modal-overlay">
+    <div class="modal-box" style="max-width:760px;">
+        <div class="modal-head">
+            <h3>Report Preview</h3>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <button onclick="window.open('/api/generate-report-pdf','_blank')" class="btn-primary" style="font-size:12px;padding:7px 12px;"><i class="fas fa-download"></i> Download PDF</button>
+                <button class="modal-close" onclick="closeReportPreview()"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+        <div class="modal-body">
+            <div style="text-align:center;margin-bottom:20px;"><i class="fas fa-file-alt" style="font-size:36px;color:var(--green);display:block;margin-bottom:10px;"></i><h4 style="font-size:18px;font-weight:700;color:var(--text);">GRI & GHG Protocol Carbon Report</h4><p style="font-size:12px;color:var(--muted);margin-top:5px;">Generating your professional carbon report...</p></div>
+            <div class="report-stats">
+                <div class="report-stat"><div class="report-stat-val">{{ "%.1f"|format(chart_data.scope_totals[0]+chart_data.scope_totals[1]+chart_data.scope_totals[2]) }}</div><div class="report-stat-label">Total kg CO₂e</div></div>
+                <div class="report-stat"><div class="report-stat-val">3</div><div class="report-stat-label">Scopes Covered</div></div>
+                <div class="report-stat"><div class="report-stat-val">{{ chart_data.annual_progress.progress|int }}%</div><div class="report-stat-label">Target Achieved</div></div>
+            </div>
+            <p style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:18px;">Your report includes GRI 102, 103, 305 standards compliance and GHG Protocol requirements.</p>
+            <div style="text-align:center;"><a href="/report" class="btn-primary" style="display:inline-flex;"><i class="fas fa-external-link-alt"></i> View Full Report</a></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const categoryData = {
+    scope1: [{value:'diesel',text:'Diesel Fuel'},{value:'gasoline',text:'Gasoline'},{value:'natural_gas',text:'Natural Gas'},{value:'lpg',text:'LPG'},{value:'coal',text:'Coal'}],
+    scope2: [{value:'electricity',text:'Electricity'}],
+    scope3: [{value:'business_travel_air',text:'Business Travel - Air'},{value:'business_travel_car',text:'Business Travel - Car'},{value:'employee_commute',text:'Employee Commute'},{value:'purchased_goods',text:'Purchased Goods'},{value:'waste_disposal',text:'Waste Disposal'},{value:'water',text:'Water Consumption'}]
+};
+const emissionFactors = {
+    scope1: {diesel:2.68,gasoline:2.31,natural_gas:2.75,lpg:1.55,coal:2.42},
+    scope2: {electricity:{peninsular_malaysia:0.85,sabah:0.92,sarawak:0.78}},
+    scope3: {business_travel_air:0.25,business_travel_car:0.21,employee_commute:0.12,purchased_goods:0.15,waste_disposal:0.85,water:0.344}
+};
+
+Chart.defaults.color = '#6b8f72';
+Chart.defaults.borderColor = '#1e2d21';
+const darkPalette = ['#22c55e','#f59e0b','#3b82f6','#a78bfa','#f87171','#2dd4bf'];
+
+document.addEventListener('DOMContentLoaded', () => {
+    initCharts();
+    loadESGData();
+});
+
+function initCharts() {
+    new Chart(document.getElementById('carbonActivitiesChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Emitted','Traded','Offset','Credited'],
+            datasets: [{ data: [{{ chart_data.scope_totals[0]+chart_data.scope_totals[1]+chart_data.scope_totals[2] }},{{ chart_data.carbon_traded or 0 }},{{ chart_data.carbon_offset or 0 }},{{ chart_data.carbon_credited or 0 }}], backgroundColor: ['#22c55e','#f59e0b','#3b82f6','#a78bfa'], borderColor: 'transparent', borderRadius: 6, borderSkipped: false }]
+        },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true,grid:{color:'#1e2d21'},ticks:{color:'#6b8f72'}}, x:{grid:{display:false},ticks:{color:'#6b8f72'}} } }
+    });
+
+    new Chart(document.getElementById('monthlyTrendChart'), {
+        type: 'line',
+        data: {
+            labels: {{ chart_data.monthly_trends.months|tojson }},
+            datasets: [
+                {label:'Scope 1',data:{{ chart_data.monthly_trends.scope1|tojson }},borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,0.05)',tension:0.4,fill:true,pointRadius:2},
+                {label:'Scope 2',data:{{ chart_data.monthly_trends.scope2|tojson }},borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.05)',tension:0.4,fill:true,pointRadius:2},
+                {label:'Scope 3',data:{{ chart_data.monthly_trends.scope3|tojson }},borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.05)',tension:0.4,fill:true,pointRadius:2}
+            ]
+        },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top',labels:{color:'#6b8f72',boxWidth:8,font:{size:10}}}}, scales:{ x:{grid:{color:'#1e2d21'},ticks:{color:'#6b8f72'}}, y:{grid:{color:'#1e2d21'},ticks:{color:'#6b8f72'}} } }
+    });
+
+    [['scope1PieChart',{{ chart_data.scope1_breakdown.keys()|list|tojson }},{{ chart_data.scope1_breakdown.values()|list|tojson }}],
+     ['scope2PieChart',{{ chart_data.scope2_breakdown.keys()|list|tojson }},{{ chart_data.scope2_breakdown.values()|list|tojson }}],
+     ['scope3PieChart',{{ chart_data.scope3_breakdown.keys()|list|tojson }},{{ chart_data.scope3_breakdown.values()|list|tojson }}]
+    ].forEach(([id,labels,data]) => {
+        new Chart(document.getElementById(id), {
+            type: 'doughnut',
+            data: {labels, datasets:[{data,backgroundColor:darkPalette,borderColor:'#141a15',borderWidth:3,hoverOffset:4}]},
+            options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{color:'#6b8f72',boxWidth:8,font:{size:10},padding:10}}}, cutout:'62%' }
+        });
+    });
+}
+
+// ── LOAD ESG + ALERTS + SUPPLY CHAIN DATA ──
+async function loadESGData() {
+    try {
+        const res = await fetch('/api/dashboard/stats');
+        const data = await res.json();
+        if (!data.success) return;
+
+        // Environmental
+        const envPct = data.environmental ? data.environmental.pct : {{ ((chart_data.scope_totals[0]+chart_data.scope_totals[1]+chart_data.scope_totals[2]) > 0)|int * 100 }};
+        const envRecords = data.environmental ? data.environmental.records : '—';
+
+        // Social
+        const socPct = data.social.pct || 0;
+        document.getElementById('soc-pct').textContent = socPct + '%';
+        document.getElementById('soc-bar').style.width = socPct + '%';
+        document.getElementById('soc-fields').textContent = data.social.fields_filled || '0';
+        document.getElementById('soc-surveys').textContent = data.social.survey_responses || '0';
+        document.getElementById('soc-status').textContent = socPct >= 80 ? '✓ Complete' : 'In progress';
+
+        // Governance
+        const govPct = data.governance.pct || 0;
+        document.getElementById('gov-pct').textContent = govPct + '%';
+        document.getElementById('gov-bar').style.width = govPct + '%';
+        document.getElementById('gov-fields').textContent = data.governance.fields_filled || '0';
+        document.getElementById('gov-policies').textContent = data.governance.fields_filled > 5 ? 'Yes' : 'Partial';
+        document.getElementById('gov-status').textContent = govPct >= 80 ? '✓ Complete' : 'In progress';
+
+        // Supply Chain
+        document.getElementById('sc-total').textContent = data.supply.total || '0';
+        document.getElementById('sc-responded').textContent = data.supply.responded || '0';
+        document.getElementById('sc-pending').textContent = data.supply.pending || '0';
+        document.getElementById('sc-pct').textContent = (data.supply.pct || 0) + '%';
+
+        // Env pillar (use carbon data)
+        const totalEmissions = {{ chart_data.scope_totals[0]+chart_data.scope_totals[1]+chart_data.scope_totals[2] }};
+        const envScore = totalEmissions > 0 ? 100 : 0;
+        document.getElementById('env-pct').textContent = envScore + '%';
+        document.getElementById('env-bar').style.width = envScore + '%';
+        document.getElementById('env-records').textContent = '{{ (user_data.scope1|length + user_data.scope2|length + user_data.scope3|length) }} entries';
+        document.getElementById('env-energy').textContent = {{ chart_data.scope_totals[1] }} > 0 ? 'Yes' : 'No';
+        document.getElementById('env-waste').textContent = {{ chart_data.scope_totals[2] }} > 0 ? 'Yes' : 'No';
+
+        // Overall ESG score
+        const overallESG = Math.round(envScore * 0.4 + socPct * 0.3 + govPct * 0.3);
+        document.getElementById('esg-score-num').textContent = overallESG;
+        document.getElementById('kpi-esg').textContent = overallESG + '/100';
+        const label = overallESG >= 80 ? 'Excellent' : overallESG >= 60 ? 'Good' : overallESG >= 40 ? 'Developing' : 'Needs Work';
+        document.getElementById('esg-score-label').textContent = label;
+        const offset = 314 - (314 * overallESG / 100);
+        document.getElementById('esg-ring-fill').style.strokeDashoffset = offset;
+        const ringColor = overallESG >= 80 ? '#22c55e' : overallESG >= 60 ? '#f59e0b' : overallESG >= 40 ? '#3b82f6' : '#ef4444';
+        document.getElementById('esg-ring-fill').style.stroke = ringColor;
+
+        // Bursa readiness bars
+        const ghgPct = totalEmissions > 0 ? 100 : 0;
+        const supplyPct = data.supply.pct || 0;
+        const tcfdPct = (govPct + socPct) / 2;
+        const barsData = [
+            {id:'b1',pct:ghgPct,cls:'green'},
+            {id:'b2',pct:envScore,cls:'green'},
+            {id:'b3',pct:socPct,cls:'purple'},
+            {id:'b4',pct:govPct,cls:'teal'},
+            {id:'b5',pct:supplyPct,cls:'amber'},
+            {id:'b6',pct:Math.round(tcfdPct),cls:'blue'}
+        ];
+        let bursaTotal = 0;
+        barsData.forEach(b => {
+            document.getElementById(b.id+'-pct').textContent = b.pct + '%';
+            const fill = document.getElementById(b.id+'-fill');
+            fill.style.width = b.pct + '%';
+            fill.className = 'readiness-fill ' + b.cls;
+            bursaTotal += b.pct;
+        });
+        const bursaOverall = Math.round(bursaTotal / barsData.length);
+        document.getElementById('kpi-bursa').textContent = bursaOverall + '%';
+        document.getElementById('bursa-overall-badge').textContent = bursaOverall + '% Ready';
+
+        // Alerts
+        buildAlerts(data, totalEmissions, ghgPct, socPct, govPct, supplyPct);
+
+    } catch(e) {
+        console.error('ESG load error:', e);
+        buildAlertsStatic();
+    }
+}
+
+function buildAlerts(data, totalEmissions, ghgPct, socPct, govPct, supplyPct) {
+    const alerts = [];
+
+    if (totalEmissions === 0) alerts.push({type:'red', title:'No emission data entered', meta:'Add Scope 1, 2 or 3 data to begin tracking'});
+    if (socPct < 50) alerts.push({type:'amber', title:'Social module incomplete', meta:`Only ${data.social.fields_filled || 0} fields filled — target 80%+`});
+    if (govPct < 50) alerts.push({type:'amber', title:'Governance module incomplete', meta:`Only ${data.governance.fields_filled || 0} fields filled — target 80%+`});
+    if (data.supply.pending > 0) alerts.push({type:'amber', title:`${data.supply.pending} supplier${data.supply.pending>1?'s':''} pending`, meta:'Send reminders to pending suppliers'});
+    if (supplyPct === 0 && data.supply.total === 0) alerts.push({type:'blue', title:'No suppliers invited yet', meta:'Invite suppliers to track Scope 3 emissions'});
+    if (ghgPct > 0) alerts.push({type:'green', title:'GHG data recorded', meta:'Scope 1 & 2 measurement complete'});
+    if (alerts.length === 0) alerts.push({type:'green', title:'All systems up to date', meta:'Great work — dashboard is fully populated'});
+
+    const list = document.getElementById('alerts-list');
+    list.innerHTML = alerts.slice(0,5).map(a => `
+        <div class="alert-item">
+            <div class="alert-dot ${a.type}"></div>
+            <div><div class="alert-text">${a.title}</div><div class="alert-meta">${a.meta}</div></div>
+        </div>
+    `).join('');
+
+    const activeAlerts = alerts.filter(a => a.type === 'red' || a.type === 'amber').length;
+    document.getElementById('kpi-alerts').textContent = activeAlerts;
+    document.getElementById('alert-count-badge').textContent = activeAlerts + ' active';
+    document.getElementById('alert-count-badge').className = 'card-badge ' + (activeAlerts > 0 ? 'badge-red' : 'badge-green');
+}
+
+function buildAlertsStatic() {
+    document.getElementById('alerts-list').innerHTML = `
+        <div class="alert-item"><div class="alert-dot amber"></div><div><div class="alert-text">Could not load alerts</div><div class="alert-meta">Check /api/dashboard/stats</div></div></div>`;
+    document.getElementById('kpi-alerts').textContent = '?';
+}
+
+// ── MODAL FUNCTIONS ──
+function openAddDataModal() { document.getElementById('addDataModal').classList.add('active'); document.body.style.overflow='hidden'; resetForm(); }
+function closeAddDataModal() { document.getElementById('addDataModal').classList.remove('active'); document.body.style.overflow=''; }
+function openReportPreview() { document.getElementById('reportPreviewModal').classList.add('active'); document.body.style.overflow='hidden'; }
+function closeReportPreview() { document.getElementById('reportPreviewModal').classList.remove('active'); document.body.style.overflow=''; }
+function toggleInputMethod(m) { document.getElementById('manualInput').style.display=m==='manual'?'block':'none'; document.getElementById('uploadInput').style.display=m==='upload'?'block':'none'; }
+
+function handleScopeChange(scope) {
+    document.querySelectorAll('input[name="scope"]').forEach(r=>{if(r.value===scope)r.checked=true;});
+    const sel=document.getElementById('category'); sel.innerHTML='<option value="">Select a category</option>';
+    (categoryData[scope]||[]).forEach(c=>{const o=document.createElement('option');o.value=c.value;o.textContent=c.text;sel.appendChild(o);});
+    document.getElementById('regionSelection').style.display='none';
+    document.getElementById('co2eResult').style.display='none';
+}
+function handleCategoryChange() {
+    const scope=document.querySelector('input[name="scope"]:checked')?.value;
+    const cat=document.getElementById('category').value;
+    document.getElementById('regionSelection').style.display=(scope==='scope2'&&cat==='electricity')?'block':'none';
+    calculateCO2e();
+}
+function calculateCO2e() {
+    const scope=document.querySelector('input[name="scope"]:checked')?.value;
+    const cat=document.getElementById('category').value;
+    const amt=parseFloat(document.getElementById('amount').value);
+    const unit=document.getElementById('unit').value;
+    if(!scope||!cat||!amt||!unit)return;
+    let factor=0;
+    if(scope==='scope1') factor=emissionFactors.scope1[cat]||0;
+    else if(scope==='scope2'&&cat==='electricity'){const r=document.getElementById('region').value||'peninsular_malaysia';factor=emissionFactors.scope2.electricity[r]||0.85;}
+    else if(scope==='scope3') factor=emissionFactors.scope3[cat]||0;
+    document.getElementById('calculatedCO2e').textContent=(amt*factor).toFixed(2);
+    document.getElementById('co2eResult').style.display='block';
+}
+function resetForm() {
+    document.getElementById('emissionForm')?.reset();
+    document.getElementById('category').innerHTML='<option value="">Select a category</option>';
+    document.getElementById('co2eResult').style.display='none';
+    document.getElementById('regionSelection').style.display='none';
+    document.getElementById('aiAnalysisResult').style.display='none';
+    document.getElementById('aiProcessing').style.display='none';
+    document.getElementById('fileName').textContent='';
+    document.querySelectorAll('.scope-btn').forEach(b=>b.classList.remove('active'));
+}
+function handleFileUpload(files) {
+    if(!files||!files[0])return;
+    document.getElementById('fileName').textContent=files[0].name;
+    document.getElementById('aiProcessing').style.display='block';
+    document.getElementById('aiAnalysisResult').style.display='none';
+    const fd=new FormData(); fd.append('file',files[0]);
+    fetch('/api/analyze-document',{method:'POST',body:fd}).then(r=>r.json()).then(data=>{
+        document.getElementById('aiProcessing').style.display='none';
+        if(data.success) displayAIAnalysis(data.data, data.temp_file_id, data.original_filename);
+        else alert('AI analysis failed: '+data.message);
+    }).catch(()=>{ document.getElementById('aiProcessing').style.display='none'; alert('Upload failed.'); });
+}
+function displayAIAnalysis(a, tempFileId, originalFilename) {
+    document.getElementById('aiScope').textContent=a.scope||'—';
+    document.getElementById('aiCategory').textContent=(a.category||'').replace(/_/g,' ');
+    document.getElementById('aiAmount').textContent=a.amount||'—';
+    document.getElementById('aiUnit').textContent=a.unit||'—';
+    document.getElementById('aiCalculatedCO2e').textContent=(a.co2e||0).toFixed(2);
+    const rc=document.getElementById('aiRegionContainer');
+    if(a.region){const rn={peninsular_malaysia:'Peninsular Malaysia',sabah:'Sabah',sarawak:'Sarawak'};document.getElementById('aiRegion').textContent=rn[a.region]||a.region;rc.style.display='block';}else rc.style.display='none';
+    window.currentAIAnalysis=a;
+    window.currentTempFileId=tempFileId||null;
+    window.currentOriginalFilename=originalFilename||null;
+    document.getElementById('aiAnalysisResult').style.display='block';
+}
+function confirmAIAnalysis() {
+    const a=window.currentAIAnalysis; if(!a)return;
+    const d={scope:a.scope,category:a.category,amount:a.amount,unit:a.unit,co2e:a.co2e};
+    if(a.region)d.region=a.region;
+    // Pass temp file info so the backend can link the uploaded bill as evidence
+    if(window.currentTempFileId) d.temp_file_id=window.currentTempFileId;
+    if(window.currentOriginalFilename) d.original_filename=window.currentOriginalFilename;
+    fetch('/api/add-emission',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}).then(r=>r.json()).then(data=>{
+        if(data.success){closeAddDataModal();alert('Emission data added! '+data.message);location.reload();}else alert('Error: '+data.message);
+    });
+}
+document.getElementById('emissionForm').addEventListener('submit',function(e){
+    e.preventDefault();
+    const fd=new FormData(this);
+    const scope=fd.get('scope'),cat=fd.get('category'),amt=parseFloat(fd.get('amount')),unit=fd.get('unit');
+    const region=scope==='scope2'&&cat==='electricity'?fd.get('region'):null;
+    calculateCO2e();
+    const co2e=parseFloat(document.getElementById('calculatedCO2e').textContent);
+    const d={scope,category:cat,amount:amt,unit,co2e};
+    if(region)d.region=region;
+    fetch('/api/add-emission',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}).then(r=>r.json()).then(data=>{
+        if(data.success){closeAddDataModal();alert('Emission data added! '+data.message);location.reload();}else alert('Error: '+data.message);
+    });
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeAddDataModal();closeReportPreview();}});
+</script>
+
+{% endblock %}

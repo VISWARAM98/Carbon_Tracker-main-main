@@ -1,0 +1,524 @@
+{% extends "base_auth.html" %}
+{% block content %}
+
+<style>
+@import url('https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --bg:       #f5f7ff;
+    --surface:  #ffffff;
+    --card:     #ffffff;
+    --border:   #e4e8f0;
+    --border2:  #cdd3e8;
+    --dark:     #0b0f0c;
+    --dark-s:   #0f1420;
+    --dark-b:   #1e2535;
+    --indigo:   #4f46e5;
+    --indigo-lt:#6366f1;
+    --indigo-dk:#1e1b4b;
+    --violet:   #7c3aed;
+    --teal:     #0d9488;
+    --amber:    #d97706;
+    --green:    #16a34a;
+    --red:      #dc2626;
+    --blue:     #2563eb;
+    --text:     #111827;
+    --muted:    #6b7280;
+    --sub:      #9ca3af;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+.es { font-family: 'Satoshi', sans-serif; background: var(--bg); min-height: 100vh; color: var(--text); }
+.es h1,.es h2,.es h3,.es h4 { font-family: 'ClashDisplay','Satoshi',sans-serif; }
+
+/* ── HERO ── */
+.es-hero {
+    background: var(--dark-s);
+    border-bottom: 1px solid var(--dark-b);
+    padding: 40px 32px 48px;
+    position: relative; overflow: hidden;
+}
+.es-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 80% 50%, rgba(99,102,241,0.08) 0%, transparent 60%);
+}
+.es-hero::after {
+    content: ''; position: absolute;
+    bottom: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(99,102,241,0.5), transparent);
+}
+.es-hero-inner { max-width: 1280px; margin: 0 auto; position: relative; z-index: 1; }
+.es-hero-badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.25);
+    color: #a5b4fc; padding: 5px 14px; border-radius: 4px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 18px;
+}
+.es-hero h1 { font-size: clamp(26px,4vw,40px); font-weight: 700; color: white; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 10px; }
+.es-hero h1 span { color: #a5b4fc; }
+.es-hero p { color: rgba(255,255,255,0.5); font-size: 14px; max-width: 520px; line-height: 1.7; }
+.es-hero-stats { display: flex; gap: 36px; margin-top: 28px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.06); flex-wrap: wrap; }
+.es-hero-stat-val { font-family: 'ClashDisplay','Satoshi',sans-serif; font-size: 22px; font-weight: 700; color: #a5b4fc; letter-spacing: -0.02em; }
+.es-hero-stat-label { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ── FILTER TABS ── */
+.es-filters { background: white; border-bottom: 1px solid var(--border); padding: 0 32px; position: sticky; top: 0; z-index: 10; }
+.es-filters-inner { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; overflow-x: auto; }
+.filter-tab { padding: 15px 18px; font-size: 12px; font-weight: 600; color: var(--muted); border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.2s; font-family: 'Satoshi',sans-serif; display: flex; align-items: center; gap: 6px; }
+.filter-tab:hover { color: var(--text); }
+.filter-tab.active { color: var(--indigo); border-bottom-color: var(--indigo); }
+.tab-count { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 100px; background: var(--bg); }
+.filter-tab.active .tab-count { background: rgba(79,70,229,0.1); color: var(--indigo); }
+
+/* ── BODY ── */
+.es-body { max-width: 1280px; margin: 0 auto; padding: 32px; }
+
+/* ── SEARCH ── */
+.es-search-row { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+.es-search { flex: 1; display: flex; align-items: center; gap: 10px; background: white; border: 1px solid var(--border2); border-radius: 10px; padding: 10px 16px; }
+.es-search i { color: var(--sub); font-size: 14px; }
+.es-search input { border: none; outline: none; font-family: 'Satoshi',sans-serif; font-size: 14px; color: var(--text); background: none; flex: 1; }
+.es-search input::placeholder { color: var(--sub); }
+.es-sort { padding: 10px 16px; border: 1px solid var(--border2); border-radius: 10px; background: white; font-family: 'Satoshi',sans-serif; font-size: 13px; color: var(--text); outline: none; cursor: pointer; appearance: none; }
+.es-count { font-size: 13px; color: var(--muted); white-space: nowrap; }
+
+/* ── FEATURED BANNER ── */
+.featured-banner { background: linear-gradient(135deg, var(--indigo-dk) 0%, #2d2467 100%); border: 1px solid rgba(99,102,241,0.25); border-radius: 16px; padding: 22px 28px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; gap: 20px; flex-wrap: wrap; }
+.featured-banner h3 { font-size: 15px; font-weight: 700; color: white; margin-bottom: 4px; }
+.featured-banner p { font-size: 12px; color: rgba(255,255,255,0.5); }
+.featured-banner-btn { padding: 9px 20px; background: rgba(99,102,241,0.15); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3); border-radius: 8px; font-family: 'Satoshi',sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+.featured-banner-btn:hover { background: var(--indigo); color: white; border-color: var(--indigo); }
+
+/* ── PROVIDER GRID ── */
+.provider-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; }
+
+/* ── PROVIDER CARD ── */
+.provider-card { background: white; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; transition: all 0.2s; display: flex; flex-direction: column; }
+.provider-card:hover { border-color: var(--indigo-lt); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(79,70,229,0.08); }
+.provider-card-top { padding: 20px 20px 16px; flex: 1; }
+
+.cat-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; padding: 3px 9px; border-radius: 4px; margin-bottom: 14px; }
+.cat-report   { background: rgba(79,70,229,0.1);  color: #4338ca; }
+.cat-ghg      { background: rgba(22,163,74,0.1);  color: #15803d; }
+.cat-bursa    { background: rgba(217,119,6,0.1);  color: #b45309; }
+.cat-training { background: rgba(13,148,136,0.1); color: #0f766e; }
+.cat-strategy { background: rgba(124,58,237,0.1); color: #6d28d9; }
+.cat-tcfd     { background: rgba(37,99,235,0.1);  color: #1d4ed8; }
+
+.provider-logo { width: 44px; height: 44px; border-radius: 10px; background: var(--bg); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 12px; }
+.provider-name { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.provider-tagline { font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 12px; }
+.provider-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; }
+.provider-tag { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 4px; background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
+.provider-meta { display: flex; align-items: center; gap: 14px; font-size: 11px; color: var(--sub); }
+.stars { color: #f59e0b; font-size: 10px; }
+
+.provider-card-footer { padding: 14px 20px; border-top: 1px solid var(--border); background: #f9fafb; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.provider-verified { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: var(--indigo); }
+.contact-btns { display: flex; gap: 6px; }
+.btn-whatsapp { padding: 6px 12px; background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; border-radius: 7px; font-family: 'Satoshi',sans-serif; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 5px; }
+.btn-whatsapp:hover { background: #16a34a; color: white; border-color: #16a34a; }
+.btn-enquire { padding: 6px 12px; background: var(--indigo-dk); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.4); border-radius: 7px; font-family: 'Satoshi',sans-serif; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+.btn-enquire:hover { background: var(--indigo); color: white; border-color: var(--indigo); }
+
+/* ── EMPTY ── */
+.es-empty { text-align: center; padding: 64px 20px; color: var(--muted); }
+.es-empty i { font-size: 40px; display: block; margin-bottom: 16px; opacity: 0.3; }
+.es-empty h3 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+
+/* ── MODAL ── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 50; display: none; align-items: center; justify-content: center; padding: 16px; }
+.modal-overlay.active { display: flex; }
+.modal-box { background: white; border-radius: 20px; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; animation: modalIn 0.25s ease; }
+@keyframes modalIn { from{opacity:0;transform:translateY(16px) scale(0.98)}to{opacity:1;transform:none} }
+.modal-head { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.modal-head h3 { font-size: 16px; font-weight: 700; color: var(--text); }
+.modal-close { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; padding: 4px; }
+.modal-close:hover { color: var(--text); }
+.modal-body { padding: 22px; }
+.modal-provider-info { display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--bg); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; }
+.modal-provider-logo { width: 42px; height: 42px; border-radius: 10px; background: white; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.modal-provider-name { font-weight: 700; font-size: 14px; color: var(--text); }
+.modal-provider-cat { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* direct contact box */
+.direct-contact-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 14px 16px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.direct-contact-box p { font-size: 12px; color: #15803d; font-weight: 500; }
+.wa-btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; background: #16a34a; color: white; border: none; border-radius: 8px; font-family: 'Satoshi',sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.2s; white-space: nowrap; text-decoration: none; }
+.wa-btn:hover { background: #15803d; }
+
+.divider { display: flex; align-items: center; gap: 12px; margin: 16px 0; }
+.divider::before,.divider::after { content:''; flex:1; height:1px; background:var(--border); }
+.divider span { font-size: 11px; color: var(--sub); font-weight: 600; }
+
+.m-label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 7px; }
+.m-input,.m-select,.m-textarea { width: 100%; padding: 10px 14px; background: white; border: 1.5px solid var(--border2); border-radius: 10px; color: var(--text); font-family: 'Satoshi',sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; appearance: none; }
+.m-input:focus,.m-select:focus,.m-textarea:focus { border-color: var(--indigo); }
+.m-input::placeholder,.m-textarea::placeholder { color: var(--sub); }
+.m-textarea { resize: vertical; min-height: 90px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.form-group { margin-bottom: 14px; }
+.submit-btn { width: 100%; padding: 12px; background: var(--indigo-dk); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.4); border-radius: 12px; font-family: 'ClashDisplay','Satoshi',sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.submit-btn:hover { background: var(--indigo); color: white; border-color: var(--indigo); }
+.submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.success-state { text-align: center; padding: 32px 20px; display: none; }
+.success-state i { font-size: 44px; color: var(--indigo); display: block; margin-bottom: 14px; }
+.success-state h3 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.success-state p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+.toast { position: fixed; bottom: 24px; right: 24px; z-index: 9999; padding: 14px 20px; border-radius: 12px; color: white; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 10px; background: var(--indigo); transform: translateY(80px); opacity: 0; transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1); font-family: 'Satoshi',sans-serif; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+.toast.show { transform: translateY(0); opacity: 1; }
+
+@media(max-width:900px) { .provider-grid { grid-template-columns: 1fr 1fr; } .es-body { padding: 20px 16px; } .es-hero { padding: 28px 16px 36px; } .es-filters { padding: 0 16px; } }
+@media(max-width:600px) { .provider-grid { grid-template-columns: 1fr; } .form-row { grid-template-columns: 1fr; } }
+</style>
+
+<div class="es">
+
+<!-- ── HERO ── -->
+<div class="es-hero">
+    <div class="es-hero-inner">
+        <div class="es-hero-badge"><i class="fas fa-briefcase"></i> Verified Consultants</div>
+        <h1>ESG <span>Services</span></h1>
+        <p>Connect with Malaysia's leading ESG consultants, auditors, trainers and advisors — from Bursa reporting to GHG verification and TCFD disclosure.</p>
+        <div class="es-hero-stats">
+            <div><div class="es-hero-stat-val">20</div><div class="es-hero-stat-label">Verified Firms</div></div>
+            <div><div class="es-hero-stat-val">6</div><div class="es-hero-stat-label">Service Areas</div></div>
+            <div><div class="es-hero-stat-val">MY</div><div class="es-hero-stat-label">Malaysia Based</div></div>
+            <div><div class="es-hero-stat-val">Free</div><div class="es-hero-stat-label">To Enquire</div></div>
+        </div>
+    </div>
+</div>
+
+<!-- ── FILTER TABS ── -->
+<div class="es-filters">
+    <div class="es-filters-inner">
+        <button class="filter-tab active" onclick="filterProviders('all',this)"><i class="fas fa-th"></i> All <span class="tab-count" id="cnt-all">20</span></button>
+        <button class="filter-tab" onclick="filterProviders('report',this)"><i class="fas fa-file-alt"></i> ESG Reports <span class="tab-count" id="cnt-report">4</span></button>
+        <button class="filter-tab" onclick="filterProviders('ghg',this)"><i class="fas fa-leaf"></i> GHG Audit <span class="tab-count" id="cnt-ghg">4</span></button>
+        <button class="filter-tab" onclick="filterProviders('bursa',this)"><i class="fas fa-chart-bar"></i> Bursa Advisory <span class="tab-count" id="cnt-bursa">3</span></button>
+        <button class="filter-tab" onclick="filterProviders('training',this)"><i class="fas fa-graduation-cap"></i> Training <span class="tab-count" id="cnt-training">3</span></button>
+        <button class="filter-tab" onclick="filterProviders('strategy',this)"><i class="fas fa-chess"></i> Strategy <span class="tab-count" id="cnt-strategy">3</span></button>
+        <button class="filter-tab" onclick="filterProviders('tcfd',this)"><i class="fas fa-shield-alt"></i> TCFD & Climate <span class="tab-count" id="cnt-tcfd">3</span></button>
+    </div>
+</div>
+
+<div class="es-body">
+
+    <!-- Featured Banner -->
+    <div class="featured-banner">
+        <div>
+            <h3><i class="fas fa-building mr-2"></i> Are you an ESG consultant or firm?</h3>
+            <p>Get listed on EmittiF.io and receive direct enquiries from Malaysian companies seeking ESG advisory services.</p>
+        </div>
+        <button class="featured-banner-btn" onclick="openListingModal()"><i class="fas fa-plus mr-2"></i> Join as Provider</button>
+    </div>
+
+    <!-- Search + Sort -->
+    <div class="es-search-row">
+        <div class="es-search">
+            <i class="fas fa-search"></i>
+            <input type="text" id="search-input" placeholder="Search by firm name, service, certification, location..." oninput="searchProviders()">
+        </div>
+        <select class="es-sort" id="sort-select" onchange="sortProviders()">
+            <option value="featured">Featured</option>
+            <option value="rating">Highest Rated</option>
+            <option value="name">A–Z</option>
+        </select>
+        <div class="es-count" id="results-count">Showing 20 providers</div>
+    </div>
+
+    <!-- Grid -->
+    <div class="provider-grid" id="provider-grid"></div>
+    <div class="es-empty" id="empty-state" style="display:none;">
+        <i class="fas fa-search"></i>
+        <h3>No providers found</h3>
+        <p>Try adjusting your search or filters</p>
+    </div>
+
+</div>
+</div>
+
+<!-- ── ENQUIRY MODAL ── -->
+<div id="enquiryModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h3>Contact Provider</h3>
+            <button class="modal-close" onclick="closeEnquiry()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div id="enquiry-form-wrap">
+                <div class="modal-provider-info">
+                    <div class="modal-provider-logo" id="enq-logo">📊</div>
+                    <div>
+                        <div class="modal-provider-name" id="enq-name">Provider</div>
+                        <div class="modal-provider-cat" id="enq-cat">Category</div>
+                    </div>
+                </div>
+
+                <!-- Direct WhatsApp -->
+                <div class="direct-contact-box" id="wa-box">
+                    <p><i class="fab fa-whatsapp mr-1"></i> Prefer to contact directly?</p>
+                    <a id="wa-link" href="#" target="_blank" class="wa-btn"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+                </div>
+
+                <div class="divider"><span>or send an enquiry</span></div>
+
+                <form id="enquiryForm">
+                    <div class="form-row">
+                        <div class="form-group" style="margin-bottom:0;"><label class="m-label">Your Name *</label><input type="text" name="contact_name" class="m-input" placeholder="Full name" required></div>
+                        <div class="form-group" style="margin-bottom:0;"><label class="m-label">Company *</label><input type="text" name="company_name" class="m-input" placeholder="Company name" required value="{{ session.company }}"></div>
+                    </div>
+                    <div class="form-row" style="margin-top:14px;">
+                        <div class="form-group" style="margin-bottom:0;"><label class="m-label">Email *</label><input type="email" name="email" class="m-input" placeholder="your@email.com" required></div>
+                        <div class="form-group" style="margin-bottom:0;"><label class="m-label">Phone</label><input type="tel" name="phone" class="m-input" placeholder="+60 12 345 6789"></div>
+                    </div>
+                    <div class="form-group" style="margin-top:14px;">
+                        <label class="m-label">Service Needed *</label>
+                        <select name="service_interest" class="m-select" required id="enq-service-select"><option value="">Select service...</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="m-label">Company Size</label>
+                        <select name="company_size" class="m-select">
+                            <option value="">Select...</option>
+                            <option value="micro">Micro (&lt;5 employees)</option>
+                            <option value="small">Small (5–75)</option>
+                            <option value="medium">Medium (75–200)</option>
+                            <option value="large">Large (&gt;200)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="m-label">Timeline</label>
+                        <select name="timeline" class="m-select">
+                            <option value="">Select...</option>
+                            <option value="urgent">Urgent — within 1 month</option>
+                            <option value="3months">Within 3 months</option>
+                            <option value="6months">Within 6 months</option>
+                            <option value="planning">Just planning ahead</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="m-label">Message *</label>
+                        <textarea name="message" class="m-textarea" placeholder="Describe what you need, your current ESG status, reporting requirements, and any specific challenges..." required></textarea>
+                    </div>
+                    <div style="font-size:11px;color:var(--sub);margin-bottom:14px;line-height:1.5;"><i class="fas fa-shield-alt mr-1" style="color:var(--indigo)"></i> Your enquiry is forwarded to the provider within 1 business day. EmittiF.io does not share your data with third parties.</div>
+                    <button type="submit" class="submit-btn" id="submit-btn"><i class="fas fa-paper-plane"></i> Send Enquiry</button>
+                </form>
+            </div>
+            <div class="success-state" id="enquiry-success">
+                <i class="fas fa-check-circle"></i>
+                <h3>Enquiry Sent!</h3>
+                <p>Your enquiry has been submitted successfully. The provider will be in touch within <strong>1–2 business days</strong>.</p>
+                <button onclick="closeEnquiry()" style="margin-top:20px;padding:10px 24px;background:var(--indigo-dk);color:#a5b4fc;border:1px solid rgba(99,102,241,0.4);border-radius:10px;font-family:'Satoshi',sans-serif;font-weight:700;font-size:13px;cursor:pointer;">Done</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── JOIN AS PROVIDER MODAL ── -->
+<div id="listingModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h3>Join as ESG Provider</h3>
+            <button class="modal-close" onclick="document.getElementById('listingModal').classList.remove('active');document.body.style.overflow=''"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:12px;padding:14px 16px;margin-bottom:20px;">
+                <div style="font-size:13px;font-weight:700;color:#3730a3;margin-bottom:4px;"><i class="fas fa-star mr-1" style="color:var(--amber)"></i> Why list on EmittiF.io?</div>
+                <div style="font-size:12px;color:#4338ca;line-height:1.7;">Reach Malaysian SMEs actively seeking ESG services · Verified badge builds trust · Direct enquiries sent to you · No commission — flat listing fee only</div>
+            </div>
+            <form id="listingForm">
+                <div class="form-row">
+                    <div class="form-group" style="margin-bottom:0;"><label class="m-label">Firm Name *</label><input type="text" name="biz_name" class="m-input" placeholder="Your firm name" required></div>
+                    <div class="form-group" style="margin-bottom:0;"><label class="m-label">Primary Service *</label>
+                        <select name="biz_category" class="m-select" required>
+                            <option value="">Select...</option>
+                            <option value="report">ESG Report Writing</option>
+                            <option value="ghg">GHG Verification & Auditing</option>
+                            <option value="bursa">Bursa Malaysia Advisory</option>
+                            <option value="training">ESG Training & Workshops</option>
+                            <option value="strategy">Sustainability Strategy</option>
+                            <option value="tcfd">TCFD & Climate Risk</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row" style="margin-top:14px;">
+                    <div class="form-group" style="margin-bottom:0;"><label class="m-label">Contact Person *</label><input type="text" name="contact" class="m-input" placeholder="Full name" required></div>
+                    <div class="form-group" style="margin-bottom:0;"><label class="m-label">Email *</label><input type="email" name="biz_email" class="m-input" placeholder="contact@firm.com" required></div>
+                </div>
+                <div class="form-row" style="margin-top:14px;">
+                    <div class="form-group" style="margin-bottom:0;"><label class="m-label">WhatsApp *</label><input type="tel" name="biz_whatsapp" class="m-input" placeholder="+60 12 345 6789" required></div>
+                    <div class="form-group" style="margin-bottom:0;"><label class="m-label">Website</label><input type="url" name="biz_website" class="m-input" placeholder="https://yourfirm.com"></div>
+                </div>
+                <div class="form-group" style="margin-top:14px;"><label class="m-label">Location *</label><input type="text" name="biz_location" class="m-input" placeholder="e.g. Kuala Lumpur, Selangor" required></div>
+                <div class="form-group"><label class="m-label">Brief Description *</label><textarea name="biz_desc" class="m-textarea" style="min-height:80px;" placeholder="Describe your firm's expertise, years of experience, and key services..." required></textarea></div>
+                <div class="form-group"><label class="m-label">Certifications / Accreditations</label><input type="text" name="biz_certs" class="m-input" placeholder="e.g. ACCA, CPA, ISO 14001 Lead Auditor, SIRIM accredited"></div>
+                <button type="submit" class="submit-btn" style="background:var(--indigo-dk);color:#a5b4fc;border:1px solid rgba(99,102,241,0.4);"><i class="fas fa-briefcase"></i> Submit Application</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const CAT_LABELS = { report:'ESG Report Writing', ghg:'GHG Verification & Audit', bursa:'Bursa Advisory', training:'ESG Training', strategy:'Sustainability Strategy', tcfd:'TCFD & Climate Risk' };
+const CAT_CLASS  = { report:'cat-report', ghg:'cat-ghg', bursa:'cat-bursa', training:'cat-training', strategy:'cat-strategy', tcfd:'cat-tcfd' };
+
+const PROVIDERS = [
+    // ── ESG REPORT WRITING ──
+    { id:1, cat:'report', name:'ReportESG Malaysia', logo:'📝', tagline:'Full-service ESG report writing aligned to GRI Standards, Bursa Sustainability Statement, and UN SDGs', tags:['GRI','Bursa','UN SDGs','Annual Report'], rating:4.9, reviews:61, location:'Kuala Lumpur', verified:true, featured:true, wa:'+60123456789', services:['Bursa Sustainability Statement','GRI Standards Report','Integrated Annual Report','ESG Data Compilation','Report Review & Editing'] },
+    { id:2, cat:'report', name:'GreenScript MY', logo:'🖊️', tagline:'Bilingual ESG reports (EN/BM) for SMEs and listed companies — fast turnaround, affordable pricing', tags:['Bilingual','SME','Fast','Affordable'], rating:4.7, reviews:38, location:'Selangor', verified:true, featured:false, wa:'+60129876543', services:['Sustainability Report','ESG Summary Report','Stakeholder Communication','Data Narrative Writing'] },
+    { id:3, cat:'report', name:'Sustain Writers', logo:'✍️', tagline:'Specialist ESG copywriting and materiality reporting for Malaysian PLCs', tags:['PLC','Materiality','Copywriting'], rating:4.6, reviews:24, location:'Penang', verified:true, featured:false, wa:'+60111234567', services:['Materiality Assessment Report','ESG Narrative','Board Statement','SDG Mapping Report'] },
+    { id:4, cat:'report', name:'DataESG Pro', logo:'📊', tagline:'Data-driven ESG reporting with interactive dashboards and benchmarking against sector peers', tags:['Data','Dashboard','Benchmarking','Sector'], rating:4.8, reviews:42, location:'Kuala Lumpur', verified:true, featured:false, wa:'+60167654321', services:['ESG Data Management','Interactive Dashboard','Sector Benchmarking','Report Automation'] },
+
+    // ── GHG VERIFICATION ──
+    { id:5, cat:'ghg', name:'VerifyCarbon MY', logo:'🔬', tagline:'SIRIM-accredited GHG inventory verification — Scope 1, 2 & 3 assurance for Bursa compliance', tags:['SIRIM','Scope 1-3','Assurance','Bursa'], rating:4.9, reviews:55, location:'Kuala Lumpur', verified:true, featured:true, wa:'+60123459876', services:['GHG Inventory Verification','Scope 3 Assessment','Limited Assurance','Reasonable Assurance','Carbon Footprint Audit'] },
+    { id:6, cat:'ghg', name:'AuditGreen MY', logo:'🔍', tagline:'Environmental audit and ISO 14064 GHG quantification for manufacturing and logistics companies', tags:['ISO 14064','Manufacturing','Logistics','Environmental'], rating:4.7, reviews:33, location:'Selangor', verified:true, featured:false, wa:'+60196543210', services:['ISO 14064 Verification','Environmental Audit','GHG Quantification','Energy Audit'] },
+    { id:7, cat:'ghg', name:'CarbonCheck', logo:'✅', tagline:'Third-party carbon accounting reviews and emission factor validation for Malaysian SMEs', tags:['Carbon Accounting','SME','Validation','Third-party'], rating:4.5, reviews:19, location:'Johor Bahru', verified:true, featured:false, wa:'+60127890123', services:['Carbon Accounting Review','Emission Factor Validation','GHG Data Quality Check','SME Carbon Report'] },
+    { id:8, cat:'ghg', name:'EnviroVerify', logo:'🌿', tagline:'Full environmental compliance audit — DOE, EIA review, and annual emissions reporting', tags:['DOE','EIA','Compliance','Annual'], rating:4.6, reviews:28, location:'Penang', verified:false, featured:false, wa:'+60112345678', services:['DOE Compliance Audit','EIA Review','Annual Emissions Report','Environmental Compliance'] },
+
+    // ── BURSA ADVISORY ──
+    { id:9, cat:'bursa', name:'BursaESG Advisors', logo:'📈', tagline:'Dedicated Bursa Malaysia ESG reporting advisory — from baseline assessment to final submission', tags:['Bursa','Listed','Submission','Baseline'], rating:4.9, reviews:72, location:'Kuala Lumpur', verified:true, featured:true, wa:'+60123450000', services:['Bursa ESG Baseline','Gap Analysis','Submission Support','Board ESG Briefing','Annual Review'] },
+    { id:10, cat:'bursa', name:'ListedCo Consult', logo:'🏢', tagline:'ESG governance and Bursa Main/ACE Market sustainability compliance for listed entities', tags:['Main Market','ACE Market','Governance','Compliance'], rating:4.8, reviews:46, location:'Kuala Lumpur', verified:true, featured:false, wa:'+60167890000', services:['Bursa Governance Advisory','Main Market Compliance','ACE Market ESG','Board Sustainability Policy'] },
+    { id:11, cat:'bursa', name:'SME Bursa Ready', logo:'🎯', tagline:'Helping SMEs prepare for Bursa ESG requirements ahead of mandatory deadlines', tags:['SME','Readiness','Deadline','Advisory'], rating:4.6, reviews:31, location:'Shah Alam', verified:true, featured:false, wa:'+60192223344', services:['Bursa Readiness Assessment','SME ESG Roadmap','Reporting Preparation','Compliance Calendar'] },
+
+    // ── ESG TRAINING ──
+    { id:12, cat:'training', name:'ESG Academy MY', logo:'🎓', tagline:'CPD-accredited ESG training programmes for sustainability officers, boards and finance teams', tags:['CPD','Board','Finance','Accredited'], rating:4.8, reviews:89, location:'Kuala Lumpur', verified:true, featured:true, wa:'+60198765432', services:['Board ESG Awareness','Sustainability Officer Training','GHG Calculation Workshop','GRI Standards Training','ESG for Finance'] },
+    { id:13, cat:'training', name:'GreenSkills MY', logo:'📚', tagline:'Practical ESG skills workshops — data collection, carbon accounting, and reporting tools', tags:['Practical','Workshops','Carbon','Tools'], rating:4.7, reviews:54, location:'Petaling Jaya', verified:true, featured:false, wa:'+60123334444', services:['Carbon Accounting Workshop','ESG Data Collection','Reporting Tools Training','Online ESG Modules'] },
+    { id:14, cat:'training', name:'SustainLearn', logo:'🌱', tagline:'In-house ESG training tailored for Malaysian SMEs — half day and full day formats available', tags:['In-house','SME','Half Day','Full Day'], rating:4.5, reviews:27, location:'Johor', verified:true, featured:false, wa:'+60155556666', services:['In-house ESG Training','SME Sustainability Basics','GHG Awareness','Employee Engagement Training'] },
+
+    // ── SUSTAINABILITY STRATEGY ──
+    { id:15, cat:'strategy', name:'StratSustain', logo:'♟️', tagline:'End-to-end sustainability strategy — materiality, stakeholder engagement, and KPI framework design', tags:['Strategy','Materiality','KPI','Stakeholder'], rating:4.8, reviews:43, location:'Kuala Lumpur', verified:true, featured:true, wa:'+60177778888', services:['Sustainability Strategy','Materiality Assessment','KPI Framework','Stakeholder Mapping','SBTi Target Setting'] },
+    { id:16, cat:'strategy', name:'NetZeroMY', logo:'🌍', tagline:'Science-Based Targets and net zero pathway development for Malaysian companies', tags:['SBTi','Net Zero','Pathway','Science-Based'], rating:4.7, reviews:35, location:'Selangor', verified:true, featured:false, wa:'+60189990000', services:['SBTi Commitment','Net Zero Roadmap','Decarbonisation Strategy','Carbon Reduction Planning'] },
+    { id:17, cat:'strategy', name:'CircularMY', logo:'🔄', tagline:'Circular economy and supply chain sustainability integration for manufacturers and retailers', tags:['Circular Economy','Supply Chain','Manufacturer','Retail'], rating:4.5, reviews:21, location:'Penang', verified:false, featured:false, wa:'+60161112222', services:['Circular Economy Strategy','Supply Chain ESG','Sustainable Procurement','LCA Assessment'] },
+
+    // ── TCFD & CLIMATE RISK ──
+    { id:18, cat:'tcfd', name:'ClimateRisk MY', logo:'🌡️', tagline:'TCFD disclosure specialists — physical and transition risk assessment for Malaysian companies', tags:['TCFD','Physical Risk','Transition Risk','Disclosure'], rating:4.9, reviews:38, location:'Kuala Lumpur', verified:true, featured:true, wa:'+60143334444', services:['TCFD Report','Physical Risk Assessment','Transition Risk Analysis','Climate Scenario Analysis','Board Climate Briefing'] },
+    { id:19, cat:'tcfd', name:'ScenarioMY', logo:'📡', tagline:'Climate scenario analysis and stress testing aligned to IPCC pathways and BNM guidance', tags:['Scenario Analysis','IPCC','BNM','Stress Test'], rating:4.7, reviews:26, location:'Kuala Lumpur', verified:true, featured:false, wa:'+60152223333', services:['Climate Scenario Analysis','BNM Climate Advisory','IPCC Alignment','Financial Risk Modelling'] },
+    { id:20, cat:'tcfd', name:'AdaptMY Consult', logo:'🛡️', tagline:'Climate adaptation planning and resilience strategy for infrastructure and property sectors', tags:['Adaptation','Resilience','Infrastructure','Property'], rating:4.5, reviews:17, location:'Shah Alam', verified:true, featured:false, wa:'+60164445555', services:['Climate Adaptation Plan','Resilience Assessment','Infrastructure Risk','Property Climate Risk'] },
+];
+
+let currentFilter='all', currentSearch='', currentSort='featured', selectedProvider=null;
+
+function renderProviders() {
+    let list=[...PROVIDERS];
+    if(currentFilter!=='all') list=list.filter(p=>p.cat===currentFilter);
+    if(currentSearch){const q=currentSearch.toLowerCase();list=list.filter(p=>p.name.toLowerCase().includes(q)||p.tagline.toLowerCase().includes(q)||p.tags.some(t=>t.toLowerCase().includes(q))||p.location.toLowerCase().includes(q));}
+    if(currentSort==='rating') list.sort((a,b)=>b.rating-a.rating);
+    else if(currentSort==='name') list.sort((a,b)=>a.name.localeCompare(b.name));
+    else list.sort((a,b)=>(b.featured?1:0)-(a.featured?1:0));
+
+    const grid=document.getElementById('provider-grid');
+    const empty=document.getElementById('empty-state');
+    document.getElementById('results-count').textContent=`Showing ${list.length} provider${list.length!==1?'s':''}`;
+
+    if(list.length===0){grid.innerHTML='';empty.style.display='block';return;}
+    empty.style.display='none';
+
+    grid.innerHTML=list.map(p=>`
+        <div class="provider-card">
+            <div class="provider-card-top">
+                <div class="cat-badge ${CAT_CLASS[p.cat]}">${CAT_LABELS[p.cat]}</div>
+                <div class="provider-logo">${p.logo}</div>
+                <div class="provider-name">${p.name}${p.featured?` <span style="font-size:10px;color:var(--amber);font-weight:700;margin-left:4px;">★ Featured</span>`:''}</div>
+                <div class="provider-tagline">${p.tagline}</div>
+                <div class="provider-tags">${p.tags.map(t=>`<span class="provider-tag">${t}</span>`).join('')}</div>
+                <div class="provider-meta">
+                    <div><span class="stars">${'★'.repeat(Math.floor(p.rating))}${p.rating%1?'☆':''}</span> <span style="font-weight:600;color:var(--text)">${p.rating}</span> (${p.reviews})</div>
+                    <div><i class="fas fa-map-marker-alt"></i> ${p.location}</div>
+                </div>
+            </div>
+            <div class="provider-card-footer">
+                <div class="provider-verified">${p.verified?`<i class="fas fa-check-circle"></i> Verified`:`<span style="color:var(--sub)"><i class="fas fa-clock"></i> Pending</span>`}</div>
+                <div class="contact-btns">
+                    <button class="btn-whatsapp" onclick="openWhatsApp('${p.wa}','${p.name}')"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+                    <button class="btn-enquire" onclick="openEnquiry(${p.id})">Enquire</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function filterProviders(cat,el) {
+    currentFilter=cat;
+    document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));
+    el.classList.add('active');
+    renderProviders();
+}
+function searchProviders() { currentSearch=document.getElementById('search-input').value; renderProviders(); }
+function sortProviders() { currentSort=document.getElementById('sort-select').value; renderProviders(); }
+
+function openWhatsApp(number, name) {
+    const msg = encodeURIComponent(`Hi ${name}, I found you on EmittiF.io and would like to enquire about your ESG services.`);
+    const clean = number.replace(/\s/g,'').replace('+','');
+    window.open(`https://wa.me/${clean}?text=${msg}`, '_blank');
+}
+
+function openEnquiry(id) {
+    selectedProvider=PROVIDERS.find(p=>p.id===id);
+    if(!selectedProvider)return;
+    document.getElementById('enq-logo').textContent=selectedProvider.logo;
+    document.getElementById('enq-name').textContent=selectedProvider.name;
+    document.getElementById('enq-cat').textContent=CAT_LABELS[selectedProvider.cat]+' · '+selectedProvider.location;
+    const waLink=document.getElementById('wa-link');
+    const clean=selectedProvider.wa.replace(/\s/g,'').replace('+','');
+    const msg=encodeURIComponent(`Hi ${selectedProvider.name}, I found you on EmittiF.io and would like to enquire about your ESG services.`);
+    waLink.href=`https://wa.me/${clean}?text=${msg}`;
+    const sel=document.getElementById('enq-service-select');
+    sel.innerHTML='<option value="">Select service...</option>'+selectedProvider.services.map(s=>`<option value="${s}">${s}</option>`).join('');
+    document.getElementById('enquiry-form-wrap').style.display='block';
+    document.getElementById('enquiry-success').style.display='none';
+    document.getElementById('enquiryModal').classList.add('active');
+    document.body.style.overflow='hidden';
+}
+
+function closeEnquiry() {
+    document.getElementById('enquiryModal').classList.remove('active');
+    document.body.style.overflow='';
+    document.getElementById('enquiryForm').reset();
+}
+
+function openListingModal() {
+    document.getElementById('listingModal').classList.add('active');
+    document.body.style.overflow='hidden';
+}
+
+document.getElementById('enquiryForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn=document.getElementById('submit-btn');
+    btn.disabled=true; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Sending...';
+    const fd=new FormData(this);
+    const data={provider_id:selectedProvider.id,provider_name:selectedProvider.name,provider_category:selectedProvider.cat,service_type:'esg'};
+    fd.forEach((v,k)=>data[k]=v);
+    try { await fetch('/api/marketplace/enquiry',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); } catch(e){}
+    document.getElementById('enquiry-form-wrap').style.display='none';
+    document.getElementById('enquiry-success').style.display='block';
+    btn.disabled=false; btn.innerHTML='<i class="fas fa-paper-plane"></i> Send Enquiry';
+});
+
+document.getElementById('listingForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const fd=new FormData(this); const data={};
+    fd.forEach((v,k)=>data[k]=v);
+    try { await fetch('/api/marketplace/listing',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); } catch(e){}
+    document.getElementById('listingModal').classList.remove('active');
+    document.body.style.overflow='';
+    showToast('Application submitted! We\'ll be in touch within 2 business days.');
+    this.reset();
+});
+
+function showToast(msg) {
+    const t=document.getElementById('toast');
+    t.innerHTML=`<i class="fas fa-check-circle"></i> ${msg}`;
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'),4000);
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeEnquiry();document.getElementById('listingModal').classList.remove('active');document.body.style.overflow='';}});
+renderProviders();
+</script>
+
+{% endblock %}

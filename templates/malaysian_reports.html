@@ -1,0 +1,611 @@
+{% extends "base.html" %}
+
+{% block title %}Malaysian Reports - EmittiF{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h2 mb-3">🇲🇾 Malaysian Regulatory Reports</h1>
+            <p class="text-muted">Generate compliance reports for NSRF (Bursa Malaysia) and SEDG (SMEs) frameworks.</p>
+        </div>
+    </div>
+
+    <!-- Report Selection Cards -->
+    <div class="row">
+        <!-- NSRF Report Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-building"></i> NSRF - Public Listed Companies
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="card-title">National Sustainability Reporting Framework</h6>
+                    <p class="card-text">Comprehensive reporting for Bursa Malaysia listed companies with full Scope 3 breakdown (15 categories).</p>
+                    
+                    <div class="mb-3">
+                        <strong>Mandatory Requirements:</strong>
+                        <ul class="small">
+                            <li>Scope 1, 2, and 3 emissions</li>
+                            <li>All 15 Scope 3 categories</li>
+                            <li>Climate governance & strategy</li>
+                            <li>Targets & performance metrics</li>
+                            <li>Third-party assurance</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="alert alert-info small">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Bursa Malaysia Requirement:</strong> Mandatory for Main Market listed companies
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-primary" onclick="generateNSRFReport()">
+                        <i class="bi bi-file-earmark-text"></i> Generate NSRF Report
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEDG Report Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 border-success">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-buildings"></i> SEDG - SMEs
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="card-title">Simplified ESG Disclosure Guide</h6>
+                    <p class="card-text">Tiered reporting for SMEs with Basic, Intermediate, and Advanced options.</p>
+                    
+                    <div class="mb-3">
+                        <strong>Select Reporting Tier:</strong>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="radio" name="sedgTier" id="tierBasic" value="Basic" checked>
+                            <label class="form-check-label" for="tierBasic">
+                                <strong>Basic Tier</strong> - Essential metrics only
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="sedgTier" id="tierIntermediate" value="Intermediate">
+                            <label class="form-check-label" for="tierIntermediate">
+                                <strong>Intermediate Tier</strong> - Expanded reporting
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="sedgTier" id="tierAdvanced" value="Advanced">
+                            <label class="form-check-label" for="tierAdvanced">
+                                <strong>Advanced Tier</strong> - Full ESG disclosure
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-success small">
+                        <i class="bi bi-check-circle"></i>
+                        <strong>Voluntary Framework:</strong> Progressive adoption encouraged for SMEs
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-success" onclick="generateSEDGReport()">
+                        <i class="bi bi-file-earmark-text"></i> Generate SEDG Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Available Templates -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Available Report Templates</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Template</th>
+                                    <th>Framework</th>
+                                    <th>Applicable To</th>
+                                    <th>Version</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for template in templates %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ template.template_name }}</strong>
+                                        {% if template.template_type == 'public_listed' %}
+                                        <span class="badge bg-primary ms-2">NSRF</span>
+                                        {% else %}
+                                        <span class="badge bg-success ms-2">SEDG</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ template.framework }}</td>
+                                    <td>{{ template.applicable_to }}</td>
+                                    <td><span class="badge bg-secondary">{{ template.version }}</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                onclick="previewTemplate('{{ template.template_id }}')">
+                                            <i class="bi bi-eye"></i> Preview
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-dark" 
+                                                onclick="useTemplate('{{ template.template_id }}')">
+                                            <i class="bi bi-play-circle"></i> Use
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Preview Area -->
+    <div class="row mt-4 d-none" id="reportPreviewSection">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Report Preview</h5>
+                    <div>
+                        <button class="btn btn-sm btn-light" onclick="downloadReport()">
+                            <i class="bi bi-download"></i> Download PDF
+                        </button>
+                        <button class="btn btn-sm btn-light" onclick="exportReportJSON()">
+                            <i class="bi bi-code-slash"></i> Export JSON
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="reportPreviewContent">
+                        <!-- Report will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Generation Modal -->
+<div class="modal fade" id="reportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reportModalTitle">Generating Report</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="reportProgress" class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3" id="reportProgressText">Preparing your report...</p>
+                </div>
+                <div id="reportSuccess" class="d-none text-center">
+                    <i class="bi bi-check-circle display-1 text-success"></i>
+                    <h4 class="mt-3">Report Generated Successfully!</h4>
+                    <p>Your compliance report is ready to view.</p>
+                </div>
+                <div id="reportError" class="d-none text-center">
+                    <i class="bi bi-exclamation-circle display-1 text-danger"></i>
+                    <h4 class="mt-3">Report Generation Failed</h4>
+                    <p id="errorMessage">An error occurred while generating the report.</p>
+                </div>
+            </div>
+            <div class="modal-footer d-none" id="reportModalFooter">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="viewGeneratedReport()">View Report</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Template Preview Modal -->
+<div class="modal fade" id="templatePreviewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Template Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="templatePreviewContent">
+                <!-- Template preview will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+let generatedReport = null;
+
+function generateNSRFReport() {
+    showReportModal('Generating NSRF Report');
+    
+    const reportingPeriod = new Date().getFullYear();
+    
+    fetch('/api/generate-malaysian-report', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            report_type: 'nsrf',
+            reporting_period: reportingPeriod
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            generatedReport = data.report;
+            showReportSuccess();
+        } else {
+            showReportError(data.message || 'Failed to generate report');
+        }
+    })
+    .catch(error => {
+        showReportError('Network error: ' + error.message);
+    });
+}
+
+function generateSEDGReport() {
+    const tier = document.querySelector('input[name="sedgTier"]:checked').value;
+    
+    showReportModal(`Generating SEDG Report (${tier} Tier)`);
+    
+    fetch('/api/generate-malaysian-report', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            report_type: 'sedg',
+            reporting_tier: tier
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            generatedReport = data.report;
+            showReportSuccess();
+        } else {
+            showReportError(data.message || 'Failed to generate report');
+        }
+    })
+    .catch(error => {
+        showReportError('Network error: ' + error.message);
+    });
+}
+
+function showReportModal(title) {
+    document.getElementById('reportModalTitle').textContent = title;
+    document.getElementById('reportProgress').classList.remove('d-none');
+    document.getElementById('reportSuccess').classList.add('d-none');
+    document.getElementById('reportError').classList.add('d-none');
+    document.getElementById('reportModalFooter').classList.add('d-none');
+    
+    const modal = new bootstrap.Modal(document.getElementById('reportModal'));
+    modal.show();
+}
+
+function showReportSuccess() {
+    document.getElementById('reportProgress').classList.add('d-none');
+    document.getElementById('reportSuccess').classList.remove('d-none');
+    document.getElementById('reportModalFooter').classList.remove('d-none');
+}
+
+function showReportError(message) {
+    document.getElementById('reportProgress').classList.add('d-none');
+    document.getElementById('reportError').classList.remove('d-none');
+    document.getElementById('errorMessage').textContent = message;
+}
+
+function viewGeneratedReport() {
+    // Hide modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('reportModal'));
+    modal.hide();
+    
+    // Show report preview section
+    document.getElementById('reportPreviewSection').classList.remove('d-none');
+    
+    // Display report
+    displayReport(generatedReport);
+    
+    // Scroll to preview
+    document.getElementById('reportPreviewSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayReport(report) {
+    let html = '';
+    
+    if (report.report_framework) {
+        html += `
+            <div class="report-header mb-4">
+                <h3>${report.report_framework}</h3>
+                <p class="text-muted">Generated on ${report.generated_date || new Date().toLocaleDateString()}</p>
+            </div>
+        `;
+    }
+    
+    // NSRF Report Display
+    if (report.report_framework && report.report_framework.includes('NSRF')) {
+        html += displayNSRFReport(report);
+    }
+    // SEDG Report Display
+    else if (report.report_framework && report.report_framework.includes('SEDG')) {
+        html += displaySEDGReport(report);
+    }
+    // Generic template display
+    else {
+        html += displayGenericReport(report);
+    }
+    
+    document.getElementById('reportPreviewContent').innerHTML = html;
+}
+
+function displayNSRFReport(report) {
+    return `
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        Organization Information
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Company:</strong> ${report.organization?.name || 'N/A'}</p>
+                        <p><strong>Reporting Period:</strong> ${report.reporting_period || 'N/A'}</p>
+                        <p><strong>Bursa Listing:</strong> ${report.organization?.bursa_listing || 'To be provided'}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        Emissions Summary
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Scope 1:</strong> ${report.emissions_inventory?.scope1_total?.toLocaleString() || 0} kg CO₂e</p>
+                        <p><strong>Scope 2:</strong> ${report.emissions_inventory?.scope2_total?.toLocaleString() || 0} kg CO₂e</p>
+                        <p><strong>Scope 3:</strong> ${report.emissions_inventory?.scope3_total?.toLocaleString() || 0} kg CO₂e</p>
+                        <p><strong>Total:</strong> ${(report.emissions_inventory?.scope1_total + report.emissions_inventory?.scope2_total + report.emissions_inventory?.scope3_total).toLocaleString() || 0} kg CO₂e</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-3">
+            <div class="card-header bg-secondary text-white">
+                Scope 3 Categories (15 Categories)
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    ${report.emissions_inventory?.scope3_categories ? report.emissions_inventory.scope3_categories.map((category, index) => `
+                        <div class="col-md-4 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="scope3cat${index}" ${report.emissions_inventory.scope3_breakdown && report.emissions_inventory.scope3_breakdown[category.toLowerCase().replace(/ /g, '_')] ? 'checked' : ''}>
+                                <label class="form-check-label" for="scope3cat${index}">
+                                    ${category}
+                                </label>
+                            </div>
+                        </div>
+                    `).join('') : '<p class="text-muted">No Scope 3 categories defined</p>'}
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-3">
+            <div class="card-header bg-dark text-white">
+                Audit Trail Summary
+            </div>
+            <div class="card-body">
+                <p><strong>Data Entries Logged:</strong> ${report.audit_trail_summary?.data_entries_logged || 0}</p>
+                <p><strong>Source Documents Linked:</strong> Available in verification mode</p>
+                <p><strong>Calculation Transparency:</strong> Full breakdown available for all metrics</p>
+                <p><strong>Report Status:</strong> ${report.assurance?.assurance_level || 'Limited assurance'}</p>
+            </div>
+        </div>
+    `;
+}
+
+function displaySEDGReport(report) {
+    const tier = report.reporting_tier || 'Basic';
+    const tierColors = {
+        'Basic': 'bg-info',
+        'Intermediate': 'bg-warning',
+        'Advanced': 'bg-success'
+    };
+    
+    return `
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card mb-3">
+                    <div class="card-header ${tierColors[tier]} text-white">
+                        <strong>SME Category:</strong> ${report.organization?.sme_category || 'To be specified'}
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Reporting Tier:</strong> <span class="badge ${tierColors[tier]}">${tier}</span></p>
+                        <p><strong>Company:</strong> ${report.organization?.name || 'N/A'}</p>
+                        <p><strong>Period:</strong> ${report.organization?.reporting_period || 'N/A'}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="card mb-3">
+                    <div class="card-header bg-success text-white">
+                        ${tier} Tier Requirements
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            ${report.applicable_requirements ? report.applicable_requirements.map(req => `<li>${req}</li>`).join('') : '<li>No requirements specified</li>'}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-3">
+            <div class="card-header bg-dark text-white">
+                Environmental Metrics
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Energy Consumption</h6>
+                        <p><strong>Electricity:</strong> ${report.environmental_metrics?.energy_consumption?.electricity_kwh?.toLocaleString() || 0} kWh</p>
+                        <p><strong>Fuel:</strong> ${report.environmental_metrics?.energy_consumption?.fuel_liters?.toLocaleString() || 0} liters</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Emissions Summary</h6>
+                        <p><strong>Scope 1:</strong> ${report.environmental_metrics?.emissions_summary?.scope1_total?.toLocaleString() || 0} kg CO₂e</p>
+                        <p><strong>Scope 2:</strong> ${report.environmental_metrics?.emissions_summary?.scope2_total?.toLocaleString() || 0} kg CO₂e</p>
+                        <p><strong>Scope 3:</strong> ${report.environmental_metrics?.emissions_summary?.scope3_total?.toLocaleString() || 0} kg CO₂e</p>
+                        <p><strong>Total:</strong> ${report.environmental_metrics?.emissions_summary?.total_emissions?.toLocaleString() || 0} kg CO₂e</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            <strong>Simplification Features:</strong> 
+            ${report.simplification_features ? Object.entries(report.simplification_features).map(([key, value]) => `${key}: ${value}`).join(', ') : 'Template-based, step-by-step guidance, automated calculations, Malaysian context'}
+        </div>
+    `;
+}
+
+function displayGenericReport(report) {
+    return `
+        <div class="card mb-3">
+            <div class="card-header bg-dark text-white">
+                ${report.template_name || 'Report'}
+            </div>
+            <div class="card-body">
+                <p><strong>Framework:</strong> ${report.framework || 'N/A'}</p>
+                <p><strong>Version:</strong> ${report.version || 'N/A'}</p>
+                <p><strong>Generated:</strong> ${report.generated_date || new Date().toLocaleDateString()}</p>
+                
+                ${report.structure ? `
+                    <h6 class="mt-3">Report Structure</h6>
+                    <pre class="bg-light p-3" style="max-height: 300px; overflow: auto;">${JSON.stringify(report.structure, null, 2)}</pre>
+                ` : ''}
+            </div>
+        </div>
+    `;
+}
+
+function previewTemplate(templateId) {
+    const template = {{ templates|tojson|safe }}.find(t => t.template_id === templateId);
+    
+    if (template) {
+        let html = `
+            <h4>${template.template_name}</h4>
+            <p class="text-muted">${template.applicable_to}</p>
+            
+            <div class="mb-3">
+                <span class="badge ${template.template_type === 'public_listed' ? 'bg-primary' : 'bg-success'}">
+                    ${template.framework}
+                </span>
+                <span class="badge bg-secondary">Version ${template.version}</span>
+            </div>
+            
+            <h6>Structure Preview:</h6>
+        `;
+        
+        try {
+            const structure = JSON.parse(template.structure_json);
+            html += `<pre class="bg-light p-3" style="max-height: 400px; overflow: auto;">${JSON.stringify(structure, null, 2)}</pre>`;
+        } catch (e) {
+            html += `<p class="text-muted">Could not parse template structure</p>`;
+        }
+        
+        document.getElementById('templatePreviewContent').innerHTML = html;
+        const modal = new bootstrap.Modal(document.getElementById('templatePreviewModal'));
+        modal.show();
+    }
+}
+
+function useTemplate(templateId) {
+    showReportModal('Generating Report from Template');
+    
+    fetch('/api/generate-malaysian-report', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            template_id: templateId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            generatedReport = data.report;
+            showReportSuccess();
+        } else {
+            showReportError(data.message || 'Failed to generate report');
+        }
+    });
+}
+
+function downloadReport() {
+    if (!generatedReport) {
+        alert('No report to download');
+        return;
+    }
+    
+    fetch('/api/export-report-pdf', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ report: generatedReport })
+    })
+    .then(response => response.blob())
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `malaysian_report_${new Date().toISOString().slice(0,10)}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    });
+}
+
+function exportReportJSON() {
+    if (!generatedReport) {
+        alert('No report to export');
+        return;
+    }
+    
+    const dataStr = JSON.stringify(generatedReport, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = `malaysian_report_${new Date().toISOString().slice(0,10)}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+}
+</script>
+
+<style>
+.report-header {
+    border-bottom: 3px solid #0F3B2E;
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+}
+
+.card-header {
+    font-weight: bold;
+}
+
+.form-check-input:checked {
+    background-color: #0F3B2E;
+    border-color: #0F3B2E;
+}
+</style>
+{% endblock %}

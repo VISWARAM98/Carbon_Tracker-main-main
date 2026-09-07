@@ -1,0 +1,580 @@
+{% extends "base_auth.html" %}
+{% block content %}
+
+<style>
+@import url('https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --bg:       #f4f7f4;
+    --surface:  #ffffff;
+    --card:     #ffffff;
+    --border:   #e4ede6;
+    --border2:  #ccddd0;
+    --dark:     #0b0f0c;
+    --dark-s:   #111612;
+    --dark-b:   #1e2d21;
+    --green:    #16a34a;
+    --green-lt: #22c55e;
+    --green-dk: #052e16;
+    --mint:     #4ade80;
+    --amber:    #d97706;
+    --red:      #dc2626;
+    --blue:     #2563eb;
+    --purple:   #7c3aed;
+    --teal:     #0d9488;
+    --text:     #0f1f15;
+    --muted:    #52725e;
+    --sub:      #8aab93;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+.mp { font-family: 'Satoshi', sans-serif; background: var(--bg); min-height: 100vh; color: var(--text); }
+.mp h1,.mp h2,.mp h3,.mp h4 { font-family: 'ClashDisplay','Satoshi',sans-serif; }
+
+/* ── HERO ── */
+.mp-hero {
+    background: var(--dark-s);
+    border-bottom: 1px solid var(--dark-b);
+    padding: 40px 32px 48px;
+    position: relative; overflow: hidden;
+}
+.mp-hero::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(34,197,94,0.4), transparent);
+}
+.mp-hero-inner { max-width: 1280px; margin: 0 auto; }
+.mp-hero-badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2);
+    color: #4ade80; padding: 5px 14px; border-radius: 4px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 18px;
+}
+.mp-hero h1 {
+    font-size: clamp(26px,4vw,40px); font-weight: 700;
+    color: white; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 10px;
+}
+.mp-hero h1 span { color: #4ade80; }
+.mp-hero p { color: rgba(255,255,255,0.5); font-size: 14px; max-width: 520px; line-height: 1.7; }
+.mp-hero-stats { display: flex; gap: 36px; margin-top: 28px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.06); flex-wrap: wrap; }
+.mp-hero-stat-val { font-family: 'ClashDisplay','Satoshi',sans-serif; font-size: 22px; font-weight: 700; color: #4ade80; letter-spacing: -0.02em; }
+.mp-hero-stat-label { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ── FILTERS ── */
+.mp-filters {
+    background: white; border-bottom: 1px solid var(--border);
+    padding: 0 32px; position: sticky; top: 0; z-index: 10;
+}
+.mp-filters-inner { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; gap: 0; overflow-x: auto; }
+.filter-tab {
+    padding: 16px 20px; font-size: 13px; font-weight: 600;
+    color: var(--muted); border: none; background: none; cursor: pointer;
+    border-bottom: 2px solid transparent; white-space: nowrap;
+    transition: all 0.2s; font-family: 'Satoshi',sans-serif;
+    display: flex; align-items: center; gap: 7px;
+}
+.filter-tab:hover { color: var(--text); }
+.filter-tab.active { color: var(--green); border-bottom-color: var(--green); }
+.filter-tab .tab-count {
+    font-size: 10px; font-weight: 700; padding: 2px 7px;
+    border-radius: 100px; background: var(--bg);
+}
+.filter-tab.active .tab-count { background: rgba(22,163,74,0.1); color: var(--green); }
+
+/* ── BODY ── */
+.mp-body { max-width: 1280px; margin: 0 auto; padding: 32px; }
+
+/* ── SEARCH BAR ── */
+.mp-search-row { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+.mp-search {
+    flex: 1; display: flex; align-items: center; gap: 10px;
+    background: white; border: 1px solid var(--border2); border-radius: 10px;
+    padding: 10px 16px;
+}
+.mp-search i { color: var(--sub); font-size: 14px; }
+.mp-search input { border: none; outline: none; font-family: 'Satoshi',sans-serif; font-size: 14px; color: var(--text); background: none; flex: 1; }
+.mp-search input::placeholder { color: var(--sub); }
+.mp-sort {
+    padding: 10px 16px; border: 1px solid var(--border2); border-radius: 10px;
+    background: white; font-family: 'Satoshi',sans-serif; font-size: 13px;
+    color: var(--text); outline: none; cursor: pointer; appearance: none;
+}
+.mp-count { font-size: 13px; color: var(--muted); white-space: nowrap; }
+
+/* ── PROVIDER GRID ── */
+.provider-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; }
+
+/* ── PROVIDER CARD ── */
+.provider-card {
+    background: white; border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+    transition: all 0.2s; cursor: pointer;
+    display: flex; flex-direction: column;
+}
+.provider-card:hover { border-color: var(--green); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(22,163,74,0.08); }
+.provider-card-top { padding: 20px 20px 16px; flex: 1; }
+.provider-card-cat {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
+    padding: 3px 9px; border-radius: 4px; margin-bottom: 14px;
+}
+.cat-offset   { background: rgba(22,163,74,0.1);  color: #15803d; }
+.cat-solar    { background: rgba(217,119,6,0.1);  color: #b45309; }
+.cat-esg      { background: rgba(124,58,237,0.1); color: #6d28d9; }
+.cat-carbon   { background: rgba(37,99,235,0.1);  color: #1d4ed8; }
+.cat-waste    { background: rgba(13,148,136,0.1); color: #0f766e; }
+
+.provider-logo {
+    width: 44px; height: 44px; border-radius: 10px;
+    background: var(--bg); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; margin-bottom: 12px; font-family: 'ClashDisplay','Satoshi',sans-serif;
+    font-weight: 700; font-size: 16px; color: var(--green);
+}
+.provider-name { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.provider-tagline { font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 14px; }
+
+.provider-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px; }
+.provider-tag {
+    font-size: 10px; font-weight: 600; padding: 3px 8px;
+    border-radius: 4px; background: var(--bg); color: var(--muted);
+    border: 1px solid var(--border);
+}
+
+.provider-meta { display: flex; align-items: center; gap: 14px; font-size: 11px; color: var(--sub); }
+.provider-meta i { font-size: 11px; }
+.provider-rating { display: flex; align-items: center; gap: 4px; }
+.stars { color: #f59e0b; font-size: 10px; }
+
+.provider-card-footer {
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+    background: #fafcfa;
+    display: flex; align-items: center; justify-content: space-between;
+}
+.provider-verified {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 600; color: var(--green);
+}
+.enquire-btn {
+    padding: 7px 16px; background: var(--green-dk);
+    color: #4ade80; border: 1px solid var(--green);
+    border-radius: 8px; font-family: 'Satoshi',sans-serif;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    transition: all 0.2s;
+}
+.enquire-btn:hover { background: var(--green); color: white; }
+
+/* ── FEATURED BANNER ── */
+.featured-banner {
+    background: linear-gradient(135deg, var(--green-dk) 0%, #0a3d1f 100%);
+    border: 1px solid rgba(34,197,94,0.2);
+    border-radius: 16px; padding: 24px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 28px; gap: 20px; flex-wrap: wrap;
+}
+.featured-banner-text h3 { font-size: 16px; font-weight: 700; color: white; margin-bottom: 5px; }
+.featured-banner-text p { font-size: 13px; color: rgba(255,255,255,0.5); }
+.featured-banner-btn {
+    padding: 10px 22px; background: rgba(34,197,94,0.15);
+    color: #4ade80; border: 1px solid rgba(34,197,94,0.3);
+    border-radius: 8px; font-family: 'Satoshi',sans-serif;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    transition: all 0.2s; white-space: nowrap;
+}
+.featured-banner-btn:hover { background: var(--green); color: white; border-color: var(--green); }
+
+/* ── EMPTY STATE ── */
+.mp-empty { text-align: center; padding: 64px 20px; color: var(--muted); }
+.mp-empty i { font-size: 40px; display: block; margin-bottom: 16px; opacity: 0.3; }
+.mp-empty h3 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+
+/* ── MODAL ── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 50; display: none; align-items: center; justify-content: center; padding: 16px; }
+.modal-overlay.active { display: flex; }
+.modal-box { background: white; border-radius: 20px; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; animation: modalIn 0.25s ease; }
+@keyframes modalIn { from{opacity:0;transform:translateY(16px) scale(0.98)}to{opacity:1;transform:none} }
+.modal-head { padding: 22px 24px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.modal-head h3 { font-size: 17px; font-weight: 700; color: var(--text); }
+.modal-close { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; padding: 4px; }
+.modal-close:hover { color: var(--text); }
+.modal-body { padding: 24px; }
+.modal-provider-info { display: flex; align-items: center; gap: 14px; padding: 16px; background: var(--bg); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 22px; }
+.modal-provider-logo { width: 44px; height: 44px; border-radius: 10px; background: white; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.modal-provider-name { font-weight: 700; font-size: 15px; color: var(--text); }
+.modal-provider-cat { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.m-label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 7px; }
+.m-input,.m-select,.m-textarea {
+    width: 100%; padding: 10px 14px;
+    background: white; border: 1.5px solid var(--border2); border-radius: 10px;
+    color: var(--text); font-family: 'Satoshi',sans-serif; font-size: 14px;
+    outline: none; transition: border-color 0.2s; appearance: none;
+}
+.m-input:focus,.m-select:focus,.m-textarea:focus { border-color: var(--green); }
+.m-input::placeholder,.m-textarea::placeholder { color: var(--sub); }
+.m-textarea { resize: vertical; min-height: 100px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.form-group { margin-bottom: 14px; }
+.submit-btn {
+    width: 100%; padding: 13px; background: var(--green-dk);
+    color: #4ade80; border: 1px solid var(--green);
+    border-radius: 12px; font-family: 'ClashDisplay','Satoshi',sans-serif;
+    font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.submit-btn:hover { background: var(--green); color: white; }
+.submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.success-state { text-align: center; padding: 32px 20px; display: none; }
+.success-state i { font-size: 48px; color: var(--green); display: block; margin-bottom: 16px; }
+.success-state h3 { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.success-state p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+.toast { position: fixed; bottom: 24px; right: 24px; z-index: 9999; padding: 14px 20px; border-radius: 12px; color: white; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 10px; background: var(--green); transform: translateY(80px); opacity: 0; transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1); font-family: 'Satoshi',sans-serif; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+.toast.show { transform: translateY(0); opacity: 1; }
+
+@media(max-width:900px) {
+    .provider-grid { grid-template-columns: 1fr 1fr; }
+    .mp-body { padding: 20px 16px; }
+    .mp-hero { padding: 28px 16px 36px; }
+    .mp-filters { padding: 0 16px; }
+}
+@media(max-width:600px) {
+    .provider-grid { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+}
+</style>
+
+<div class="mp">
+
+<!-- ── HERO ── -->
+<div class="mp-hero">
+    <div class="mp-hero-inner">
+        <div class="mp-hero-badge"><i class="fas fa-store"></i> Verified Providers</div>
+        <h1>Carbon <span>Marketplace</span></h1>
+        <p>Discover verified Malaysian green solution providers — offset your emissions, go solar, get certified, and achieve net zero with trusted partners.</p>
+        <div class="mp-hero-stats">
+            <div><div class="mp-hero-stat-val" id="stat-providers">18</div><div class="mp-hero-stat-label">Verified Providers</div></div>
+            <div><div class="mp-hero-stat-val">5</div><div class="mp-hero-stat-label">Categories</div></div>
+            <div><div class="mp-hero-stat-val">MY</div><div class="mp-hero-stat-label">Malaysia Focused</div></div>
+            <div><div class="mp-hero-stat-val">Free</div><div class="mp-hero-stat-label">To Enquire</div></div>
+        </div>
+    </div>
+</div>
+
+<!-- ── FILTER TABS ── -->
+<div class="mp-filters">
+    <div class="mp-filters-inner">
+        <button class="filter-tab active" onclick="filterProviders('all',this)"><i class="fas fa-th"></i> All <span class="tab-count" id="cnt-all">18</span></button>
+        <button class="filter-tab" onclick="filterProviders('offset',this)"><i class="fas fa-leaf"></i> Carbon Offset <span class="tab-count" id="cnt-offset">4</span></button>
+        <button class="filter-tab" onclick="filterProviders('solar',this)"><i class="fas fa-solar-panel"></i> Solar & Renewable <span class="tab-count" id="cnt-solar">4</span></button>
+        <button class="filter-tab" onclick="filterProviders('esg',this)"><i class="fas fa-chart-line"></i> ESG Consultants <span class="tab-count" id="cnt-esg">4</span></button>
+        <button class="filter-tab" onclick="filterProviders('carbon',this)"><i class="fas fa-coins"></i> Carbon Credits <span class="tab-count" id="cnt-carbon">3</span></button>
+        <button class="filter-tab" onclick="filterProviders('waste',this)"><i class="fas fa-recycle"></i> Waste Management <span class="tab-count" id="cnt-waste">3</span></button>
+    </div>
+</div>
+
+<div class="mp-body">
+
+    <!-- Featured Banner -->
+    <div class="featured-banner">
+        <div class="featured-banner-text">
+            <h3><i class="fas fa-building mr-2"></i> Are you a green solution provider?</h3>
+            <p>List your services on EmittiF.io and connect with Malaysian SMEs actively seeking sustainability solutions.</p>
+        </div>
+        <button class="featured-banner-btn" onclick="openListingEnquiry()"><i class="fas fa-plus mr-2"></i> List Your Business</button>
+    </div>
+
+    <!-- Search + Sort -->
+    <div class="mp-search-row">
+        <div class="mp-search">
+            <i class="fas fa-search"></i>
+            <input type="text" id="search-input" placeholder="Search providers, services, certifications..." oninput="searchProviders()">
+        </div>
+        <select class="mp-sort" id="sort-select" onchange="sortProviders()">
+            <option value="featured">Featured</option>
+            <option value="rating">Highest Rated</option>
+            <option value="name">A–Z</option>
+        </select>
+        <div class="mp-count" id="results-count">Showing 18 providers</div>
+    </div>
+
+    <!-- Provider Grid -->
+    <div class="provider-grid" id="provider-grid"></div>
+
+    <div class="mp-empty" id="empty-state" style="display:none;">
+        <i class="fas fa-search"></i>
+        <h3>No providers found</h3>
+        <p>Try adjusting your search or filters</p>
+    </div>
+
+</div>
+</div>
+
+<!-- ── ENQUIRY MODAL ── -->
+<div id="enquiryModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h3>Send Enquiry</h3>
+            <button class="modal-close" onclick="closeEnquiry()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div id="enquiry-form-wrap">
+                <div class="modal-provider-info">
+                    <div class="modal-provider-logo" id="enq-logo">🌿</div>
+                    <div>
+                        <div class="modal-provider-name" id="enq-name">Provider Name</div>
+                        <div class="modal-provider-cat" id="enq-cat">Category</div>
+                    </div>
+                </div>
+                <form id="enquiryForm">
+                    <div class="form-row">
+                        <div class="form-group" style="margin-bottom:0;"><label class="m-label">Your Name *</label><input type="text" name="contact_name" class="m-input" placeholder="Full name" required></div>
+                        <div class="form-group" style="margin-bottom:0;"><label class="m-label">Company *</label><input type="text" name="company_name" class="m-input" placeholder="Company name" required value="{{ session.company }}"></div>
+                    </div>
+                    <div class="form-row" style="margin-top:14px;">
+                        <div class="form-group" style="margin-bottom:0;"><label class="m-label">Email *</label><input type="email" name="email" class="m-input" placeholder="your@email.com" required></div>
+                        <div class="form-group" style="margin-bottom:0;"><label class="m-label">Phone</label><input type="tel" name="phone" class="m-input" placeholder="+60 12 345 6789"></div>
+                    </div>
+                    <div class="form-group" style="margin-top:14px;">
+                        <label class="m-label">Service Interest *</label>
+                        <select name="service_interest" class="m-select" required id="enq-service-select">
+                            <option value="">Select service...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="m-label">Estimated Monthly Emissions</label>
+                        <select name="emissions_size" class="m-select">
+                            <option value="">Select range...</option>
+                            <option value="<10t">Less than 10 tCO₂e/month</option>
+                            <option value="10-50t">10–50 tCO₂e/month</option>
+                            <option value="50-200t">50–200 tCO₂e/month</option>
+                            <option value=">200t">Over 200 tCO₂e/month</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="m-label">Message *</label>
+                        <textarea name="message" class="m-textarea" placeholder="Tell the provider what you're looking for, your timeline, and any specific requirements..." required></textarea>
+                    </div>
+                    <div style="font-size:11px;color:var(--sub);margin-bottom:16px;line-height:1.5;"><i class="fas fa-shield-alt mr-1" style="color:var(--green)"></i> Your enquiry will be forwarded to the provider within 1 business day. EmittiF.io does not share your data with third parties.</div>
+                    <button type="submit" class="submit-btn" id="submit-btn"><i class="fas fa-paper-plane"></i> Send Enquiry</button>
+                </form>
+            </div>
+            <div class="success-state" id="enquiry-success">
+                <i class="fas fa-check-circle"></i>
+                <h3>Enquiry Sent!</h3>
+                <p>Your enquiry has been submitted. The provider will be in touch within <strong>1–2 business days</strong>.<br><br>You can track your enquiries in your account settings.</p>
+                <button onclick="closeEnquiry()" style="margin-top:20px;padding:10px 24px;background:var(--green-dk);color:#4ade80;border:1px solid var(--green);border-radius:10px;font-family:'Satoshi',sans-serif;font-weight:700;font-size:13px;cursor:pointer;">Done</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── LIST YOUR BUSINESS MODAL ── -->
+<div id="listingModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h3>List Your Business</h3>
+            <button class="modal-close" onclick="document.getElementById('listingModal').classList.remove('active')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px;">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;"><i class="fas fa-star mr-1" style="color:var(--amber)"></i> Provider Listing Benefits</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.7;">Get discovered by Malaysian SMEs actively seeking green solutions · Verified badge on your listing · Direct enquiries forwarded to you · No commission fees</div>
+            </div>
+            <form id="listingForm">
+                <div class="form-row">
+                    <div class="form-group" style="margin-bottom:0;"><label class="m-label">Business Name *</label><input type="text" name="biz_name" class="m-input" placeholder="Your company name" required></div>
+                    <div class="form-group" style="margin-bottom:0;"><label class="m-label">Category *</label>
+                        <select name="biz_category" class="m-select" required>
+                            <option value="">Select...</option>
+                            <option value="offset">Carbon Offset Projects</option>
+                            <option value="solar">Solar & Renewable Energy</option>
+                            <option value="esg">ESG Consultants & Auditors</option>
+                            <option value="carbon">Carbon Credit Brokers</option>
+                            <option value="waste">Waste Management</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row" style="margin-top:14px;">
+                    <div class="form-group" style="margin-bottom:0;"><label class="m-label">Contact Person *</label><input type="text" name="contact" class="m-input" placeholder="Full name" required></div>
+                    <div class="form-group" style="margin-bottom:0;"><label class="m-label">Email *</label><input type="email" name="biz_email" class="m-input" placeholder="contact@company.com" required></div>
+                </div>
+                <div class="form-group" style="margin-top:14px;"><label class="m-label">Phone / WhatsApp *</label><input type="tel" name="biz_phone" class="m-input" placeholder="+60 12 345 6789" required></div>
+                <div class="form-group"><label class="m-label">Website</label><input type="url" name="biz_website" class="m-input" placeholder="https://yourwebsite.com"></div>
+                <div class="form-group"><label class="m-label">Brief Description *</label><textarea name="biz_desc" class="m-textarea" style="min-height:80px;" placeholder="Describe your services and what makes you unique..." required></textarea></div>
+                <div class="form-group"><label class="m-label">Certifications (optional)</label><input type="text" name="biz_certs" class="m-input" placeholder="e.g. SIRIM, MyHIJAU, ISO 14001, Gold Standard"></div>
+                <button type="submit" class="submit-btn"><i class="fas fa-store"></i> Submit for Review</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const PROVIDERS = [
+    // ── CARBON OFFSET ──
+    { id:1, cat:'offset', name:'MyCarbon Offset', logo:'🌳', tagline:'Malaysia\'s largest reforestation offset programme — REDD+ certified projects in Sabah & Sarawak', tags:['REDD+','Verified','Reforestation','Sabah','Sarawak'], rating:4.8, reviews:34, location:'Kuala Lumpur', verified:true, featured:true, services:['Forest Conservation Credits','Community Reforestation','Mangrove Restoration','REDD+ Certificates'] },
+    { id:2, cat:'offset', name:'GreenLand Credits', logo:'🌿', tagline:'Peatland conservation and sustainable palm oil offset projects across Peninsular Malaysia', tags:['Peatland','Palm Oil','Gold Standard'], rating:4.6, reviews:18, location:'Selangor', verified:true, featured:false, services:['Peatland Conservation','Sustainable Agriculture Offset','Gold Standard Credits'] },
+    { id:3, cat:'offset', name:'OceanMY Offsets', logo:'🌊', tagline:'Blue carbon — mangrove and seagrass restoration projects certified under Verra VCS', tags:['Blue Carbon','VCS','Mangrove'], rating:4.7, reviews:22, location:'Penang', verified:true, featured:false, services:['Mangrove Restoration','Seagrass Credits','Blue Carbon Certification'] },
+    { id:4, cat:'offset', name:'Hutan Bersih', logo:'🍃', tagline:'Community-led tropical forest conservation in Kelantan — Gold Standard certified', tags:['Gold Standard','Community','Forest'], rating:4.5, reviews:12, location:'Kelantan', verified:true, featured:false, services:['Tropical Forest Credits','Community Carbon','Gold Standard Certificates'] },
+
+    // ── SOLAR & RENEWABLE ──
+    { id:5, cat:'solar', name:'SolarMY Pro', logo:'☀️', tagline:'Commercial & industrial solar installation with NEM 3.0 advisory and ROI analysis for SMEs', tags:['NEM 3.0','Commercial','Industrial','ROI'], rating:4.9, reviews:67, location:'Selangor', verified:true, featured:true, services:['Rooftop Solar Installation','NEM 3.0 Application','Solar Audit','ROI Analysis','O&M Services'] },
+    { id:6, cat:'solar', name:'GreenWatt Energy', logo:'⚡', tagline:'End-to-end renewable energy solutions — solar PV, energy storage, and grid optimisation', tags:['Solar PV','Energy Storage','Grid'], rating:4.7, reviews:41, location:'Kuala Lumpur', verified:true, featured:false, services:['Solar PV Design','Battery Storage','Energy Audit','Grid Connection'] },
+    { id:7, cat:'solar', name:'EcoSun Malaysia', logo:'🔆', tagline:'Affordable solar leasing for SMEs — zero upfront cost, immediate energy savings', tags:['Zero Upfront','Leasing','SME'], rating:4.6, reviews:29, location:'Johor', verified:true, featured:false, services:['Solar Leasing','Power Purchase Agreement','SME Solar Package'] },
+    { id:8, cat:'solar', name:'WindTech MY', logo:'💨', tagline:'Hybrid solar-wind energy systems and biogas solutions for industrial facilities', tags:['Wind','Biogas','Industrial','Hybrid'], rating:4.4, reviews:15, location:'Pahang', verified:false, featured:false, services:['Hybrid Energy Systems','Biogas Solutions','Industrial Energy Audit'] },
+
+    // ── ESG CONSULTANTS ──
+    { id:9, cat:'esg', name:'ESG Advisors MY', logo:'📊', tagline:'Bursa Malaysia ESG reporting specialists — GRI, TCFD, and SBTi advisory for listed and unlisted companies', tags:['Bursa','GRI','TCFD','SBTi'], rating:4.9, reviews:53, location:'Kuala Lumpur', verified:true, featured:true, services:['Bursa ESG Report','GRI Standards','TCFD Disclosure','SBTi Target Setting','ESG Training'] },
+    { id:10, cat:'esg', name:'GreenCompliance', logo:'✅', tagline:'ISO 14001 & ISO 50001 certification support and environmental management system implementation', tags:['ISO 14001','ISO 50001','Certification'], rating:4.7, reviews:38, location:'Penang', verified:true, featured:false, services:['ISO 14001 Certification','ISO 50001 Energy','Environmental Audit','EMS Implementation'] },
+    { id:11, cat:'esg', name:'Sustain Consult', logo:'🎯', tagline:'End-to-end ESG strategy, materiality assessment, and stakeholder engagement for Malaysian SMEs', tags:['Strategy','Materiality','SME','Stakeholder'], rating:4.6, reviews:27, location:'Selangor', verified:true, featured:false, services:['ESG Strategy','Materiality Assessment','Sustainability Report','Stakeholder Mapping'] },
+    { id:12, cat:'esg', name:'CarbonAudit MY', logo:'🔍', tagline:'Third-party GHG inventory verification and carbon footprint auditing — Scope 1, 2 & 3', tags:['Verification','GHG Audit','Scope 3'], rating:4.8, reviews:44, location:'Kuala Lumpur', verified:true, featured:false, services:['GHG Verification','Carbon Footprint Audit','Scope 3 Assessment','Third-party Assurance'] },
+
+    // ── CARBON CREDITS ──
+    { id:13, cat:'carbon', name:'BCX Malaysia', logo:'💹', tagline:'Bursa Carbon Exchange certified broker — buy, sell and retire voluntary carbon credits', tags:['BCX','Bursa','Voluntary','Retire'], rating:4.8, reviews:31, location:'Kuala Lumpur', verified:true, featured:true, services:['BCX Credit Trading','Credit Retirement','Portfolio Management','Carbon Neutral Certification'] },
+    { id:14, cat:'carbon', name:'GoldCarbon', logo:'🥇', tagline:'Gold Standard and VCS carbon credit marketplace with retirement certificates for Bursa reporting', tags:['Gold Standard','VCS','Retirement'], rating:4.6, reviews:19, location:'Kuala Lumpur', verified:true, featured:false, services:['Gold Standard Credits','VCS Credits','Retirement Certificates','Carbon Registry'] },
+    { id:15, cat:'carbon', name:'CarbonBridge MY', logo:'🔗', tagline:'Connecting Malaysian SMEs with regional carbon markets — Indonesia, Thailand & Malaysia projects', tags:['Regional','Indonesia','Thailand','SME'], rating:4.4, reviews:11, location:'Penang', verified:false, featured:false, services:['Regional Carbon Credits','Cross-border Trading','SME Credit Packages'] },
+
+    // ── WASTE MANAGEMENT ──
+    { id:16, cat:'waste', name:'ZeroWaste MY', logo:'♻️', tagline:'Industrial waste reduction consultancy and certified waste-to-energy project development', tags:['Waste-to-Energy','Industrial','Certified'], rating:4.7, reviews:36, location:'Selangor', verified:true, featured:true, services:['Waste Audit','Waste-to-Energy','Recycling Programme','Zero Waste Certification'] },
+    { id:17, cat:'waste', name:'EcoRecycle Pro', logo:'🔄', tagline:'B2B recycling and circular economy solutions — e-waste, plastic, and industrial scrap', tags:['E-waste','Plastic','Circular','B2B'], rating:4.5, reviews:24, location:'Johor', verified:true, featured:false, services:['E-waste Collection','Plastic Recycling','Industrial Scrap','Circular Economy Audit'] },
+    { id:18, cat:'waste', name:'Organic Loop', logo:'🌱', tagline:'Food & organic waste composting and biogas programmes for F&B and hospitality sectors', tags:['Composting','Biogas','F&B','Organic'], rating:4.6, reviews:17, location:'Kuala Lumpur', verified:true, featured:false, services:['Organic Composting','Biogas Programme','Food Waste Audit','F&B Sustainability'] },
+];
+
+const CAT_LABELS = { offset:'Carbon Offset', solar:'Solar & Renewable', esg:'ESG Consultant', carbon:'Carbon Credits', waste:'Waste Management' };
+const CAT_CLASS  = { offset:'cat-offset', solar:'cat-solar', esg:'cat-esg', carbon:'cat-carbon', waste:'cat-waste' };
+
+let currentFilter = 'all';
+let currentSearch = '';
+let currentSort = 'featured';
+let selectedProvider = null;
+
+function renderProviders() {
+    let list = [...PROVIDERS];
+    if (currentFilter !== 'all') list = list.filter(p => p.cat === currentFilter);
+    if (currentSearch) {
+        const q = currentSearch.toLowerCase();
+        list = list.filter(p => p.name.toLowerCase().includes(q) || p.tagline.toLowerCase().includes(q) || p.tags.some(t => t.toLowerCase().includes(q)));
+    }
+    if (currentSort === 'rating') list.sort((a,b) => b.rating - a.rating);
+    else if (currentSort === 'name') list.sort((a,b) => a.name.localeCompare(b.name));
+    else list.sort((a,b) => (b.featured?1:0) - (a.featured?1:0));
+
+    const grid = document.getElementById('provider-grid');
+    const empty = document.getElementById('empty-state');
+    document.getElementById('results-count').textContent = `Showing ${list.length} provider${list.length!==1?'s':''}`;
+
+    if (list.length === 0) { grid.innerHTML=''; empty.style.display='block'; return; }
+    empty.style.display = 'none';
+
+    grid.innerHTML = list.map(p => `
+        <div class="provider-card" onclick="openEnquiry(${p.id})">
+            <div class="provider-card-top">
+                <div class="provider-card-cat ${CAT_CLASS[p.cat]}">${CAT_LABELS[p.cat]}</div>
+                <div class="provider-logo">${p.logo}</div>
+                <div class="provider-name">${p.name}${p.featured?` <span style="font-size:10px;color:var(--amber);font-weight:700;margin-left:4px;">★ Featured</span>`:''}</div>
+                <div class="provider-tagline">${p.tagline}</div>
+                <div class="provider-tags">${p.tags.map(t=>`<span class="provider-tag">${t}</span>`).join('')}</div>
+                <div class="provider-meta">
+                    <div class="provider-rating"><span class="stars">${'★'.repeat(Math.floor(p.rating))}${p.rating%1?'☆':''}</span> <span style="font-weight:600;color:var(--text)">${p.rating}</span> (${p.reviews})</div>
+                    <div><i class="fas fa-map-marker-alt"></i> ${p.location}</div>
+                </div>
+            </div>
+            <div class="provider-card-footer">
+                <div class="provider-verified">${p.verified?`<i class="fas fa-check-circle"></i> Verified`:`<span style="color:var(--sub)"><i class="fas fa-clock"></i> Pending</span>`}</div>
+                <button class="enquire-btn" onclick="event.stopPropagation();openEnquiry(${p.id})">Enquire</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function filterProviders(cat, el) {
+    currentFilter = cat;
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    renderProviders();
+}
+
+function searchProviders() {
+    currentSearch = document.getElementById('search-input').value;
+    renderProviders();
+}
+
+function sortProviders() {
+    currentSort = document.getElementById('sort-select').value;
+    renderProviders();
+}
+
+function openEnquiry(id) {
+    selectedProvider = PROVIDERS.find(p => p.id === id);
+    if (!selectedProvider) return;
+    document.getElementById('enq-logo').textContent = selectedProvider.logo;
+    document.getElementById('enq-name').textContent = selectedProvider.name;
+    document.getElementById('enq-cat').textContent = CAT_LABELS[selectedProvider.cat] + ' · ' + selectedProvider.location;
+    const sel = document.getElementById('enq-service-select');
+    sel.innerHTML = '<option value="">Select service...</option>' + selectedProvider.services.map(s=>`<option value="${s}">${s}</option>`).join('');
+    document.getElementById('enquiry-form-wrap').style.display = 'block';
+    document.getElementById('enquiry-success').style.display = 'none';
+    document.getElementById('enquiryModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeEnquiry() {
+    document.getElementById('enquiryModal').classList.remove('active');
+    document.body.style.overflow = '';
+    document.getElementById('enquiryForm').reset();
+}
+
+function openListingEnquiry() {
+    document.getElementById('listingModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+document.getElementById('enquiryForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+    const fd = new FormData(this);
+    const data = { provider_id: selectedProvider.id, provider_name: selectedProvider.name, provider_category: selectedProvider.cat };
+    fd.forEach((v,k) => data[k] = v);
+    try {
+        const res = await fetch('/api/marketplace/enquiry', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+        const result = await res.json();
+        document.getElementById('enquiry-form-wrap').style.display = 'none';
+        document.getElementById('enquiry-success').style.display = 'block';
+    } catch(err) {
+        document.getElementById('enquiry-form-wrap').style.display = 'none';
+        document.getElementById('enquiry-success').style.display = 'block';
+    }
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Enquiry';
+});
+
+document.getElementById('listingForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const fd = new FormData(this);
+    const data = {};
+    fd.forEach((v,k) => data[k] = v);
+    try {
+        await fetch('/api/marketplace/listing', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+    } catch(err) {}
+    document.getElementById('listingModal').classList.remove('active');
+    document.body.style.overflow = '';
+    showToast('Application submitted! We\'ll review within 2 business days.');
+    this.reset();
+});
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.innerHTML = `<i class="fas fa-check-circle"></i> ${msg}`;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+document.addEventListener('keydown', e => { if(e.key==='Escape'){ closeEnquiry(); document.getElementById('listingModal').classList.remove('active'); document.body.style.overflow=''; }});
+
+renderProviders();
+</script>
+
+{% endblock %}

@@ -1,0 +1,788 @@
+{% extends "base_auth.html" %}
+{% block content %}
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap');
+
+:root {
+    --forest: #021a0d;
+    --pine: #052e16;
+    --fern: #0a3d1f;
+    --moss: #15803d;
+    --leaf: #16a34a;
+    --mint: #4ade80;
+    --sage: #bbf7d0;
+    --mist: #f0fdf4;
+    --cream: #f6fdf8;
+    --amber: #d97706;
+    --amber-light: #fef3c7;
+    --slate: #0f1f15;
+    --mid: #52725e;
+    --border: #ddeee4;
+    --card: #ffffff;
+}
+
+* { box-sizing: border-box; }
+
+.roadmap-page {
+    font-family: 'Satoshi', sans-serif;
+    background: var(--cream);
+    min-height: 100vh;
+}
+
+h1, h2, h3, .heading { font-family: 'ClashDisplay', 'Satoshi', sans-serif; }
+
+/* ── HERO ── */
+.hero {
+    background: linear-gradient(160deg, var(--forest) 0%, #031a0e 40%, #062414 100%);
+    padding: 56px 0 64px;
+    position: relative;
+    overflow: hidden;
+}
+.hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 80% 20%, rgba(74,222,128,0.07) 0%, transparent 55%),
+                radial-gradient(ellipse at 10% 90%, rgba(22,163,74,0.05) 0%, transparent 50%);
+}
+.hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(74,222,128,0.3), transparent);
+}
+.hero-inner { max-width: 900px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 1; }
+.hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.2);
+    color: var(--mint); padding: 6px 16px; border-radius: 4px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 24px;
+}
+.hero h1 {
+    font-family: 'ClashDisplay', 'Satoshi', sans-serif;
+    font-size: clamp(32px, 5vw, 52px); font-weight: 700;
+    color: white; line-height: 1.1; margin-bottom: 16px;
+    letter-spacing: -0.02em;
+}
+.hero h1 span {
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--mint);
+}
+.hero p {
+    font-family: 'Satoshi', sans-serif;
+    color: rgba(255,255,255,0.5); font-size: 15px;
+    max-width: 480px; line-height: 1.7; font-weight: 400;
+}
+.hero-stats {
+    display: flex; gap: 40px; margin-top: 40px;
+    flex-wrap: wrap; padding-top: 32px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+.hero-stat { text-align: left; }
+.hero-stat-val {
+    font-family: 'ClashDisplay', 'Satoshi', sans-serif;
+    font-size: 26px; font-weight: 600; color: var(--mint);
+    letter-spacing: -0.02em;
+}
+.hero-stat-label { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 3px; letter-spacing: 0.05em; text-transform: uppercase; }
+
+/* ── MAIN LAYOUT ── */
+.roadmap-body { max-width: 900px; margin: 0 auto; padding: 40px 32px 80px; }
+
+/* ── CARDS ── */
+.card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 20px; overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04);
+    margin-bottom: 24px;
+}
+.card-header {
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+}
+.card-header h3 { font-family: 'ClashDisplay', 'Satoshi', sans-serif; font-size: 15px; font-weight: 700; color: var(--slate); margin: 0; }
+.card-body { padding: 24px; }
+
+/* ── SETUP FORM ── */
+.setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-label {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--mid);
+}
+.form-select, .form-input {
+    border: 1.5px solid var(--border); border-radius: 12px;
+    padding: 10px 14px; font-family: 'Satoshi', sans-serif;
+    font-size: 14px; color: var(--slate); background: white;
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+    appearance: none;
+}
+.form-select:focus, .form-input:focus {
+    border-color: var(--moss); box-shadow: 0 0 0 3px rgba(21,128,61,0.1);
+}
+
+/* ── EMISSION SUMMARY ── */
+.scope-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+.scope-card {
+    background: var(--mist); border: 1px solid var(--sage);
+    border-radius: 14px; padding: 16px; text-align: center;
+}
+.scope-card-label { font-size: 11px; font-weight: 600; color: var(--fern); text-transform: uppercase; letter-spacing: 0.05em; }
+.scope-card-val { font-family: 'ClashDisplay', 'Satoshi', sans-serif; font-size: 22px; font-weight: 700; color: var(--forest); margin: 4px 0 2px; }
+.scope-card-unit { font-size: 11px; color: var(--mid); }
+.scope-card.total { background: var(--forest); border-color: var(--pine); grid-column: 1 / -1; }
+.scope-card.total .scope-card-label { color: rgba(255,255,255,0.6); }
+.scope-card.total .scope-card-val { font-size: 32px; color: white; }
+.scope-card.total .scope-card-unit { color: rgba(255,255,255,0.5); }
+
+.no-data-msg {
+    text-align: center; padding: 32px; color: var(--mid); font-size: 14px;
+}
+.no-data-msg i { display: block; font-size: 32px; margin-bottom: 12px; color: var(--border); }
+.no-data-msg a { color: var(--moss); font-weight: 500; }
+
+/* ── GENERATE BUTTON ── */
+.generate-btn {
+    width: 100%; padding: 16px 24px;
+    background: linear-gradient(135deg, var(--forest) 0%, var(--fern) 100%);
+    color: white; border: none; border-radius: 14px;
+    font-family: 'ClashDisplay', 'Satoshi', sans-serif; font-size: 16px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    gap: 10px; transition: all 0.2s; letter-spacing: 0.02em;
+    position: relative; overflow: hidden;
+}
+.generate-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(5,46,22,0.3); }
+.generate-btn:active { transform: translateY(0); }
+.generate-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.generate-btn .shimmer {
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%);
+    transform: translateX(-100%);
+    animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer { to { transform: translateX(100%); } }
+
+/* ── LOADING ── */
+.loading-state { display: none; text-align: center; padding: 48px 24px; }
+.loading-state.active { display: block; }
+.ai-spinner {
+    width: 56px; height: 56px; margin: 0 auto 20px;
+    border: 3px solid var(--sage); border-top-color: var(--moss);
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-steps { display: flex; flex-direction: column; gap: 8px; max-width: 280px; margin: 0 auto; }
+.loading-step {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 14px; border-radius: 8px; font-size: 13px; color: var(--mid);
+    transition: all 0.3s;
+}
+.loading-step.active { background: var(--mist); color: var(--fern); font-weight: 500; }
+.loading-step.done { color: var(--moss); }
+.loading-step i { width: 16px; text-align: center; }
+
+/* ── ROADMAP OUTPUT ── */
+.roadmap-output { display: none; }
+.roadmap-output.active { display: block; }
+
+.output-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px; flex-wrap: gap;
+}
+.output-header h2 { font-family: 'ClashDisplay', 'Satoshi', sans-serif; font-size: 22px; font-weight: 800; color: var(--forest); margin: 0; }
+
+.download-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 18px; background: var(--forest); color: white;
+    border: none; border-radius: 10px; cursor: pointer;
+    font-family: 'Satoshi', sans-serif; font-size: 13px; font-weight: 600;
+    transition: all 0.2s;
+}
+.download-btn:hover { background: var(--pine); }
+
+/* ── AI SECTIONS ── */
+.ai-section {
+    background: white; border: 1px solid var(--border);
+    border-radius: 18px; margin-bottom: 20px; overflow: hidden;
+}
+.ai-section-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 18px 22px; background: var(--mist);
+    border-bottom: 1px solid var(--sage);
+}
+.ai-section-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+}
+.ai-section-icon.green { background: var(--forest); color: var(--mint); }
+.ai-section-icon.amber { background: #92400e; color: #fbbf24; }
+.ai-section-icon.blue { background: #1e3a5f; color: #60a5fa; }
+.ai-section-icon.red { background: #7f1d1d; color: #f87171; }
+.ai-section-icon.purple { background: #3b0764; color: #c084fc; }
+
+.ai-section-title { font-family: 'ClashDisplay', 'Satoshi', sans-serif; font-size: 15px; font-weight: 700; color: var(--slate); }
+.ai-section-subtitle { font-size: 12px; color: var(--mid); margin-top: 1px; }
+.ai-section-body { padding: 22px; font-size: 14px; line-height: 1.75; color: var(--slate); }
+.ai-section-body p { margin: 0 0 14px; }
+.ai-section-body p:last-child { margin: 0; }
+.ai-section-body ul { margin: 0 0 14px; padding-left: 20px; }
+.ai-section-body li { margin-bottom: 8px; }
+.ai-section-body strong { color: var(--forest); font-weight: 600; }
+
+/* ── YEAR MILESTONES ── */
+.milestones { display: flex; flex-direction: column; gap: 0; }
+.milestone {
+    display: flex; gap: 0; position: relative;
+}
+.milestone-line {
+    display: flex; flex-direction: column; align-items: center;
+    width: 40px; flex-shrink: 0;
+}
+.milestone-dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    border: 2px solid var(--moss); background: white;
+    flex-shrink: 0; margin-top: 18px; z-index: 1;
+    transition: all 0.3s;
+}
+.milestone-dot.achieved { background: var(--moss); border-color: var(--moss); }
+.milestone-connector { flex: 1; width: 2px; background: var(--sage); }
+.milestone:last-child .milestone-connector { display: none; }
+.milestone-content {
+    flex: 1; padding: 14px 0 24px 12px;
+}
+.milestone-year { font-family: 'ClashDisplay', 'Satoshi', sans-serif; font-size: 13px; font-weight: 700; color: var(--moss); }
+.milestone-target { font-size: 18px; font-weight: 600; color: var(--forest); margin: 4px 0; }
+.milestone-desc { font-size: 13px; color: var(--mid); line-height: 1.5; }
+
+/* ── QUICK WINS GRID ── */
+.quick-wins { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.quick-win {
+    background: var(--mist); border: 1px solid var(--sage);
+    border-radius: 14px; padding: 16px;
+}
+.quick-win-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.quick-win-icon { font-size: 20px; }
+.quick-win-title { font-family: 'ClashDisplay', 'Satoshi', sans-serif; font-size: 13px; font-weight: 700; color: var(--forest); }
+.quick-win-text { font-size: 12px; color: var(--mid); line-height: 1.5; }
+.quick-win-saving {
+    margin-top: 10px; font-size: 11px; font-weight: 600;
+    color: var(--moss); text-transform: uppercase; letter-spacing: 0.05em;
+}
+
+/* ── COMPLIANCE TABLE ── */
+.compliance-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.compliance-table th {
+    text-align: left; padding: 8px 12px; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.05em; color: var(--mid);
+    border-bottom: 1px solid var(--border);
+}
+.compliance-table td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; color: var(--slate); }
+.compliance-table tr:last-child td { border-bottom: none; }
+.status-pill {
+    display: inline-block; padding: 2px 10px; border-radius: 100px;
+    font-size: 11px; font-weight: 600;
+}
+.status-req { background: #fee2e2; color: #dc2626; }
+.status-rec { background: #fef3c7; color: #d97706; }
+.status-opt { background: #dbeafe; color: #1d4ed8; }
+
+/* ── REGEN BUTTON ── */
+.regen-row { display: flex; justify-content: center; margin-top: 32px; }
+.regen-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 24px; border: 2px solid var(--forest);
+    color: var(--forest); background: white; border-radius: 12px;
+    font-family: 'ClashDisplay', 'Satoshi', sans-serif; font-weight: 700; font-size: 14px;
+    cursor: pointer; transition: all 0.2s;
+}
+.regen-btn:hover { background: var(--forest); color: white; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 640px) {
+    .roadmap-body { padding: 24px 16px 60px; }
+    .setup-grid { grid-template-columns: 1fr; }
+    .scope-grid { grid-template-columns: 1fr 1fr; }
+    .scope-card.total { grid-column: 1 / -1; }
+    .quick-wins { grid-template-columns: 1fr; }
+    .hero-stats { gap: 20px; }
+}
+</style>
+
+<div class="roadmap-page">
+
+    <!-- Hero -->
+    <div class="hero">
+        <div class="hero-inner">
+            <div class="hero-badge">
+                <i class="fas fa-robot"></i> AI-Powered
+            </div>
+            <h1>Carbon Reduction<br><span>Roadmap AI</span></h1>
+            <p>Personalised 5-year decarbonisation strategy built from your actual ESG data — aligned to Bursa Malaysia and Science-Based Targets.</p>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-val" id="hero-total">—</div>
+                    <div class="hero-stat-label">Total tCO₂e/yr</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-val" id="hero-year">—</div>
+                    <div class="hero-stat-label">Reporting Year</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-val" id="hero-target">—</div>
+                    <div class="hero-stat-label">Reduction Target</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="roadmap-body">
+
+        <!-- Setup Card -->
+        <div class="card" id="setup-card">
+            <div class="card-header">
+                <h3><i class="fas fa-sliders-h mr-2 text-green-700"></i>Configure Your Roadmap</h3>
+                <span style="font-size:12px;color:var(--mid);">Step 1 of 2</span>
+            </div>
+            <div class="card-body">
+                <div class="setup-grid">
+                    <div class="form-group">
+                        <label class="form-label">Reporting Year</label>
+                        <select class="form-select" id="sel-year" onchange="loadEmissions()">
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                            <option value="2023">2023</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Industry Sector</label>
+                        <select class="form-select" id="sel-industry">
+                            <option value="manufacturing">Manufacturing</option>
+                            <option value="services">Services / Office</option>
+                            <option value="retail">Retail / F&B</option>
+                            <option value="logistics">Logistics / Transport</option>
+                            <option value="construction">Construction</option>
+                            <option value="hospitality">Hospitality</option>
+                            <option value="technology">Technology / IT</option>
+                            <option value="healthcare">Healthcare</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Reduction Target</label>
+                        <select class="form-select" id="sel-target">
+                            <option value="30">30% by 2030 (Bursa Minimum)</option>
+                            <option value="45">45% by 2030 (SBTi Aligned)</option>
+                            <option value="50">50% by 2030 (Ambitious)</option>
+                            <option value="net_zero">Net Zero by 2050</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Company Size</label>
+                        <select class="form-select" id="sel-size">
+                            <option value="micro">Micro (&lt;5 employees)</option>
+                            <option value="small" selected>Small (5–75 employees)</option>
+                            <option value="medium">Medium (75–200 employees)</option>
+                            <option value="large">Large (&gt;200 employees)</option>
+                        </select>
+                    </div>
+                    <div class="form-group full">
+                        <label class="form-label">Additional Context <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+                        <input class="form-input" id="sel-context" type="text" placeholder="e.g. We operate a food manufacturing plant in Johor with diesel generators...">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Emission Data Card -->
+        <div class="card" id="emission-card">
+            <div class="card-header">
+                <h3><i class="fas fa-chart-pie mr-2 text-green-700"></i>Your Emission Data</h3>
+                <button onclick="window.location='/esg_environmental'" style="font-size:12px;color:var(--moss);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;">
+                    <i class="fas fa-pencil mr-1"></i> Edit Data
+                </button>
+            </div>
+            <div class="card-body" id="emission-body">
+                <div class="no-data-msg">
+                    <i class="fas fa-database"></i>
+                    No emission records found for this year.<br>
+                    <a href="/esg_environmental">Add environmental data</a> to get a personalised roadmap.
+                </div>
+            </div>
+        </div>
+
+        <!-- Generate Button -->
+        <button class="generate-btn" id="generate-btn" onclick="generateRoadmap()">
+            <div class="shimmer"></div>
+            <i class="fas fa-robot"></i>
+            Generate My Carbon Roadmap
+            <i class="fas fa-arrow-right"></i>
+        </button>
+
+        <!-- Loading State -->
+        <div class="loading-state" id="loading-state">
+            <div class="ai-spinner"></div>
+            <p style="font-family:'Syne',sans-serif;font-weight:700;color:var(--forest);font-size:18px;margin-bottom:24px;">AI is analysing your data...</p>
+            <div class="loading-steps">
+                <div class="loading-step" id="step-1"><i class="fas fa-circle-notch fa-spin"></i> Analysing emission profile</div>
+                <div class="loading-step" id="step-2"><i class="fas fa-clock"></i> Building reduction pathway</div>
+                <div class="loading-step" id="step-3"><i class="fas fa-clock"></i> Finding quick wins</div>
+                <div class="loading-step" id="step-4"><i class="fas fa-clock"></i> Mapping Malaysia incentives</div>
+                <div class="loading-step" id="step-5"><i class="fas fa-clock"></i> Generating report</div>
+            </div>
+        </div>
+
+        <!-- Roadmap Output -->
+        <div class="roadmap-output" id="roadmap-output">
+            <div class="output-header">
+                <h2>Your Carbon Roadmap</h2>
+                <button class="download-btn" onclick="downloadRoadmap()">
+                    <i class="fas fa-download"></i> Download PDF
+                </button>
+            </div>
+            <div id="roadmap-sections"></div>
+            <div class="regen-row">
+                <button class="regen-btn" onclick="regenerate()">
+                    <i class="fas fa-sync-alt"></i> Regenerate Roadmap
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// ── STATE ──
+let emissionData = {};
+let roadmapText = '';
+
+// ── LOAD EMISSIONS FROM ESG DATA ──
+async function loadEmissions() {
+    const year = document.getElementById('sel-year').value;
+    try {
+        const res = await fetch(`/api/roadmap/emissions?year=${year}`);
+        const data = await res.json();
+        if (data.success) {
+            emissionData = data;
+            renderEmissions(data);
+            updateHeroStats(data);
+        } else {
+            showNoData();
+        }
+    } catch(e) {
+        showNoData();
+    }
+}
+
+function renderEmissions(data) {
+    const body = document.getElementById('emission-body');
+    const s1 = (data.scope1_tco2e || 0).toFixed(2);
+    const s2 = (data.scope2_tco2e || 0).toFixed(2);
+    const s3 = (data.scope3_tco2e || 0).toFixed(2);
+    const total = (parseFloat(s1) + parseFloat(s2) + parseFloat(s3)).toFixed(2);
+
+    if (total === '0.00') { showNoData(); return; }
+
+    body.innerHTML = `
+        <div class="scope-grid">
+            <div class="scope-card">
+                <div class="scope-card-label">Scope 1 — Direct</div>
+                <div class="scope-card-val">${s1}</div>
+                <div class="scope-card-unit">tCO₂e/year</div>
+            </div>
+            <div class="scope-card">
+                <div class="scope-card-label">Scope 2 — Energy</div>
+                <div class="scope-card-val">${s2}</div>
+                <div class="scope-card-unit">tCO₂e/year</div>
+            </div>
+            <div class="scope-card">
+                <div class="scope-card-label">Scope 3 — Value Chain</div>
+                <div class="scope-card-val">${s3}</div>
+                <div class="scope-card-unit">tCO₂e/year</div>
+            </div>
+            <div class="scope-card total">
+                <div class="scope-card-label">Total Footprint</div>
+                <div class="scope-card-val">${total}</div>
+                <div class="scope-card-unit">tCO₂e per year</div>
+            </div>
+        </div>
+        ${data.breakdown ? renderBreakdown(data.breakdown) : ''}
+    `;
+
+    document.getElementById('hero-total').textContent = total;
+    document.getElementById('hero-year').textContent = document.getElementById('sel-year').value;
+}
+
+function renderBreakdown(breakdown) {
+    if (!breakdown || breakdown.length === 0) return '';
+    return `
+        <div style="margin-top:16px;">
+            <div style="font-size:12px;font-weight:600;color:var(--mid);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px;">Activity Breakdown</div>
+            ${breakdown.map(item => `
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+                    <div style="font-size:13px;color:var(--slate);min-width:160px;">${item.label}</div>
+                    <div style="flex:1;height:8px;background:#f1f5f9;border-radius:100px;overflow:hidden;">
+                        <div style="height:100%;width:${item.pct}%;background:linear-gradient(90deg,var(--moss),var(--mint));border-radius:100px;transition:width 0.8s ease;"></div>
+                    </div>
+                    <div style="font-size:12px;font-weight:600;color:var(--forest);min-width:80px;text-align:right;">${item.value} tCO₂e</div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+function showNoData() {
+    document.getElementById('emission-body').innerHTML = `
+        <div class="no-data-msg">
+            <i class="fas fa-database"></i>
+            No emission records found for this year.<br>
+            <a href="/esg_environmental">Add environmental data</a> to get a personalised roadmap,<br>or generate a roadmap based on your industry benchmark.
+        </div>
+    `;
+    emissionData = {};
+    document.getElementById('hero-total').textContent = '—';
+}
+
+function updateHeroStats(data) {
+    const total = ((data.scope1_tco2e||0) + (data.scope2_tco2e||0) + (data.scope3_tco2e||0)).toFixed(1);
+    document.getElementById('hero-total').textContent = total;
+    document.getElementById('hero-year').textContent = document.getElementById('sel-year').value;
+}
+
+// ── GENERATE ROADMAP ──
+async function generateRoadmap() {
+    const btn = document.getElementById('generate-btn');
+    const loading = document.getElementById('loading-state');
+    const output = document.getElementById('roadmap-output');
+
+    const target = document.getElementById('sel-target').value;
+    const targetLabel = document.getElementById('sel-target').options[document.getElementById('sel-target').selectedIndex].text;
+    document.getElementById('hero-target').textContent = target === 'net_zero' ? 'Net Zero' : target + '%';
+
+    // UI state
+    btn.style.display = 'none';
+    loading.classList.add('active');
+    output.classList.remove('active');
+
+    // Animate loading steps
+    animateSteps();
+
+    const payload = {
+        year: document.getElementById('sel-year').value,
+        industry: document.getElementById('sel-industry').value,
+        target: document.getElementById('sel-target').value,
+        size: document.getElementById('sel-size').value,
+        context: document.getElementById('sel-context').value,
+        scope1: emissionData.scope1_tco2e || 0,
+        scope2: emissionData.scope2_tco2e || 0,
+        scope3: emissionData.scope3_tco2e || 0,
+        breakdown: emissionData.breakdown || [],
+        target_label: targetLabel
+    };
+
+    try {
+        const res = await fetch('/api/roadmap/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+
+        if (result.success) {
+            roadmapText = result.roadmap_text;
+            renderRoadmap(result);
+        } else {
+            showError(result.error || 'Generation failed');
+        }
+    } catch(e) {
+        showError('Could not connect to AI service. Please try again.');
+    }
+
+    loading.classList.remove('active');
+}
+
+function animateSteps() {
+    const steps = ['step-1','step-2','step-3','step-4','step-5'];
+    const icons = ['fa-circle-notch fa-spin','fa-circle-notch fa-spin','fa-circle-notch fa-spin','fa-circle-notch fa-spin','fa-circle-notch fa-spin'];
+    steps.forEach((id, i) => {
+        setTimeout(() => {
+            if (i > 0) {
+                const prev = document.getElementById(steps[i-1]);
+                prev.classList.remove('active');
+                prev.classList.add('done');
+                prev.querySelector('i').className = 'fas fa-check-circle';
+            }
+            const el = document.getElementById(id);
+            el.classList.add('active');
+            el.querySelector('i').className = `fas fa-circle-notch fa-spin`;
+        }, i * 1200);
+    });
+}
+
+function renderRoadmap(result) {
+    const output = document.getElementById('roadmap-output');
+    const sections = document.getElementById('roadmap-sections');
+
+    sections.innerHTML = buildSectionsHTML(result);
+    output.classList.add('active');
+
+    // Animate in
+    setTimeout(() => {
+        output.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 200);
+}
+
+function buildSectionsHTML(r) {
+    return `
+        <!-- Executive Summary -->
+        <div class="ai-section">
+            <div class="ai-section-header">
+                <div class="ai-section-icon green"><i class="fas fa-leaf"></i></div>
+                <div>
+                    <div class="ai-section-title">Executive Summary</div>
+                    <div class="ai-section-subtitle">AI-generated overview of your carbon position</div>
+                </div>
+            </div>
+            <div class="ai-section-body">${r.summary || ''}</div>
+        </div>
+
+        <!-- 5-Year Milestones -->
+        <div class="ai-section">
+            <div class="ai-section-header">
+                <div class="ai-section-icon blue"><i class="fas fa-road"></i></div>
+                <div>
+                    <div class="ai-section-title">5-Year Reduction Pathway</div>
+                    <div class="ai-section-subtitle">Year-by-year targets to meet your goal</div>
+                </div>
+            </div>
+            <div class="ai-section-body">
+                <div class="milestones">
+                    ${(r.milestones||[]).map((m,i) => `
+                        <div class="milestone">
+                            <div class="milestone-line">
+                                <div class="milestone-dot ${i===0?'achieved':''}"></div>
+                                <div class="milestone-connector"></div>
+                            </div>
+                            <div class="milestone-content">
+                                <div class="milestone-year">${m.year}</div>
+                                <div class="milestone-target">${m.target} tCO₂e</div>
+                                <div class="milestone-desc">${m.description}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Wins -->
+        <div class="ai-section">
+            <div class="ai-section-header">
+                <div class="ai-section-icon amber"><i class="fas fa-bolt"></i></div>
+                <div>
+                    <div class="ai-section-title">Quick Wins — Act Now</div>
+                    <div class="ai-section-subtitle">Highest impact actions for Year 1</div>
+                </div>
+            </div>
+            <div class="ai-section-body">
+                <div class="quick-wins">
+                    ${(r.quick_wins||[]).map(w => `
+                        <div class="quick-win">
+                            <div class="quick-win-header">
+                                <span class="quick-win-icon">${w.icon}</span>
+                                <span class="quick-win-title">${w.title}</span>
+                            </div>
+                            <div class="quick-win-text">${w.description}</div>
+                            <div class="quick-win-saving"><i class="fas fa-arrow-down mr-1"></i>${w.saving}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+
+        <!-- Strategic Initiatives -->
+        <div class="ai-section">
+            <div class="ai-section-header">
+                <div class="ai-section-icon purple"><i class="fas fa-chess"></i></div>
+                <div>
+                    <div class="ai-section-title">Strategic Initiatives</div>
+                    <div class="ai-section-subtitle">Medium to long-term transformation actions</div>
+                </div>
+            </div>
+            <div class="ai-section-body">${r.strategic || ''}</div>
+        </div>
+
+        <!-- Malaysian Incentives -->
+        <div class="ai-section">
+            <div class="ai-section-header">
+                <div class="ai-section-icon green"><i class="fas fa-hand-holding-usd"></i></div>
+                <div>
+                    <div class="ai-section-title">Malaysia Green Incentives</div>
+                    <div class="ai-section-subtitle">Grants, tax incentives & schemes you qualify for</div>
+                </div>
+            </div>
+            <div class="ai-section-body">${r.incentives || ''}</div>
+        </div>
+
+        <!-- Bursa Compliance -->
+        <div class="ai-section">
+            <div class="ai-section-header">
+                <div class="ai-section-icon red"><i class="fas fa-clipboard-check"></i></div>
+                <div>
+                    <div class="ai-section-title">Bursa Malaysia Compliance Checklist</div>
+                    <div class="ai-section-subtitle">Regulatory requirements & recommendations</div>
+                </div>
+            </div>
+            <div class="ai-section-body">
+                <table class="compliance-table">
+                    <thead>
+                        <tr>
+                            <th>Requirement</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${(r.compliance||[]).map(c => `
+                            <tr>
+                                <td>${c.item}</td>
+                                <td><span class="status-pill status-${c.status_class}">${c.status}</span></td>
+                                <td style="font-size:12px;color:var(--mid);">${c.priority}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+}
+
+function showError(msg) {
+    document.getElementById('loading-state').classList.remove('active');
+    document.getElementById('generate-btn').style.display = 'flex';
+    alert('Error: ' + msg);
+}
+
+function regenerate() {
+    document.getElementById('roadmap-output').classList.remove('active');
+    document.getElementById('generate-btn').style.display = 'flex';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function downloadRoadmap() {
+    const blob = new Blob([roadmapText || 'Carbon Roadmap — EmittiF.io\n\nGenerated for ' + '{{ session.company }}'], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'carbon_roadmap_' + document.getElementById('sel-year').value + '.txt';
+    a.click(); URL.revokeObjectURL(url);
+}
+
+// Load on start
+document.addEventListener('DOMContentLoaded', loadEmissions);
+document.getElementById('sel-year').addEventListener('change', loadEmissions);
+</script>
+
+{% endblock %}

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EmittiF.iO - Carbon Management Platform{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet">
+    <style>
+        .font-orbitron { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .font-exo { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        
+        /* Remove glow effects completely */
+        .glow-text { text-shadow: none; }
+        .neon-border { 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Force transparent background for floating container */
+        .floating-background {
+            background: transparent !important;
+            background-color: transparent !important;
+        }
+
+        /* Clean typography for body */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        /* Navigation Styles */
+        .nav-gradient {
+            background: linear-gradient(135deg, #0F3B2E 0%, #1A5C48 100%);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-link-custom {
+            color: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+        }
+        
+        .nav-link-custom:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .nav-link-custom.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.15);
+            font-weight: 600;
+        }
+        
+        .dropdown-menu-custom {
+            background: linear-gradient(135deg, #0F3B2E 0%, #1A5C48 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .dropdown-item-custom {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .dropdown-item-custom:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .brand-text {
+            font-weight: 800;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #10B981 0%, #3B82F6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* New: Menu icons styling */
+        .menu-icon {
+            width: 24px;
+            text-align: center;
+            margin-right: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .submenu-indicator {
+            margin-left: auto;
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white font-exo">
+    <!-- Navigation Bar -->
+    <nav class="nav-gradient fixed top-0 left-0 right-0 z-40 py-3 px-6">
+        <div class="container mx-auto">
+            <div class="flex items-center justify-between">
+                <!-- Left: Brand -->
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 flex items-center justify-center">
+                        <i class="fas fa-leaf text-white"></i>
+                    </div>
+                    <!-- FIXED: Changed dashboard_home to dashboard -->
+                    <a href="{{ url_for('dashboard') }}" class="brand-text font-orbitron">EmittiF.iO</a>
+                </div>
+                
+                <!-- Center: Simplified Navigation Links -->
+                <div class="hidden md:flex items-center space-x-4">
+                    <!-- Home Button -->
+                    <!-- FIXED: Changed dashboard_home to dashboard -->
+                    <a href="{{ url_for('dashboard') }}" class="nav-link-custom {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                        <i class="fas fa-home mr-2"></i>Home
+                    </a>
+                    
+                    <!-- Audit Dropdown -->
+                    <div class="relative group">
+                        <button class="nav-link-custom flex items-center">
+                            <i class="fas fa-chart-line mr-2"></i>Audit <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-64 dropdown-menu-custom opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                            <div class="px-4 py-3 border-b border-gray-700">
+                                <p class="text-sm font-semibold text-emerald-300">Audit Management</p>
+                                <p class="text-xs text-gray-400">Comprehensive audit tools</p>
+                            </div>
+                            
+                            <a href="{{ url_for('dashboard') }}" class="block dropdown-item-custom">
+                             <span class="menu-icon">📊</span> Audit Overview
+                            </a>
+                                                        
+                            <a href="/compliance_dashboard" class="block dropdown-item-custom">
+                                <span class="menu-icon">🛡️</span> Compliance & Standards
+                                <span class="submenu-indicator"><i class="fas fa-external-link-alt"></i></span>
+                            </a>
+                            
+                            <a href="/carbon_tax_modeling" class="block dropdown-item-custom">
+                                <span class="menu-icon">💰</span> Carbon Tax & Pricing
+                            </a>
+                            
+                            <a href="/supplier_portal" class="block dropdown-item-custom">
+                                <span class="menu-icon">🏭</span> Suppliers (Scope 3)
+                                <span class="submenu-indicator"><i class="fas fa-arrow-right"></i></span>
+                            </a>
+                            
+                            <a href="/audit_trail" class="block dropdown-item-custom">
+                                <span class="menu-icon">🧾</span> Audit Trail
+                            </a>
+                            
+                            <a href="/source_documents" class="block dropdown-item-custom">
+                                <span class="menu-icon">📂</span> Source Documents
+                            </a>
+                            
+                            <a href="/verifier_mode" class="block dropdown-item-custom">
+                                <span class="menu-icon">🧪</span> Verification & Assurance
+                            </a>
+                            
+                            <a href="/malaysian_reports" class="block dropdown-item-custom">
+                                <span class="menu-icon">🇲🇾</span> Regulatory Reports (Malaysia)
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Services Dropdown -->
+                    <div class="relative group">
+                        <button class="nav-link-custom flex items-center">
+                            <i class="fas fa-cogs mr-2"></i>Services <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-56 dropdown-menu-custom opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                            <div class="px-4 py-3 border-b border-gray-700">
+                                <p class="text-sm font-semibold text-cyan-300">Platform Services</p>
+                                <p class="text-xs text-gray-400">Tools & resources</p>
+                            </div>
+                            
+                            <a href="{{ url_for('services') }}" class="block dropdown-item-custom">
+                                <span class="menu-icon">🛠️</span> ESG & Carbon Services
+                            </a>
+                            
+                            <a href="{{ url_for('marketplace') }}" class="block dropdown-item-custom">
+                                <span class="menu-icon">🧩</span> Marketplace
+                            </a>
+                            
+                            <a href="/courses" class="block dropdown-item-custom">
+                                <span class="menu-icon">🎓</span> Courses & Training
+                                <span class="submenu-indicator text-xs text-gray-400">Coming Soon</span>
+                            </a>
+                            
+                            <div class="border-t border-gray-700 my-2"></div>
+                            
+                            <!-- Quick Access Links -->
+                            <a href="{{ url_for('ai_consultant') }}" class="block dropdown-item-custom">
+                                <span class="menu-icon"><i class="fas fa-robot"></i></span> AI Consultant
+                            </a>
+                            
+                            <a href="{{ url_for('sentinel') }}" class="block dropdown-item-custom">
+                                <span class="menu-icon"><i class="fas fa-shield-alt"></i></span> Carbon Sentinel
+                            </a>
+                            
+                            <a href="{{ url_for('carbon_report') }}" class="block dropdown-item-custom">
+                                <span class="menu-icon"><i class="fas fa-file-alt"></i></span> Reports
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right: Enhanced User Menu with Role Display -->
+                <div class="flex items-center space-x-4">
+                    <div class="relative group">
+                        <div class="flex items-center space-x-2 cursor-pointer nav-link-custom">
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 flex items-center justify-center">
+                                <span class="font-bold">{{ session.get('user', 'U')[0].upper() }}</span>
+                            </div>
+                            <div class="hidden md:block">
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-semibold">{{ session.get('user', 'User') }}</span>
+                                    <span class="text-xs text-gray-300">
+                                        {% set user_role = session.get('role', 'Sustainability Lead') %}
+                                        {% if user_role == 'Admin' %}
+                                            <span class="text-red-300">👑 {{ user_role }}</span>
+                                        {% elif user_role == 'Auditor' %}
+                                            <span class="text-yellow-300">🔍 {{ user_role }}</span>
+                                        {% elif user_role == 'Supplier' %}
+                                            <span class="text-blue-300">🏭 {{ user_role }}</span>
+                                        {% else %}
+                                            <span class="text-emerald-300">🌱 {{ user_role }}</span>
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-down text-sm"></i>
+                        </div>
+                        <div class="absolute right-0 mt-2 w-64 dropdown-menu-custom opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                            <!-- User Profile Header -->
+                            <div class="px-4 py-3 border-b border-gray-700">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 flex items-center justify-center">
+                                        <span class="font-bold text-lg">{{ session.get('user', 'U')[0].upper() }}</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold">{{ session.get('user', 'User') }}</p>
+                                        <p class="text-xs text-gray-400">{{ session.get('email', 'user@example.com') }}</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Role Display -->
+                                <div class="mt-2 p-2 bg-gray-800/50 rounded-lg">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-xs text-gray-300">Role:</span>
+                                        {% set user_role = session.get('role', 'Sustainability Lead') %}
+                                        {% if user_role == 'Admin' %}
+                                            <span class="text-xs font-bold text-red-300">👑 {{ user_role }}</span>
+                                        {% elif user_role == 'Auditor' %}
+                                            <span class="text-xs font-bold text-yellow-300">🔍 {{ user_role }}</span>
+                                        {% elif user_role == 'Supplier' %}
+                                            <span class="text-xs font-bold text-blue-300">🏭 {{ user_role }}</span>
+                                        {% else %}
+                                            <span class="text-xs font-bold text-emerald-300">🌱 {{ user_role }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex justify-between items-center mt-1">
+                                        <span class="text-xs text-gray-300">Company:</span>
+                                        <span class="text-xs font-medium">{{ session.get('company', 'Your Company') }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Menu Items -->
+                            <a href="/profile_settings" class="block dropdown-item-custom">
+                                <i class="fas fa-user-cog mr-3"></i>Profile Settings
+                            </a>
+                            
+                            <a href="/company_settings" class="block dropdown-item-custom">
+                                <i class="fas fa-building mr-3"></i>Company Settings
+                            </a>
+                            
+                            <a href="/notifications" class="block dropdown-item-custom">
+                                <i class="fas fa-bell mr-3"></i>Notifications
+                                <span class="submenu-indicator text-xs bg-red-500 text-white px-2 py-1 rounded-full">3</span>
+                            </a>
+                            
+                            <div class="border-t border-gray-700 my-2"></div>
+                            
+                            <!-- Security Info -->
+                            <div class="px-4 py-2 text-xs text-gray-400">
+                                <i class="fas fa-shield-alt mr-2"></i> Session active
+                                <div class="mt-1 text-green-400">
+                                    <i class="fas fa-check-circle mr-1"></i> Secured connection
+                                </div>
+                            </div>
+                            
+                            <!-- Logout -->
+                            <a href="{{ url_for('logout') }}" 
+                               class="block dropdown-item-custom text-red-300 hover:text-red-100 hover:bg-red-900/20"
+                               onclick="return confirm('Are you sure you want to logout?')">
+                                <i class="fas fa-sign-out-alt mr-3"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Floating Elements - Individual elements only, no container background -->
+    <div class="floating-background fixed inset-0 pointer-events-none z-0">
+        <!-- Individual floating elements without container backgrounds -->
+        <div class="absolute bottom-10 left-10 w-20 h-20 float-free-1 gentle-scale">
+            <div class="w-full h-full rounded-full bg-emerald-500/10">
+                <i class="fas fa-leaf text-emerald-400 text-2xl absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></i>
+            </div>
+        </div>
+
+        <div class="absolute top-20 right-20 w-16 h-16 float-free-2 gentle-scale" style="animation-delay: 1.5s;">
+            <div class="w-full h-full rounded-full bg-cyan-500/10">
+                <i class="fas fa-tree text-cyan-400 text-xl absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></i>
+            </div>
+        </div>
+
+        <div class="absolute top-1/3 left-1/4 w-12 h-12 float-free-3 gentle-scale" style="animation-delay: 3s;">
+            <div class="w-full h-full rounded-full bg-teal-500/10">
+                <i class="fas fa-water text-teal-400 text-lg absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content - Added padding-top for navigation -->
+    <main class="relative z-10 pt-20">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="fixed top-24 right-6 z-50 space-y-2">
+                {% for category, message in messages %}
+                    <div class="bg-{% if category == 'error' %}red-500{% else %}emerald-500{% endif %} text-white px-6 py-3 rounded-xl shadow-lg font-exo animate-fade-in">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Simple hover effect for dropdowns
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdowns = document.querySelectorAll('.group');
+            dropdowns.forEach(dropdown => {
+                dropdown.addEventListener('mouseenter', function() {
+                    const menu = this.querySelector('.dropdown-menu-custom');
+                    if (menu) {
+                        menu.classList.remove('invisible', 'opacity-0');
+                        menu.classList.add('visible', 'opacity-100');
+                    }
+                });
+                
+                dropdown.addEventListener('mouseleave', function() {
+                    const menu = this.querySelector('.dropdown-menu-custom');
+                    if (menu) {
+                        setTimeout(() => {
+                            menu.classList.remove('visible', 'opacity-100');
+                            menu.classList.add('invisible', 'opacity-0');
+                        }, 300);
+                    }
+                });
+            });
+            
+            // Set active nav link based on current page
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.nav-link-custom').forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+            
+            // Enhanced user menu functionality
+            const userMenu = document.querySelector('.relative.group:last-child');
+            if (userMenu) {
+                userMenu.addEventListener('click', function(e) {
+                    if (window.innerWidth < 768) { // Mobile
+                        e.preventDefault();
+                        const menu = this.querySelector('.dropdown-menu-custom');
+                        const isVisible = menu.classList.contains('visible');
+                        
+                        // Close all other dropdowns
+                        document.querySelectorAll('.dropdown-menu-custom').forEach(m => {
+                            m.classList.remove('visible', 'opacity-100');
+                            m.classList.add('invisible', 'opacity-0');
+                        });
+                        
+                        // Toggle this one
+                        if (!isVisible) {
+                            menu.classList.remove('invisible', 'opacity-0');
+                            menu.classList.add('visible', 'opacity-100');
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

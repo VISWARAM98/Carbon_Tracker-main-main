@@ -1,0 +1,427 @@
+{% extends "base_auth.html" %}
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200 px-6 py-5">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">ESG Data Center</h1>
+                <p class="text-sm text-gray-500 mt-1">One-stop hub for all sustainability data collection</p>
+            </div>
+            <button onclick="goToAddData()"
+                class="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-medium transition-colors shadow-sm">
+                <i class="fas fa-plus"></i>
+                <span>Add Data</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 py-6">
+
+        <!-- Quick Stats — live from DB -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                <div class="text-sm text-gray-500">Overall Completion</div>
+                <div class="text-2xl font-bold text-emerald-600" id="stat-completion">
+                    <span class="inline-block w-12 h-6 bg-gray-100 animate-pulse rounded"></span>
+                </div>
+                <div class="text-xs text-gray-400 mt-1">Across all modules</div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                <div class="text-sm text-gray-500">Data Points</div>
+                <div class="text-2xl font-bold text-blue-600" id="stat-datapoints">
+                    <span class="inline-block w-12 h-6 bg-gray-100 animate-pulse rounded"></span>
+                </div>
+                <div class="text-xs text-gray-400 mt-1">This reporting year</div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                <div class="text-sm text-gray-500">Evidence Files</div>
+                <div class="text-2xl font-bold text-purple-600" id="stat-evidence">
+                    <span class="inline-block w-12 h-6 bg-gray-100 animate-pulse rounded"></span>
+                </div>
+                <div class="text-xs text-gray-400 mt-1">Linked to records</div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                <div class="text-sm text-gray-500">Pending Reviews</div>
+                <div class="text-2xl font-bold text-amber-600" id="stat-pending">
+                    <span class="inline-block w-12 h-6 bg-gray-100 animate-pulse rounded"></span>
+                </div>
+                <div class="text-xs text-gray-400 mt-1">Require attention</div>
+            </div>
+        </div>
+
+        <!-- ESG Module Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+
+            <!-- Environmental Card -->
+            <a href="{{ url_for('esg_environmental') }}" class="group block">
+                <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 p-6 h-full">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-emerald-500 rounded-lg flex items-center justify-center mr-4 shadow-sm">
+                            <i class="fas fa-leaf text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-gray-800">Environmental</h3>
+                            <p class="text-xs text-gray-500">Energy, Fuel, Water, Waste</p>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">Completion</span>
+                            <span class="font-bold text-emerald-700" id="env-completion">—</span>
+                        </div>
+                        <div class="w-full bg-emerald-200 rounded-full h-2">
+                            <div class="bg-emerald-500 h-2 rounded-full transition-all duration-700" id="env-progress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-500 flex items-center">
+                        <i class="fas fa-database mr-2"></i>
+                        <span id="env-record-count">Loading...</span>
+                    </div>
+                    <div class="mt-2 text-sm flex items-center" id="env-status-msg">
+                        <span class="text-gray-400 text-xs">Calculating...</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Social Card -->
+            <a href="{{ url_for('esg_social') }}" class="group block">
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 p-6 h-full">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mr-4 shadow-sm">
+                            <i class="fas fa-users text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-gray-800">Social</h3>
+                            <p class="text-xs text-gray-500">Workforce, Safety, Training</p>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">Completion</span>
+                            <span class="font-bold text-blue-700" id="social-completion">—</span>
+                        </div>
+                        <div class="w-full bg-blue-200 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full transition-all duration-700" id="social-progress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-500 flex items-center">
+                        <i class="fas fa-database mr-2"></i>
+                        <span id="social-record-count">Loading...</span>
+                    </div>
+                    <div class="mt-2 text-sm flex items-center" id="social-status-msg">
+                        <span class="text-gray-400 text-xs">Calculating...</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Governance Card -->
+            <a href="{{ url_for('esg_governance') }}" class="group block">
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 p-6 h-full">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mr-4 shadow-sm">
+                            <i class="fas fa-balance-scale text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-gray-800">Governance</h3>
+                            <p class="text-xs text-gray-500">Risk, Compliance, Ethics</p>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">Completion</span>
+                            <span class="font-bold text-purple-700" id="gov-completion">—</span>
+                        </div>
+                        <div class="w-full bg-purple-200 rounded-full h-2">
+                            <div class="bg-purple-500 h-2 rounded-full transition-all duration-700" id="gov-progress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-500 flex items-center">
+                        <i class="fas fa-database mr-2"></i>
+                        <span id="gov-record-count">Loading...</span>
+                    </div>
+                    <div class="mt-2 text-sm flex items-center" id="gov-status-msg">
+                        <span class="text-gray-400 text-xs">Calculating...</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Supply Chain Card -->
+            <a href="{{ url_for('esg_supply_chain') }}" class="group block">
+                <div class="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 p-6 h-full">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-amber-500 rounded-lg flex items-center justify-center mr-4 shadow-sm">
+                            <i class="fas fa-truck text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-gray-800">Supply Chain</h3>
+                            <p class="text-xs text-gray-500">Scope 3, Supplier Data</p>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">Completion</span>
+                            <span class="font-bold text-amber-700" id="supply-completion">—</span>
+                        </div>
+                        <div class="w-full bg-amber-200 rounded-full h-2">
+                            <div class="bg-amber-500 h-2 rounded-full transition-all duration-700" id="supply-progress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-500 flex items-center">
+                        <i class="fas fa-database mr-2"></i>
+                        <span id="supply-record-count">Loading...</span>
+                    </div>
+                    <div class="mt-2 text-sm flex items-center" id="supply-status-msg">
+                        <span class="text-gray-400 text-xs">Calculating...</span>
+                    </div>
+                </div>
+            </a>
+
+        </div>
+
+        <!-- Recent Activity — live from DB -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="font-bold text-lg text-gray-800">Recent Data Activity</h3>
+                <button onclick="loadDataCenterStats()"
+                    class="text-sm text-emerald-600 hover:text-emerald-800 flex items-center space-x-1">
+                    <i class="fas fa-sync-alt"></i><span>Refresh</span>
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 rounded-lg">
+                        <tr>
+                            <th class="py-3 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                            <th class="py-3 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Module</th>
+                            <th class="py-3 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Activity</th>
+                            <th class="py-3 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Quantity</th>
+                            <th class="py-3 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-activity-body" class="divide-y divide-gray-100">
+                        <tr>
+                            <td colspan="5" class="text-center py-8 text-gray-400">
+                                <div class="animate-spin inline-block h-5 w-5 border-b-2 border-emerald-500 rounded-full mr-2"></div>
+                                Loading recent activity...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+function goToAddData() {
+    window.location.href = '/dashboard#addData';
+}
+
+async function loadDataCenterStats() {
+    try {
+        // Fetch environmental records
+        const envRes = await fetch('/api/environmental/list');
+        const envData = await envRes.json();
+
+        if (envData.success) {
+            const records = envData.records || [];
+            const currentYear = new Date().getFullYear();
+            const yearRecords = records.filter(r => r.reporting_year == currentYear);
+
+            // Count by sub-module
+            const fuelActivities = ['diesel', 'gasoline', 'natural_gas', 'lpg', 'coal', 'ron95', 'ron97', 'petrol'];
+            let hasEnergy = false, hasFuel = false, hasWater = false, hasWaste = false;
+
+            records.forEach(r => {
+                if (r.module_type === 'energy') {
+                    if (fuelActivities.includes(r.activity_type)) hasFuel = true;
+                    else hasEnergy = true;
+                } else if (r.module_type === 'water') hasWater = true;
+                else if (r.module_type === 'waste') hasWaste = true;
+            });
+
+            const filledModules = [hasEnergy, hasFuel, hasWater, hasWaste].filter(Boolean).length;
+            const envPct = Math.round((filledModules / 4) * 100);
+
+            // Update env card
+            document.getElementById('env-completion').textContent = envPct + '%';
+            document.getElementById('env-progress').style.width = envPct + '%';
+            document.getElementById('env-record-count').textContent = records.length + ' records total';
+
+            // Missing modules message
+            const missing = [];
+            if (!hasEnergy) missing.push('Electricity');
+            if (!hasFuel) missing.push('Fuel');
+            if (!hasWater) missing.push('Water');
+            if (!hasWaste) missing.push('Waste');
+
+            const statusEl = document.getElementById('env-status-msg');
+            if (missing.length === 0) {
+                statusEl.innerHTML = '<i class="fas fa-check-circle text-emerald-500 mr-1"></i><span class="text-emerald-600 text-xs">All categories filled</span>';
+            } else {
+                statusEl.innerHTML = `<i class="fas fa-exclamation-circle text-amber-500 mr-1"></i><span class="text-amber-600 text-xs">Missing: ${missing.join(', ')}</span>`;
+            }
+
+            // Update top stats
+            document.getElementById('stat-datapoints').textContent = records.length;
+
+            // Overall completion (env only for now, others hardcoded until their APIs exist)
+            
+            // Pending count (submitted status)
+            const pending = records.filter(r => r.status === 'submitted').length;
+            document.getElementById('stat-pending').textContent = pending;
+
+            // Evidence count — rough estimate from records with evidence
+            const withEvidence = records.filter(r => r.evidence_count > 0).length;
+            document.getElementById('stat-evidence').textContent = withEvidence;
+
+           // Social/Gov/Supply — live from API
+            const dashYear = new Date().getFullYear();  // fixed: yearSelect doesn't exist on this page
+            const statsRes = await fetch(`/api/dashboard/stats?year=${dashYear}`);
+            const stats = await statsRes.json();
+            if (stats.success) {
+            updateModuleCard('social', stats.social.pct, stats.social.status,
+            `${stats.social.fields_filled} fields filled · ${stats.social.survey_responses} survey responses`);
+            updateModuleCard('gov', stats.governance.pct, stats.governance.status,
+            `${stats.governance.fields_filled} fields filled`);
+            updateModuleCard('supply', stats.supply.pct, stats.supply.status,
+            `${stats.supply.total} suppliers · ${stats.supply.responded} responded`);
+
+            // Use real env pct from API if available, else fall back to local calculation
+            const realEnvPct = stats.environmental ? stats.environmental.pct : envPct;
+
+            // Update evidence count from real DB data
+            if (stats.environmental) {
+                document.getElementById('stat-evidence').textContent = stats.environmental.evidence_files;
+            }
+
+    // Overall completion using real data from all 4 pillars
+    const overallPct = Math.round(realEnvPct * 0.4 + stats.social.pct * 0.2 + stats.governance.pct * 0.2 + stats.supply.pct * 0.2);
+    document.getElementById('stat-completion').textContent = overallPct + '%';
+}
+            // Recent activity table
+            renderRecentActivity(records);
+        }
+
+    } catch (err) {
+        console.error('Error loading data center stats:', err);
+        document.getElementById('stat-completion').textContent = '—';
+        document.getElementById('stat-datapoints').textContent = '—';
+        document.getElementById('stat-evidence').textContent = '—';
+        document.getElementById('stat-pending').textContent = '—';
+    }
+
+    // ── Intensity section: fetch from API and stop the spinner ──
+    try {
+        const intRes = await fetch(`/api/environmental/intensity?year=${new Date().getFullYear()}`);
+        const intData = await intRes.json();
+        // Stop any intensity spinners regardless of result
+        document.querySelectorAll('[id*="intensity"][class*="spin"], [id*="intensity"][class*="loading"], .intensity-spinner, .intensity-loading').forEach(el => {
+            el.style.display = 'none';
+        });
+        if (intData.success && intData.data) {
+            // Populate intensity values if elements exist
+            const d = intData.data;
+            ['energy','water','waste','land'].forEach(mod => {
+                const el = document.getElementById(`${mod}-intensity-value`);
+                if (el && d[mod]) el.textContent = d[mod].intensity_value
+                    ? `${d[mod].intensity_value.toFixed(2)} ${d[mod].intensity_unit || ''}`
+                    : '—';
+            });
+        }
+    } catch (intErr) {
+        console.warn('Intensity load failed (non-critical):', intErr);
+        // Still stop any stuck spinners
+        document.querySelectorAll('[id*="intensity"][class*="spin"], [id*="intensity"][class*="loading"], .intensity-spinner, .intensity-loading').forEach(el => {
+            el.style.display = 'none';
+        });
+    }
+}
+
+function updateModuleCard(module, pct, statusMsg, countMsg) {
+    const completionEl = document.getElementById(`${module}-completion`);
+    const progressEl = document.getElementById(`${module}-progress`);
+    const countEl = document.getElementById(`${module}-record-count`);
+    const statusEl = document.getElementById(`${module}-status-msg`);
+
+    if (completionEl) completionEl.textContent = pct + '%';
+    if (progressEl) progressEl.style.width = pct + '%';
+    if (countEl) countEl.textContent = countMsg;
+    if (statusEl) statusEl.innerHTML = `<span class="text-amber-600 text-xs"><i class="fas fa-exclamation-circle mr-1"></i>${statusMsg}</span>`;
+}
+
+function renderRecentActivity(records) {
+    const tbody = document.getElementById('recent-activity-body');
+    if (!records || records.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="text-center py-8 text-gray-400">
+                    <i class="fas fa-inbox text-3xl mb-2 block opacity-30"></i>
+                    No activity yet. <a href="/dashboard" class="text-emerald-600 underline">Add your first data point</a>
+                </td>
+            </tr>`;
+        return;
+    }
+
+    // Show latest 10 records
+    const recent = [...records].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 10);
+
+    const statusBadges = {
+        draft: 'bg-gray-100 text-gray-600',
+        submitted: 'bg-amber-100 text-amber-700',
+        reviewed: 'bg-blue-100 text-blue-700',
+        approved: 'bg-emerald-100 text-emerald-700'
+    };
+
+    const moduleLabels = {
+        energy: 'Environmental → Energy',
+        water: 'Environmental → Water',
+        waste: 'Environmental → Waste',
+        land_biodiversity: 'Environmental → Land'
+    };
+
+    const fuelActivities = ['diesel', 'gasoline', 'natural_gas', 'lpg', 'coal', 'ron95', 'ron97', 'petrol'];
+
+    let html = '';
+    recent.forEach(r => {
+        const date = r.created_at ? timeAgo(r.created_at) : '—';
+        const isFuel = r.module_type === 'energy' && fuelActivities.includes(r.activity_type);
+        const moduleLabel = isFuel ? 'Environmental → Fuel' : (moduleLabels[r.module_type] || r.module_type);
+        const activity = r.activity_type ? r.activity_type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '—';
+        const badgeClass = statusBadges[r.status] || 'bg-gray-100 text-gray-500';
+
+        html += `
+            <tr class="hover:bg-gray-50 transition-colors">
+                <td class="py-3 px-4 text-sm text-gray-500">${date}</td>
+                <td class="py-3 px-4 text-sm font-medium text-gray-700">${moduleLabel}</td>
+                <td class="py-3 px-4 text-sm text-gray-600">${activity}</td>
+                <td class="py-3 px-4 text-sm text-gray-600">${r.quantity} ${r.unit}</td>
+                <td class="py-3 px-4">
+                    <span class="px-2 py-1 text-xs rounded-full ${badgeClass}">${r.status}</span>
+                </td>
+            </tr>`;
+    });
+
+    tbody.innerHTML = html;
+}
+
+function timeAgo(dateStr) {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000);
+
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+    if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
+    return date.toLocaleDateString('en-MY');
+}
+
+// Load on page ready
+document.addEventListener('DOMContentLoaded', loadDataCenterStats);
+</script>
+
+{% endblock %}

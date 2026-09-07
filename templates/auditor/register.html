@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set Up Your Auditor Account — EmitIQ</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0b0f0c;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .card {
+            background: #111612;
+            border: 1px solid #1e2d21;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 480px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: #0b0f0c;
+            border-bottom: 1px solid #1e2d21;
+            padding: 28px 32px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            color: #22c55e;
+            letter-spacing: -0.03em;
+            margin-bottom: 6px;
+        }
+
+        .logo span { color: #e8f5eb; }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(34,197,94,0.1);
+            border: 1px solid rgba(34,197,94,0.2);
+            color: #22c55e;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            padding: 4px 12px;
+            border-radius: 100px;
+            margin-top: 8px;
+        }
+
+        .card-body { padding: 32px; }
+
+        .welcome-text {
+            font-size: 20px;
+            font-weight: 700;
+            color: #e8f5eb;
+            margin-bottom: 6px;
+        }
+
+        .sub-text {
+            font-size: 13px;
+            color: #6b8f72;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .company-box {
+            background: #141a15;
+            border: 1px solid #1e2d21;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .company-icon {
+            width: 36px;
+            height: 36px;
+            background: rgba(34,197,94,0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #22c55e;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .company-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: #6b8f72;
+            margin-bottom: 2px;
+        }
+
+        .company-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: #22c55e;
+        }
+
+        .form-group { margin-bottom: 16px; }
+
+        label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #6b8f72;
+            margin-bottom: 7px;
+        }
+
+        input {
+            width: 100%;
+            padding: 11px 14px;
+            background: #141a15;
+            border: 1px solid #253029;
+            border-radius: 8px;
+            color: #e8f5eb;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus { border-color: #22c55e; }
+        input:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        input::placeholder { color: #3a5c40; }
+
+        .password-wrap { position: relative; }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6b8f72;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px;
+        }
+
+        .password-toggle:hover { color: #e8f5eb; }
+
+        .strength-bar {
+            height: 3px;
+            background: #1e2d21;
+            border-radius: 100px;
+            margin-top: 6px;
+            overflow: hidden;
+        }
+
+        .strength-fill {
+            height: 100%;
+            border-radius: 100px;
+            transition: width 0.3s, background 0.3s;
+            width: 0%;
+        }
+
+        .strength-text {
+            font-size: 10px;
+            color: #6b8f72;
+            margin-top: 4px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 13px;
+            background: #052e16;
+            border: 1px solid #16a34a;
+            border-radius: 10px;
+            color: #4ade80;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .btn:hover {
+            background: #16a34a;
+            border-color: #22c55e;
+            color: white;
+        }
+
+        .expiry-note {
+            text-align: center;
+            font-size: 11px;
+            color: #3a5c40;
+            margin-top: 16px;
+        }
+
+        .expiry-note strong { color: #6b8f72; }
+
+        .features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .feature {
+            background: #141a15;
+            border: 1px solid #1e2d21;
+            border-radius: 8px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feature i {
+            color: #22c55e;
+            font-size: 12px;
+            width: 14px;
+        }
+
+        .feature-text {
+            font-size: 11px;
+            color: #6b8f72;
+            line-height: 1.3;
+        }
+
+        .divider {
+            height: 1px;
+            background: #1e2d21;
+            margin: 20px 0;
+        }
+
+        .flash-error {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.2);
+            color: #f87171;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="card-header">
+        <div class="logo">Emit<span>IQ</span></div>
+        <div class="badge"><i class="fas fa-shield-alt"></i> Auditor Portal</div>
+    </div>
+
+    <div class="card-body">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="flash-error">
+                    <i class="fas fa-exclamation-circle"></i> {{ message }}
+                </div>
+            {% endfor %}
+        {% endwith %}
+
+        <div class="welcome-text">Welcome, {{ auditor_name }}! 👋</div>
+        <p class="sub-text">You've been invited to audit the ESG and carbon data for:</p>
+
+        <div class="company-box">
+            <div class="company-icon"><i class="fas fa-building"></i></div>
+            <div>
+                <div class="company-label">Company</div>
+                <div class="company-name">{{ company_name }}</div>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <i class="fas fa-eye"></i>
+                <div class="feature-text">View ESG data & emissions</div>
+            </div>
+            <div class="feature">
+                <i class="fas fa-file-alt"></i>
+                <div class="feature-text">Access evidence files</div>
+            </div>
+            <div class="feature">
+                <i class="fas fa-comment-alt"></i>
+                <div class="feature-text">Leave review comments</div>
+            </div>
+            <div class="feature">
+                <i class="fas fa-check-circle"></i>
+                <div class="feature-text">Sign off on audit</div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <form method="POST" action="/auditor/register/{{ token }}">
+            <div class="form-group">
+                <label>Your Email</label>
+                <input type="email" value="{{ auditor_email }}" disabled>
+            </div>
+
+            <div class="form-group">
+                <label>Set Password</label>
+                <div class="password-wrap">
+                    <input type="password" id="password" name="password"
+                           placeholder="Min. 8 characters" required
+                           oninput="checkStrength(this.value)">
+                    <button type="button" class="password-toggle"
+                            onclick="togglePassword('password', this)">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <div class="strength-bar">
+                    <div class="strength-fill" id="strengthFill"></div>
+                </div>
+                <div class="strength-text" id="strengthText">Enter a password</div>
+            </div>
+
+            <div class="form-group">
+                <label>Confirm Password</label>
+                <div class="password-wrap">
+                    <input type="password" id="password2" name="password2"
+                           placeholder="Repeat your password" required>
+                    <button type="button" class="password-toggle"
+                            onclick="togglePassword('password2', this)">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn">
+                <i class="fas fa-lock"></i> Activate My Auditor Account
+            </button>
+        </form>
+
+        <div class="expiry-note">
+            ⏳ This invite expires on <strong>{{ expires_at }}</strong>
+        </div>
+
+    </div>
+</div>
+
+<script>
+function togglePassword(id, btn) {
+    const input = document.getElementById(id);
+    const icon  = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'fas fa-eye';
+    }
+}
+
+function checkStrength(val) {
+    const fill = document.getElementById('strengthFill');
+    const text = document.getElementById('strengthText');
+    let score = 0;
+    if (val.length >= 8)  score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+    const levels = [
+        { pct: '0%',   color: '#ef4444', label: 'Too short' },
+        { pct: '25%',  color: '#ef4444', label: 'Weak' },
+        { pct: '50%',  color: '#f59e0b', label: 'Fair' },
+        { pct: '75%',  color: '#3b82f6', label: 'Good' },
+        { pct: '100%', color: '#22c55e', label: 'Strong 💪' },
+    ];
+    const l = levels[score];
+    fill.style.width      = l.pct;
+    fill.style.background = l.color;
+    text.textContent      = l.label;
+    text.style.color      = l.color;
+}
+</script>
+
+</body>
+</html>

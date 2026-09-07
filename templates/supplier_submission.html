@@ -1,0 +1,430 @@
+{% extends "base.html" %}
+
+{% block title %}Supplier Data Submission - EmittiF{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" style="max-width: 800px;">
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h1 class="h2 mb-3">📋 Supplier Data Submission</h1>
+            <div class="alert alert-info">
+                <i class="bi bi-shield-check"></i>
+                <strong>Secure Submission Portal</strong> - Your data is protected and will only be shared with the requesting company.
+            </div>
+        </div>
+    </div>
+
+    <!-- Invitation Details -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Invitation Details</h5>
+                </div>
+                <div class="card-body">
+                    {% if invitation %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Requested By:</strong> {{ invitation.corporate_user_id }}</p>
+                            <p><strong>Scope 3 Category:</strong> 
+                                <span class="badge bg-info">{{ invitation.scope3_category|replace('_', ' ')|title }}</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Invitation Created:</strong> {{ invitation.created_date[:10] }}</p>
+                            <p><strong>Expires:</strong> {{ invitation.expiry_date[:10] }}
+                                {% if invitation.expiry_date < now %}
+                                <span class="badge bg-danger">Expired</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Invalid or expired invitation link. Please contact the requesting company for a new invitation.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if invitation and invitation.status == 'pending' and invitation.expiry_date > now %}
+    <!-- Data Submission Form -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clipboard-data"></i> SEDG-Aligned Data Collection
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="supplierForm">
+                        <input type="hidden" id="token" value="{{ token }}">
+                        
+                        <!-- Company Information -->
+                        <div class="mb-4">
+                            <h5>1. Company Information</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Company Name *</label>
+                                    <input type="text" class="form-control" id="companyName" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Registration Number</label>
+                                    <input type="text" class="form-control" id="registrationNumber">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Contact Person *</label>
+                                    <input type="text" class="form-control" id="contactPerson" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Contact Email *</label>
+                                    <input type="email" class="form-control" id="contactEmail" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Company Address</label>
+                                    <textarea class="form-control" id="companyAddress" rows="2"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Energy Consumption -->
+                        <div class="mb-4">
+                            <h5>2. Energy Consumption (Last 12 Months)</h5>
+                            <div class="alert alert-secondary">
+                                <i class="bi bi-info-circle"></i>
+                                This information helps calculate Scope 2 emissions from your operations.
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Electricity Consumption (kWh)</label>
+                                    <input type="number" class="form-control" id="electricityConsumption" min="0" step="100">
+                                    <div class="form-text">Total kWh consumed</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Fuel Consumption (Liters)</label>
+                                    <input type="number" class="form-control" id="fuelConsumption" min="0" step="10">
+                                    <div class="form-text">Diesel, gasoline, natural gas</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Renewable Energy (%)</label>
+                                    <input type="number" class="form-control" id="renewableEnergy" min="0" max="100" value="0">
+                                    <div class="form-text">Percentage from solar/wind/hydro</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Material/Product Information -->
+                        <div class="mb-4">
+                            <h5>3. Material/Product Quantities</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Primary Material</label>
+                                    <input type="text" class="form-control" id="primaryMaterial" 
+                                           placeholder="e.g., Steel, Plastic, Electronics">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Annual Quantity (kg)</label>
+                                    <input type="number" class="form-control" id="materialQuantity" min="0">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Transport Distance (km)</label>
+                                    <input type="number" class="form-control" id="transportDistance" min="0">
+                                    <div class="form-text">Average distance to customer</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Transport Mode</label>
+                                    <select class="form-select" id="transportMode">
+                                        <option value="">Select mode</option>
+                                        <option value="road">Road</option>
+                                        <option value="rail">Rail</option>
+                                        <option value="sea">Sea</option>
+                                        <option value="air">Air</option>
+                                        <option value="mixed">Mixed</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Waste Management -->
+                        <div class="mb-4">
+                            <h5>4. Waste Generation</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Total Waste (kg/year)</label>
+                                    <input type="number" class="form-control" id="totalWaste" min="0">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Recycling Rate (%)</label>
+                                    <input type="number" class="form-control" id="recyclingRate" min="0" max="100" value="0">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Hazardous Waste (kg/year)</label>
+                                    <input type="number" class="form-control" id="hazardousWaste" min="0">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Environmental Initiatives -->
+                        <div class="mb-4">
+                            <h5>5. Environmental Initiatives</h5>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="hasEMS">
+                                    <label class="form-check-label" for="hasEMS">
+                                        Have Environmental Management System (ISO 14001)
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="hasCarbonTarget">
+                                    <label class="form-check-label" for="hasCarbonTarget">
+                                        Have carbon reduction target
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="usesRenewables">
+                                    <label class="form-check-label" for="usesRenewables">
+                                        Use renewable energy
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Additional Notes</label>
+                                <textarea class="form-control" id="additionalNotes" rows="3"
+                                          placeholder="Any additional environmental information or initiatives..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- Data Privacy -->
+                        <div class="alert alert-warning">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="dataPrivacy" required>
+                                <label class="form-check-label" for="dataPrivacy">
+                                    <strong>I confirm that:</strong>
+                                    <ul class="small mt-2 mb-0">
+                                        <li>The information provided is accurate to the best of my knowledge</li>
+                                        <li>This data will be used only for the requesting company's Scope 3 emissions calculation</li>
+                                        <li>I have the authority to share this information</li>
+                                    </ul>
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <!-- Submission Progress -->
+                    <div id="submissionProgress" class="d-none text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3">Submitting your data...</p>
+                    </div>
+                    
+                    <!-- Submission Success -->
+                    <div id="submissionSuccess" class="d-none text-center">
+                        <i class="bi bi-check-circle display-1 text-success"></i>
+                        <h4 class="mt-3">Data Submitted Successfully!</h4>
+                        <p>Thank you for contributing to sustainable supply chain management.</p>
+                        <p class="text-muted">Your submission ID: <span id="submissionId"></span></p>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="button" class="btn btn-success btn-lg w-100" 
+                            onclick="submitSupplierData()" id="submitButton">
+                        <i class="bi bi-send"></i> Submit Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Data Use Explanation -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-question-circle"></i> How Your Data Will Be Used
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>For Scope 3 Calculation</h6>
+                            <p>Your data helps calculate:</p>
+                            <ul>
+                                <li><strong>Category 1:</strong> Purchased Goods & Services emissions</li>
+                                <li><strong>Category 4:</strong> Upstream Transportation emissions</li>
+                                <li><strong>Category 5:</strong> Waste-related emissions</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>SEDG Framework</h6>
+                            <p>This form follows Malaysia's <strong>Simplified ESG Disclosure Guide</strong> for SMEs:</p>
+                            <ul>
+                                <li>Basic environmental metrics</li>
+                                <li>Simple, standardized format</li>
+                                <li>Malaysian context-specific</li>
+                                <li>One-time submission</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="alert alert-success mt-3">
+                        <i class="bi bi-shield-check"></i>
+                        <strong>Data Privacy:</strong> Your information is stored securely and only shared with the requesting company for emissions calculation purposes.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% elif invitation.status == 'submitted' %}
+    <!-- Already Submitted -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-check-circle display-1 text-success"></i>
+                    <h3 class="mt-3">Already Submitted</h3>
+                    <p class="text-muted">You have already submitted data for this invitation on {{ invitation.submission_date[:10] }}.</p>
+                    <p>If you need to update your submission, please contact {{ invitation.corporate_user_id }} directly.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- JavaScript -->
+<script>
+function submitSupplierData() {
+    // Validate form
+    const form = document.getElementById('supplierForm');
+    if (!form.checkValidity()) {
+        form.classList.add('was-validated');
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    if (!document.getElementById('dataPrivacy').checked) {
+        alert('Please agree to the data privacy terms');
+        return;
+    }
+    
+    // Collect form data
+    const formData = {
+        token: document.getElementById('token').value,
+        company_info: {
+            name: document.getElementById('companyName').value,
+            registration_number: document.getElementById('registrationNumber').value,
+            contact_person: document.getElementById('contactPerson').value,
+            contact_email: document.getElementById('contactEmail').value,
+            address: document.getElementById('companyAddress').value
+        },
+        energy_consumption: {
+            electricity_kwh: document.getElementById('electricityConsumption').value || 0,
+            fuel_liters: document.getElementById('fuelConsumption').value || 0,
+            renewable_percentage: document.getElementById('renewableEnergy').value || 0
+        },
+        materials: {
+            primary_material: document.getElementById('primaryMaterial').value,
+            annual_quantity_kg: document.getElementById('materialQuantity').value || 0,
+            transport_distance_km: document.getElementById('transportDistance').value || 0,
+            transport_mode: document.getElementById('transportMode').value
+        },
+        waste: {
+            total_waste_kg: document.getElementById('totalWaste').value || 0,
+            recycling_rate: document.getElementById('recyclingRate').value || 0,
+            hazardous_waste_kg: document.getElementById('hazardousWaste').value || 0
+        },
+        initiatives: {
+            has_ems: document.getElementById('hasEMS').checked,
+            has_carbon_target: document.getElementById('hasCarbonTarget').checked,
+            uses_renewables: document.getElementById('usesRenewables').checked,
+            additional_notes: document.getElementById('additionalNotes').value
+        },
+        submission_date: new Date().toISOString(),
+        sedg_version: '2024',
+        reporting_period: new Date().getFullYear() - 1 // Previous year
+    };
+    
+    // Show progress
+    document.getElementById('submissionProgress').classList.remove('d-none');
+    document.getElementById('submitButton').disabled = true;
+    
+    // Submit data
+    fetch('/api/submit-supplier-data', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            token: formData.token,
+            supplier_data: formData
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('submissionProgress').classList.add('d-none');
+        
+        if (data.success) {
+            // Show success
+            document.getElementById('submissionSuccess').classList.remove('d-none');
+            document.getElementById('submissionId').textContent = data.invitation_id;
+            document.getElementById('supplierForm').classList.add('d-none');
+            document.querySelector('.card-footer').classList.add('d-none');
+        } else {
+            alert('Submission failed: ' + data.message);
+            document.getElementById('submitButton').disabled = false;
+        }
+    })
+    .catch(error => {
+        document.getElementById('submissionProgress').classList.add('d-none');
+        alert('Network error: ' + error.message);
+        document.getElementById('submitButton').disabled = false;
+    });
+}
+
+// Auto-calculate suggestions
+document.addEventListener('DOMContentLoaded', function() {
+    // If electricity consumption is entered, suggest fuel consumption
+    const electricityInput = document.getElementById('electricityConsumption');
+    electricityInput.addEventListener('blur', function() {
+        const electricity = parseFloat(this.value) || 0;
+        const fuelInput = document.getElementById('fuelConsumption');
+        
+        if (electricity > 0 && (!fuelInput.value || fuelInput.value == 0)) {
+            // Rough estimate: 0.1 liters of fuel per kWh for industrial operations
+            const suggestedFuel = Math.round(electricity * 0.1);
+            fuelInput.value = suggestedFuel;
+        }
+    });
+    
+    // If material quantity entered, suggest transport distance
+    const materialInput = document.getElementById('materialQuantity');
+    materialInput.addEventListener('blur', function() {
+        const quantity = parseFloat(this.value) || 0;
+        const distanceInput = document.getElementById('transportDistance');
+        
+        if (quantity > 0 && (!distanceInput.value || distanceInput.value == 0)) {
+            // Rough estimate: average 50km transport for Malaysian context
+            distanceInput.value = 50;
+        }
+    });
+});
+</script>
+
+<style>
+.form-check-input:checked {
+    background-color: #0F3B2E;
+    border-color: #0F3B2E;
+}
+
+.card-header {
+    font-weight: bold;
+}
+
+.alert ul {
+    margin-bottom: 0;
+}
+</style>
+{% endblock %}

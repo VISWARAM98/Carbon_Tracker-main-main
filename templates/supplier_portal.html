@@ -1,0 +1,501 @@
+{% extends "base.html" %}
+
+{% block title %}Supplier Portal - EmittiF{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h2 mb-0">🔗 Scope 3 Supplier Portal</h1>
+                <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#invitationModal">
+                    <i class="bi bi-plus-circle"></i> New Invitation
+                </button>
+            </div>
+            <p class="text-muted">Collect Scope 3 emissions data from your SME suppliers via secure invitation links (SEDG-aligned).</p>
+        </div>
+    </div>
+
+    <!-- Supplier Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Total Invitations</h6>
+                    <h2 class="mb-0">{{ invitations|length }}</h2>
+                    <small>All sent invitations</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Submitted</h6>
+                    <h2 class="mb-0">{{ invitations|selectattr('status', 'equalto', 'submitted')|list|length }}</h2>
+                    <small>Data received</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Pending</h6>
+                    <h2 class="mb-0">{{ invitations|selectattr('status', 'equalto', 'pending')|list|length }}</h2>
+                    <small>Awaiting response</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Expired</h6>
+                    <h2 class="mb-0">{{ invitations|selectattr('status', 'equalto', 'expired')|list|length }}</h2>
+                    <small>Links expired</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invitations Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Supplier Invitations</h5>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-light" onclick="filterInvitations('all')">All</button>
+                        <button class="btn btn-sm btn-outline-light" onclick="filterInvitations('pending')">Pending</button>
+                        <button class="btn btn-sm btn-outline-light" onclick="filterInvitations('submitted')">Submitted</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if invitations %}
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="invitationsTable">
+                            <thead>
+                                <tr>
+                                    <th>Supplier</th>
+                                    <th>Email</th>
+                                    <th>Scope 3 Category</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Expires</th>
+                                    <th>Invitation Link</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for invite in invitations %}
+                                <tr data-status="{{ invite[6] }}"> <!-- status column -->
+                                    <td>
+                                        <strong>{{ invite[4] or 'Unnamed Supplier' }}</strong>
+                                    </td>
+                                    <td>{{ invite[3] }}</td>
+                                    <td>
+                                        <span class="badge bg-info">{{ invite[5] }}</span>
+                                    </td>
+                                    <td>
+                                        {% if invite[6] == 'submitted' %}
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle"></i> Submitted
+                                        </span>
+                                        {% elif invite[6] == 'pending' %}
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="bi bi-clock"></i> Pending
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ invite[6] }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ invite[7][:10] if invite[7] else 'N/A' }}</td>
+                                    <td>
+                                        {% if invite[8] %}
+                                        {{ invite[8][:10] }}
+                                        {% if invite[8] < now %}
+                                        <span class="badge bg-danger">Expired</span>
+                                        {% endif %}
+                                        {% else %}
+                                        N/A
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control form-control-sm" 
+                                                   value="{{ url_for('supplier_submission_portal', token=invite[9], _external=True) if invite[9] else 'No token' }}" 
+                                                   id="link{{ invite[0] }}" readonly>
+                                            <button class="btn btn-outline-primary" type="button"
+                                                    onclick="copyInvitationLink('link{{ invite[0] }}')">
+                                                <i class="bi bi-copy"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            {% if invite[6] == 'submitted' and invite[10] %}
+                                            <button class="btn btn-outline-success" 
+                                                    onclick="viewSupplierData('{{ invite[1] }}')">
+                                                <i class="bi bi-eye"></i> View Data
+                                            </button>
+                                            {% endif %}
+                                            <button class="btn btn-outline-primary" 
+                                                    onclick="resendInvitation('{{ invite[1] }}')">
+                                                <i class="bi bi-send"></i> Resend
+                                            </button>
+                                            <button class="btn btn-outline-danger" 
+                                                    onclick="deleteInvitation('{{ invite[1] }}')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-people display-1 text-muted"></i>
+                        <h4 class="mt-3">No supplier invitations yet</h4>
+                        <p class="text-muted">Create your first invitation to collect Scope 3 data from suppliers.</p>
+                        <button class="btn btn-dark mt-2" data-bs-toggle="modal" data-bs-target="#invitationModal">
+                            <i class="bi bi-plus-circle"></i> Create First Invitation
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scope 3 Mapping Guide -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-diagram-3"></i> Scope 3 Category Mapping Guide
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>SEDG-Aligned Data Collection</h6>
+                            <p>Suppliers will be asked for:</p>
+                            <ul>
+                                <li>Energy consumption (electricity, fuel)</li>
+                                <li>Material/Product quantities</li>
+                                <li>Transportation distances</li>
+                                <li>Waste generation</li>
+                                <li>Basic company information</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Automatic Mapping to Your Scope 3</h6>
+                            <p>Supplier data automatically maps to:</p>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Category 1:</strong></td>
+                                    <td>Purchased Goods & Services</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Category 4:</strong></td>
+                                    <td>Upstream Transportation</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Category 5:</strong></td>
+                                    <td>Waste Generated in Operations</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Category 9:</strong></td>
+                                    <td>Downstream Transportation</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Invitation Modal -->
+<div class="modal fade" id="invitationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Supplier Invitation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="invitationForm">
+                    <div class="mb-3">
+                        <label class="form-label">Supplier Email *</label>
+                        <input type="email" class="form-control" id="supplierEmail" 
+                               placeholder="supplier@company.com" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Supplier Name</label>
+                        <input type="text" class="form-control" id="supplierName" 
+                               placeholder="Acme Manufacturing Sdn Bhd">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Scope 3 Category *</label>
+                        <select class="form-select" id="scope3Category" required>
+                            <option value="">Select category</option>
+                            <option value="purchased_goods">Purchased Goods & Services</option>
+                            <option value="capital_goods">Capital Goods</option>
+                            <option value="upstream_transport">Upstream Transportation</option>
+                            <option value="waste_generated">Waste Generated in Operations</option>
+                            <option value="downstream_transport">Downstream Transportation</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Expiry Days</label>
+                        <select class="form-select" id="expiryDays">
+                            <option value="7">7 days</option>
+                            <option value="14" selected>14 days</option>
+                            <option value="30">30 days</option>
+                            <option value="60">60 days</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Custom Message (Optional)</label>
+                        <textarea class="form-control" id="customMessage" rows="3"
+                                  placeholder="Dear supplier, please submit your environmental data for our Scope 3 reporting..."></textarea>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        The supplier will receive a secure link to submit SEDG-aligned data that automatically maps to your Scope 3 inventory.
+                    </div>
+                </form>
+                
+                <div id="invitationSuccess" class="d-none">
+                    <div class="alert alert-success">
+                        <h6>Invitation Created Successfully!</h6>
+                        <p>Share this link with your supplier:</p>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" id="generatedLink" readonly>
+                            <button class="btn btn-outline-success" type="button" onclick="copyGeneratedLink()">
+                                <i class="bi bi-copy"></i>
+                            </button>
+                        </div>
+                        <button class="btn btn-success w-100" onclick="sendEmailInvitation()">
+                            <i class="bi bi-envelope"></i> Send Email to Supplier
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-dark" onclick="createInvitation()" id="createButton">
+                    Create Invitation
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Supplier Data Modal -->
+<div class="modal fade" id="dataModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Supplier Submitted Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="supplierDataContent">
+                <!-- Data will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+function filterInvitations(filter) {
+    const rows = document.querySelectorAll('#invitationsTable tbody tr');
+    rows.forEach(row => {
+        const status = row.getAttribute('data-status');
+        switch(filter) {
+            case 'all':
+                row.style.display = '';
+                break;
+            case 'pending':
+                row.style.display = status === 'pending' ? '' : 'none';
+                break;
+            case 'submitted':
+                row.style.display = status === 'submitted' ? '' : 'none';
+                break;
+        }
+    });
+}
+
+function createInvitation() {
+    const email = document.getElementById('supplierEmail').value;
+    const name = document.getElementById('supplierName').value;
+    const category = document.getElementById('scope3Category').value;
+    const expiryDays = document.getElementById('expiryDays').value;
+    const message = document.getElementById('customMessage').value;
+    
+    if (!email || !category) {
+        alert('Please fill in required fields');
+        return;
+    }
+    
+    fetch('/api/create-supplier-invitation', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            supplier_email: email,
+            supplier_name: name,
+            scope3_category: category,
+            expiry_days: parseInt(expiryDays),
+            custom_message: message
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success section
+            document.getElementById('invitationSuccess').classList.remove('d-none');
+            document.getElementById('generatedLink').value = data.invitation.invitation_url;
+            document.getElementById('createButton').disabled = true;
+            
+            // Store invitation data for email sending
+            window.currentInvitation = data.invitation;
+            window.currentSupplierEmail = email;
+        } else {
+            alert('Failed to create invitation: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Error: ' + error.message);
+    });
+}
+
+function copyInvitationLink(inputId) {
+    const input = document.getElementById(inputId);
+    input.select();
+    input.setSelectionRange(0, 99999); // For mobile devices
+    navigator.clipboard.writeText(input.value).then(() => {
+        alert('Invitation link copied to clipboard');
+    });
+}
+
+function copyGeneratedLink() {
+    const input = document.getElementById('generatedLink');
+    input.select();
+    navigator.clipboard.writeText(input.value).then(() => {
+        alert('Link copied to clipboard');
+    });
+}
+
+function sendEmailInvitation() {
+    if (!window.currentInvitation || !window.currentSupplierEmail) {
+        alert('No invitation data available');
+        return;
+    }
+    
+    fetch('/api/send-supplier-email', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            supplier_email: window.currentSupplierEmail,
+            invitation_url: window.currentInvitation.invitation_url,
+            expiry_date: window.currentInvitation.expiry_date
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Email sent successfully to ' + window.currentSupplierEmail);
+            location.reload(); // Refresh to show new invitation
+        } else {
+            alert('Failed to send email: ' + data.message);
+        }
+    });
+}
+
+function viewSupplierData(invitationId) {
+    fetch(`/api/supplier-data/${invitationId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                let html = '';
+                
+                if (data.data) {
+                    const submittedData = JSON.parse(data.data);
+                    html += `
+                        <h6>Submitted Data</h6>
+                        <pre class="bg-light p-3">${JSON.stringify(submittedData, null, 2)}</pre>
+                        
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            This data will be automatically mapped to your Scope 3 inventory.
+                        </div>
+                    `;
+                } else {
+                    html = '<p class="text-muted">No data submitted yet.</p>';
+                }
+                
+                document.getElementById('supplierDataContent').innerHTML = html;
+                const modal = new bootstrap.Modal(document.getElementById('dataModal'));
+                modal.show();
+            }
+        });
+}
+
+function resendInvitation(invitationId) {
+    if (confirm('Resend invitation to this supplier?')) {
+        fetch(`/api/resend-invitation/${invitationId}`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Invitation resent successfully');
+            } else {
+                alert('Failed to resend: ' + data.message);
+            }
+        });
+    }
+}
+
+function deleteInvitation(invitationId) {
+    if (confirm('Delete this invitation? This cannot be undone.')) {
+        fetch(`/api/delete-invitation/${invitationId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Invitation deleted');
+                location.reload();
+            } else {
+                alert('Delete failed: ' + data.message);
+            }
+        });
+    }
+}
+
+// Auto-populate supplier name from email domain
+document.getElementById('supplierEmail').addEventListener('blur', function() {
+    const email = this.value;
+    const nameField = document.getElementById('supplierName');
+    
+    if (email && !nameField.value) {
+        // Extract domain and suggest company name
+        const domain = email.split('@')[1];
+        if (domain) {
+            const companyName = domain.split('.')[0];
+            nameField.value = companyName.charAt(0).toUpperCase() + companyName.slice(1) + ' Sdn Bhd';
+        }
+    }
+});
+</script>
+{% endblock %}

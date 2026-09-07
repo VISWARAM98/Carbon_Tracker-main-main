@@ -1,0 +1,524 @@
+{% extends "base_auth.html" %}
+{% block title %}CarbonIQ — Carbon Intelligence Hub | EmittiF.io{% endblock %}
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+* { box-sizing: border-box; }
+
+.ciq-wrap {
+    background: #bae8c1;
+    min-height: 100vh;
+    font-family: 'Outfit', sans-serif;
+    color: #0a2e14;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Soft ambient blobs */
+.ciq-wrap::before {
+    content: '';
+    position: fixed; top: -10%; left: -5%;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+}
+.ciq-wrap::after {
+    content: '';
+    position: fixed; bottom: -10%; right: -5%;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(6,182,212,0.06) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+}
+
+.ciq-content { position: relative; z-index: 1; }
+
+/* HERO */
+.hero { text-align: center; padding: 52px 24px 36px; }
+.hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25);
+    border-radius: 999px; padding: 6px 18px; font-size: 11px;
+    font-family: 'Space Mono', monospace; color: #065f46;
+    letter-spacing: 0.08em; margin-bottom: 24px;
+}
+.hero-badge .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #10b981; box-shadow: 0 0 6px #10b981;
+    animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; box-shadow: 0 0 6px #10b981; }
+    50% { opacity: 0.4; box-shadow: 0 0 2px #10b981; }
+}
+.hero h1 {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(2.8rem, 6vw, 4.5rem);
+    font-weight: 700; line-height: 1.05; margin-bottom: 16px;
+    background: linear-gradient(135deg, #052e16 0%, #065f46 50%, #164e63 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero p { font-size: 16px; color: #14532d; max-width: 480px; margin: 0 auto 36px; line-height: 1.7; font-weight: 500; }
+
+/* TABS */
+.tab-nav {
+    display: flex; gap: 3px;
+    background: rgba(255,255,255,0.35); border: 1px solid rgba(255,255,255,0.5);
+    border-radius: 16px; padding: 4px;
+    max-width: 580px; margin: 0 auto 44px;
+}
+.tab-btn {
+    flex: 1; padding: 10px 14px; border-radius: 12px; border: none;
+    background: transparent; color: #166534;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: all 0.25s; font-family: 'Outfit', sans-serif; white-space: nowrap;
+}
+.tab-btn.active {
+    background: white; color: #065f46;
+    border: 1px solid #bbf7d0;
+    box-shadow: 0 2px 8px rgba(16,185,129,0.15), 0 1px 2px rgba(0,0,0,0.06);
+}
+.tab-btn:hover:not(.active) { color: #052e16; background: rgba(255,255,255,0.5); }
+
+/* PANELS */
+.panel { display: none; }
+.panel.active { display: block; animation: fadeUp 0.35s cubic-bezier(0.4,0,0.2,1); }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+/* CARDS */
+.card {
+    background: rgba(255,255,255,0.75);
+    border: 1px solid rgba(255,255,255,0.9);
+    border-radius: 20px; padding: 28px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+    transition: border-color 0.3s, box-shadow 0.3s;
+    position: relative; overflow: hidden;
+    backdrop-filter: blur(12px);
+}
+.card:hover {
+    border-color: rgba(255,255,255,1);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.06);
+}
+.card-title {
+    font-family: 'Space Mono', monospace; font-size: 11px; color: #065f46;
+    letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 22px;
+    display: flex; align-items: center; gap: 8px; font-weight: 700;
+}
+
+/* FORM */
+.form-row { margin-bottom: 18px; }
+.form-label { display: block; font-size: 11px; font-weight: 700; color: #166534; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 8px; }
+.form-input, .form-select {
+    width: 100%; background: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.8);
+    border-radius: 12px; padding: 11px 15px; color: #052e16; font-size: 14px; font-weight: 500;
+    font-family: 'Outfit', sans-serif; outline: none; transition: all 0.2s; -webkit-appearance: none;
+}
+.form-select option { background: white; color: #052e16; }
+.form-input:focus, .form-select:focus { border-color: #059669; background: white; box-shadow: 0 0 0 3px rgba(5,150,105,0.15); }
+.form-input::placeholder { color: #6ee7b7; }
+
+/* RESULT BOX */
+.result-box {
+    background: rgba(255,255,255,0.6);
+    border: 1px solid rgba(255,255,255,0.85); border-radius: 20px; padding: 28px;
+    text-align: center; position: relative; overflow: hidden;
+    backdrop-filter: blur(12px); box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.result-box::before {
+    content: ''; position: absolute; top: -40%; left: -20%;
+    width: 140%; height: 180%;
+    background: radial-gradient(ellipse, rgba(16,185,129,0.05) 0%, transparent 60%);
+    pointer-events: none;
+}
+.result-value {
+    font-family: 'Space Mono', monospace; font-size: 3.2rem; font-weight: 700;
+    color: #065f46; line-height: 1; margin-bottom: 6px; transition: all 0.5s cubic-bezier(0.4,0,0.2,1);
+}
+.result-unit { font-size: 12px; color: #166534; font-family: 'Space Mono', monospace; letter-spacing: 0.05em; font-weight: 600; }
+
+/* BREAKDOWN */
+.breakdown-item { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.breakdown-label { font-size: 12px; color: #166534; width: 95px; flex-shrink: 0; font-weight: 600; }
+.breakdown-bar-wrap { flex: 1; height: 6px; background: rgba(255,255,255,0.4); border-radius: 999px; overflow: hidden; }
+.breakdown-bar { height: 100%; border-radius: 999px; transition: width 0.9s cubic-bezier(0.4,0,0.2,1); }
+.breakdown-val { font-family: 'Space Mono', monospace; font-size: 11px; color: #065f46; width: 75px; text-align: right; flex-shrink: 0; font-weight: 700; }
+
+/* BUTTONS */
+.calc-btn {
+    width: 100%; padding: 14px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    border: none; border-radius: 12px; color: white; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.25s; font-family: 'Outfit', sans-serif; margin-top: 8px;
+}
+.calc-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(16,185,129,0.3); }
+.calc-btn:active { transform: translateY(0); }
+
+.download-btn {
+    display: inline-flex; align-items: center; gap: 10px; padding: 12px 24px;
+    background: rgba(255,255,255,0.75); border: 1px solid rgba(255,255,255,0.9);
+    border-radius: 12px; color: #065f46; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.25s; font-family: 'Outfit', sans-serif;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); backdrop-filter: blur(12px);
+}
+.download-btn:hover { background: white; box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+
+/* TAX METER */
+.tax-meter { height: 8px; background: #f1f5f9; border-radius: 999px; overflow: hidden; margin: 16px 0; }
+.tax-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #10b981 0%, #f59e0b 50%, #ef4444 100%); transition: width 0.9s cubic-bezier(0.4,0,0.2,1); }
+
+/* BENCHMARK */
+.benchmark-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(0,0,0,0.06); }
+.benchmark-item:last-child { border-bottom: none; }
+.b-value { font-family: 'Space Mono', monospace; font-size: 13px; color: #065f46; font-weight: 700; }
+.your-badge { background: rgba(255,255,255,0.6); border: 1px solid rgba(6,95,70,0.3); border-radius: 6px; padding: 2px 8px; font-size: 10px; color: #065f46; font-family: 'Space Mono', monospace; letter-spacing: 0.05em; font-weight: 700; }
+
+/* RATE CARDS */
+.rate-card { background: rgba(255,255,255,0.75); border: 1px solid rgba(255,255,255,0.9); border-radius: 16px; padding: 22px; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.05); backdrop-filter: blur(12px); }
+.rate-card:hover { background: rgba(255,255,255,0.92); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+.rate-year { font-family: 'Space Mono', monospace; font-size: 10px; color: #166534; letter-spacing: 0.08em; margin-bottom: 6px; font-weight: 700; }
+.rate-val { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: #92400e; margin: 4px 0; }
+.rate-label { font-size: 12px; color: #14532d; font-weight: 600; }
+
+/* MINI STATS */
+.mini-stat { background: rgba(255,255,255,0.75); border: 1px solid rgba(255,255,255,0.9); border-radius: 16px; padding: 22px; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.06); transition: all 0.3s; backdrop-filter: blur(12px); }
+.mini-stat:hover { background: rgba(255,255,255,0.9); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+.mini-stat-val { font-family: 'Space Mono', monospace; font-size: 1.8rem; font-weight: 700; color: #065f46; margin-bottom: 6px; }
+.mini-stat-label { font-size: 10px; color: #166534; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700; }
+
+/* TIP CARDS */
+.tip-card { background: rgba(255,255,255,0.75); border: 1px solid rgba(255,255,255,0.9); border-radius: 16px; padding: 20px; display: flex; gap: 16px; align-items: flex-start; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.05); backdrop-filter: blur(12px); }
+.tip-card:hover { background: rgba(255,255,255,0.92); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+.tip-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.tip-title { font-size: 14px; font-weight: 700; color: #052e16; margin-bottom: 5px; }
+.tip-desc { font-size: 12px; color: #166534; line-height: 1.6; font-weight: 500; }
+.tip-saving { font-family: 'Space Mono', monospace; font-size: 11px; color: #065f46; margin-top: 8px; font-weight: 700; }
+
+/* EF TAGS */
+.ef-tag { display: inline-flex; align-items: center; background: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.7); border-radius: 8px; padding: 5px 10px; font-size: 11px; font-family: 'Space Mono', monospace; color: #065f46; margin: 3px; transition: all 0.2s; font-weight: 700; }
+.ef-tag:hover { background: white; border-color: #a7f3d0; }
+
+/* SECTION TITLE */
+.section-title { font-family: 'Space Mono', monospace; font-size: 11px; color: #166534; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 16px; margin-top: 32px; font-weight: 700; }
+
+/* LAYOUT */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+@media (max-width: 768px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } .tab-btn { font-size: 11px; padding: 8px 6px; } .hero h1 { font-size: 2.4rem; } }
+.space-y-3 > * + * { margin-top: 12px; }
+.space-y-4 > * + * { margin-top: 16px; }
+.mb-2 { margin-bottom: 8px; }
+.mr-1 { margin-right: 4px; }
+.mr-2 { margin-right: 8px; }
+</style>
+
+<div class="ciq-wrap">
+<div class="ciq-content max-w-5xl mx-auto px-4 pb-16">
+
+  <div class="hero">
+    <div class="hero-badge"><div class="dot"></div> LIVE EMISSION FACTORS LIVE EMISSION FACTORS &middot; MALAYSIA 2025middot; MALAYSIA 2025 (UPDATED)</div>
+    <h1>CarbonIQ</h1>
+    <p>Real-time carbon calculations with Malaysian emission factors, carbon tax projections, and industry benchmarking for SMEs.</p>
+    <div class="tab-nav">
+      <button class="tab-btn active" onclick="switchTab('calculator')"><i class="fas fa-calculator mr-1"></i> Calculator</button>
+      <button class="tab-btn" onclick="switchTab('tax')"><i class="fas fa-landmark mr-1"></i> Carbon Tax</button>
+      <button class="tab-btn" onclick="switchTab('benchmark')"><i class="fas fa-chart-bar mr-1"></i> Benchmark</button>
+      <button class="tab-btn" onclick="switchTab('roadmap')"><i class="fas fa-route mr-1"></i> Roadmap</button>
+    </div>
+  </div>
+
+  <!-- CALCULATOR -->
+  <div class="panel active" id="panel-calculator">
+    <div class="grid-2">
+      <div class="space-y-4">
+        <div class="card">
+          <div class="card-title"><i class="fas fa-bolt"></i> Electricity &mdash; Scope 2</div>
+          <div class="form-row"><label class="form-label">Monthly Usage (kWh)</label><input type="number" id="kwh" class="form-input" placeholder="e.g. 5000" oninput="calculate()"></div>
+          <div class="form-row"><label class="form-label">Grid Region</label>
+            <select id="grid" class="form-select" onchange="calculate()">
+              <option value="0.740">Peninsular Malaysia (TNB) &mdash; 0.740 kg/kWh</option>
+              <option value="0.539">Sabah (SESB) &mdash; 0.539 kg/kWh</option>
+              <option value="0.199">Sarawak (SEB) &mdash; 0.199 kg/kWh</option>
+            </select>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-gas-pump"></i> Fuel &mdash; Scope 1</div>
+          <div class="grid-2" style="gap:12px;">
+            <div><label class="form-label">Petrol (Litres)</label><input type="number" id="petrol" class="form-input" placeholder="0" oninput="calculate()"></div>
+            <div><label class="form-label">Diesel (Litres)</label><input type="number" id="diesel" class="form-input" placeholder="0" oninput="calculate()"></div>
+            <div><label class="form-label">LPG (kg)</label><input type="number" id="lpg" class="form-input" placeholder="0" oninput="calculate()"></div>
+            <div><label class="form-label">Natural Gas (m3)</label><input type="number" id="natgas" class="form-input" placeholder="0" oninput="calculate()"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-truck"></i> Business Travel &amp; Logistics &mdash; Scope 3</div>
+          <div class="grid-2" style="gap:12px;">
+            <div><label class="form-label">Air Travel (km)</label><input type="number" id="airtravel" class="form-input" placeholder="0" oninput="calculate()"></div>
+            <div><label class="form-label">Road Freight (tonne-km)</label><input type="number" id="freight" class="form-input" placeholder="0" oninput="calculate()"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-trash"></i> Waste &amp; Water</div>
+          <div class="grid-2" style="gap:12px;">
+            <div><label class="form-label">Waste to Landfill (kg)</label><input type="number" id="waste" class="form-input" placeholder="0" oninput="calculate()"></div>
+            <div><label class="form-label">Water Usage (m3)</label><input type="number" id="water" class="form-input" placeholder="0" oninput="calculate()"></div>
+          </div>
+        </div>
+      </div>
+      <div class="space-y-4">
+        <div class="result-box">
+          <div class="result-unit mb-2">TOTAL CARBON FOOTPRINT</div>
+          <div class="result-value" id="total-result">0.00</div>
+          <div class="result-unit">kg CO2e &nbsp;/&nbsp; month</div>
+          <div style="margin-top:14px;font-family:'Space Mono',monospace;font-size:11px;color:#166534;letter-spacing:0.05em;font-weight:600;">= <span id="annual-result">0.00</span> tCO2e / year</div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-layer-group"></i> Breakdown by Scope</div>
+          <div class="breakdown-item"><div class="breakdown-label">Scope 1 &mdash; Fuel</div><div class="breakdown-bar-wrap"><div class="breakdown-bar" id="bar-s1" style="width:0%;background:linear-gradient(90deg,#f59e0b,#ef4444)"></div></div><div class="breakdown-val" id="val-s1">0 kg</div></div>
+          <div class="breakdown-item"><div class="breakdown-label">Scope 2 &mdash; Energy</div><div class="breakdown-bar-wrap"><div class="breakdown-bar" id="bar-s2" style="width:0%;background:linear-gradient(90deg,#3b82f6,#06b6d4)"></div></div><div class="breakdown-val" id="val-s2">0 kg</div></div>
+          <div class="breakdown-item"><div class="breakdown-label">Scope 3 &mdash; Other</div><div class="breakdown-bar-wrap"><div class="breakdown-bar" id="bar-s3" style="width:0%;background:linear-gradient(90deg,#10b981,#06b6d4)"></div></div><div class="breakdown-val" id="val-s3">0 kg</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-atom"></i> Emission Factors &mdash; MY 2025</div>
+          <span class="ef-tag">Peninsular 0.740 kg/kWh</span><span class="ef-tag">Sabah 0.539 kg/kWh</span><span class="ef-tag">Sarawak 0.199 kg/kWh</span><span class="ef-tag">Petrol 2.31 kg/L</span><span class="ef-tag">Diesel 2.68 kg/L</span><span class="ef-tag">LPG 2.98 kg/kg</span><span class="ef-tag">Nat Gas 2.02 kg/m3</span><span class="ef-tag">Air 0.20 kg/km</span><span class="ef-tag">Freight 0.062 kg/t-km</span><span class="ef-tag">Landfill 0.436 kg/kg</span>
+          <div style="font-size:11px;color:#166534;margin-top:14px;font-weight:600;">ST MESTECC &middot; IPCC AR6 &middot; MYCarbon &middot; DOE Malaysiamiddot; IPCC MESTECC &middot; IPCC AR6 &middot; MYCarbon &middot; DOE Malaysiamiddot; DEFRA</div>
+        </div>
+        <button class="download-btn" style="width:100%;justify-content:center;" onclick="downloadReport()"><i class="fas fa-file-alt mr-2"></i> Download Calculation Report</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARBON TAX -->
+  <div class="panel" id="panel-tax">
+    <div class="section-title">Malaysian Carbon Tax Roadmap</div>
+    <div class="grid-3" style="margin-bottom:32px;">
+      <div class="rate-card"><div class="rate-year">2026 &mdash; PROPOSED</div><div class="rate-val">MYR 35-50</div><div class="rate-label">per tonne CO2e</div><div style="margin-top:10px;font-size:11px;color:#166534;font-weight:600;">Iron, Steel &amp; Energy sectors</div></div>
+      <div class="rate-card" style="border-color:#a7f3d0;background:rgba(255,255,255,0.5);"><div class="rate-year">2030 &mdash; TARGET</div><div class="rate-val" style="color:#065f46;">MYR 80-120</div><div class="rate-label">per tonne CO2e</div><div style="margin-top:10px;font-size:11px;color:#166534;font-weight:600;">Broader industry coverage</div></div>
+      <div class="rate-card"><div class="rate-year">BURSA CARBON MARKET</div><div class="rate-val" style="color:#0e7490;">MYR 12-18</div><div class="rate-label">voluntary credit price</div><div style="margin-top:10px;font-size:11px;color:#166534;font-weight:600;">Bursa Carbon Exchange (BCX)</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title"><i class="fas fa-calculator"></i> Carbon Tax Liability Calculator</div>
+        <div class="form-row"><label class="form-label">Annual Emissions (tCO2e)</label><input type="number" id="tax-emissions" class="form-input" placeholder="e.g. 500" oninput="calcTax()"><div style="font-size:11px;color:#166534;margin-top:5px;font-weight:600;">Use the Calculator tab to get your figure</div></div>
+        <div class="form-row"><label class="form-label">Industry Sector</label>
+          <select id="tax-sector" class="form-select" onchange="calcTax()">
+            <option>Iron, Steel &amp; Energy (Regulated)</option>
+            <option>Manufacturing</option>
+            <option>Services / Retail / SME</option>
+            <option>Logistics &amp; Transport</option>
+            <option>Construction</option>
+          </select>
+        </div>
+        <div class="form-row"><label class="form-label">Carbon Tax Rate Scenario</label>
+          <select id="tax-rate" class="form-select" onchange="calcTax()">
+            <option value="35">Conservative &mdash; MYR 35/tonne (2026)</option>
+            <option value="50">Mid &mdash; MYR 50/tonne (2026 upper)</option>
+            <option value="80">Optimistic &mdash; MYR 80/tonne (2030)</option>
+            <option value="120">High &mdash; MYR 120/tonne (2030 upper)</option>
+          </select>
+        </div>
+        <div class="form-row"><label class="form-label">Free Allocation (tCO2e)</label><input type="number" id="tax-free" class="form-input" placeholder="0" oninput="calcTax()"></div>
+        <button class="calc-btn" onclick="calcTax()"><i class="fas fa-bolt mr-2"></i> Calculate Tax Liability</button>
+      </div>
+      <div class="space-y-4">
+        <div class="result-box" style="background:rgba(255,255,255,0.6);border-color:rgba(255,255,255,0.85);">
+          <div class="result-unit mb-2">ESTIMATED ANNUAL TAX LIABILITY</div>
+          <div class="result-value" id="tax-result" style="color:#92400e;">MYR 0</div>
+          <div class="result-unit">per year</div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-signal"></i> Tax Exposure Meter</div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:#94a3b8;margin-bottom:8px;font-family:'Space Mono',monospace;letter-spacing:0.08em;"><span>LOW</span><span>MEDIUM</span><span>HIGH</span></div>
+          <div class="tax-meter"><div class="tax-fill" id="tax-meter-fill" style="width:0%"></div></div>
+          <div id="tax-risk-label" style="font-size:12px;color:#166534;margin-top:10px;text-align:center;font-weight:600;">Enter your emissions to see risk level</div>
+        </div>
+        <div class="card" id="tax-breakdown-card" style="display:none;"><div class="card-title"><i class="fas fa-list"></i> Tax Breakdown</div><div id="tax-breakdown-content"></div></div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-lightbulb"></i> Carbon Credit Option &mdash; BCX</div>
+          <div style="font-size:13px;color:#14532d;line-height:1.7;font-weight:500;">Purchase <strong style="color:#065f46;">Bursa Carbon Credits</strong> at <span style="font-family:'Space Mono',monospace;color:#0e7490;">MYR 12-18/tonne</span> &mdash; potentially saving up to <strong style="color:#065f46;">65%</strong> vs direct tax liability.</div>
+          <div id="credit-saving" style="font-family:'Space Mono',monospace;font-size:12px;color:#059669;margin-top:14px;padding:12px;background:#f0fdf4;border:1px solid #a7f3d0;border-radius:10px;display:none;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BENCHMARK -->
+  <div class="panel" id="panel-benchmark">
+    <div class="grid-2">
+      <div>
+        <div class="form-row" style="margin-bottom:20px;"><label class="form-label">Your Industry</label>
+          <select id="bench-industry" class="form-select" onchange="renderBenchmark()">
+            <option value="manufacturing">Manufacturing</option>
+            <option value="services">Services / Office</option>
+            <option value="retail">Retail &amp; F&amp;B</option>
+            <option value="logistics">Logistics &amp; Transport</option>
+            <option value="construction">Construction</option>
+            <option value="hospitality">Hospitality &amp; Tourism</option>
+          </select>
+        </div>
+        <div class="form-row" style="margin-bottom:20px;"><label class="form-label">Your Annual Emissions (tCO2e)</label><input type="number" id="bench-emissions" class="form-input" placeholder="e.g. 250" oninput="renderBenchmark()"></div>
+        <div class="form-row" style="margin-bottom:20px;"><label class="form-label">Company Size</label>
+          <select id="bench-size" class="form-select" onchange="renderBenchmark()">
+            <option value="micro">Micro (1-5 employees)</option>
+            <option value="small">Small (6-75 employees)</option>
+            <option value="medium">Medium (76-200 employees)</option>
+          </select>
+        </div>
+        <div class="card"><div class="card-title"><i class="fas fa-crosshairs"></i> Your Position</div><div id="bench-position" style="font-size:14px;color:#166534;line-height:1.8;font-weight:500;">Enter your emissions above to see how you compare against Malaysian SMEs.</div></div>
+      </div>
+      <div>
+        <div class="card"><div class="card-title"><i class="fas fa-industry"></i> Malaysian SME Benchmarks</div><div id="benchmark-list"></div></div>
+        <div class="card" style="margin-top:16px;"><div class="card-title"><i class="fas fa-trophy"></i> Intensity Comparison</div><div id="intensity-compare" style="font-size:13px;color:#166534;font-weight:500;">Select your industry to see benchmarks.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROADMAP -->
+  <div class="panel" id="panel-roadmap">
+    <div class="grid-2" style="margin-bottom:24px;">
+      <div class="form-row"><label class="form-label">Current Annual Emissions (tCO2e)</label><input type="number" id="rm-emissions" class="form-input" placeholder="e.g. 300" oninput="buildRoadmap()"></div>
+      <div class="form-row"><label class="form-label">Reduction Target</label>
+        <select id="rm-target" class="form-select" onchange="buildRoadmap()">
+          <option value="30">30% by 2030 &mdash; Malaysia NDC</option>
+          <option value="45">45% by 2030 &mdash; Science-Based</option>
+          <option value="50">Net Zero by 2050</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid-3" style="margin-bottom:28px;">
+      <div class="mini-stat"><div class="mini-stat-val" id="rm-stat-target">-</div><div class="mini-stat-label">Target Emissions (tCO2e)</div></div>
+      <div class="mini-stat"><div class="mini-stat-val" id="rm-stat-reduction">-</div><div class="mini-stat-label">Required Reduction</div></div>
+      <div class="mini-stat"><div class="mini-stat-val" id="rm-stat-annual">-</div><div class="mini-stat-label">Annual Reduction Needed</div></div>
+    </div>
+    <div class="section-title">Recommended Actions</div>
+    <div id="tips-container" class="space-y-3">
+      <div class="tip-card"><div class="tip-icon" style="background:#f0fdf4;">💡</div><div><div class="tip-title">Enter your emissions above</div><div class="tip-desc">We will generate a personalised reduction roadmap based on your footprint and Malaysian industry standards.</div></div></div>
+    </div>
+    <div class="section-title" style="margin-top:36px;">Malaysian Green Incentives</div>
+    <div class="grid-2">
+      <div class="tip-card"><div class="tip-icon" style="background:#ecfeff;">🌞</div><div><div class="tip-title">NEM Solar Programme</div><div class="tip-desc">Net Energy Metering - sell excess solar back to TNB. CAPEX offset via Green Investment Tax Allowance (GITA).</div><div class="tip-saving">Up to 100% tax allowance on solar CAPEX</div></div></div>
+      <div class="tip-card"><div class="tip-icon" style="background:#fffbeb;">🏭</div><div><div class="tip-title">GreenTech Financing (GTFS)</div><div class="tip-desc">Green Technology Financing Scheme - subsidised loans up to MYR 100M for green projects.</div><div class="tip-saving">2% interest subsidy from Malaysian Government</div></div></div>
+      <div class="tip-card"><div class="tip-icon" style="background:#faf5ff;">📋</div><div><div class="tip-title">MGTC Green Certification</div><div class="tip-desc">Malaysian Green Technology and Climate Change Corporation - green certification boosts Bursa ESG score.</div><div class="tip-saving">Required for GBI and Green Lane procurement</div></div></div>
+      <div class="tip-card"><div class="tip-icon" style="background:#f0fdf4;">💰</div><div><div class="tip-title">Carbon Credit Revenue (BCX)</div><div class="tip-desc">Verified carbon reductions can be sold on Bursa Carbon Exchange as tradeable credits.</div><div class="tip-saving">MYR 12-18 per tonne CO2e avoided</div></div></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+const EF={petrol:2.31,diesel:2.68,lpg:2.98,natgas:2.02,airtravel:0.20,freight:0.062,waste:0.436,water:0.344};
+
+function calculate(){
+    const kwh=parseFloat(document.getElementById('kwh').value)||0;
+    const gridEF=parseFloat(document.getElementById('grid').value);
+    const scope1=(parseFloat(document.getElementById('petrol').value)||0)*EF.petrol+(parseFloat(document.getElementById('diesel').value)||0)*EF.diesel+(parseFloat(document.getElementById('lpg').value)||0)*EF.lpg+(parseFloat(document.getElementById('natgas').value)||0)*EF.natgas;
+    const scope2=kwh*gridEF;
+    const scope3=(parseFloat(document.getElementById('airtravel').value)||0)*EF.airtravel+(parseFloat(document.getElementById('freight').value)||0)*EF.freight+(parseFloat(document.getElementById('waste').value)||0)*EF.waste+(parseFloat(document.getElementById('water').value)||0)*EF.water;
+    const total=scope1+scope2+scope3;
+    const annual=(total*12/1000).toFixed(2);
+    document.getElementById('total-result').textContent=total.toFixed(2);
+    document.getElementById('annual-result').textContent=annual;
+    const max=Math.max(total,1);
+    document.getElementById('bar-s1').style.width=(scope1/max*100)+'%';
+    document.getElementById('bar-s2').style.width=(scope2/max*100)+'%';
+    document.getElementById('bar-s3').style.width=(scope3/max*100)+'%';
+    document.getElementById('val-s1').textContent=scope1.toFixed(0)+' kg';
+    document.getElementById('val-s2').textContent=scope2.toFixed(0)+' kg';
+    document.getElementById('val-s3').textContent=scope3.toFixed(0)+' kg';
+    document.getElementById('tax-emissions').value=annual;
+    document.getElementById('bench-emissions').value=annual;
+    document.getElementById('rm-emissions').value=annual;
+}
+
+function calcTax(){
+    const emissions=parseFloat(document.getElementById('tax-emissions').value)||0;
+    const rate=parseFloat(document.getElementById('tax-rate').value);
+    const freeAlloc=parseFloat(document.getElementById('tax-free').value)||0;
+    const taxable=Math.max(0,emissions-freeAlloc);
+    const taxLiability=taxable*rate;
+    document.getElementById('tax-result').textContent='MYR '+formatNum(taxLiability.toFixed(0));
+    document.getElementById('tax-meter-fill').style.width=Math.min(100,(taxLiability/500000)*100)+'%';
+    let risk='Low risk - minimal tax exposure';
+    if(taxLiability>100000)risk='High exposure - consider carbon credits urgently';
+    else if(taxLiability>30000)risk='Medium exposure - begin reduction planning';
+    document.getElementById('tax-risk-label').textContent=risk;
+    if(emissions>0){
+        document.getElementById('tax-breakdown-card').style.display='block';
+        document.getElementById('tax-breakdown-content').innerHTML=`
+            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.06);"><span style="font-size:13px;color:#14532d;font-weight:600;">Total Emissions</span><span style="font-family:'Space Mono',monospace;font-size:12px;color:#0a2e14;font-weight:700;">${emissions} tCO2e</span></div>
+            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.06);"><span style="font-size:13px;color:#14532d;font-weight:600;">Free Allocation</span><span style="font-family:'Space Mono',monospace;font-size:12px;color:#065f46;font-weight:700;">- ${freeAlloc} tCO2e</span></div>
+            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.06);"><span style="font-size:13px;color:#14532d;font-weight:600;">Taxable x Rate</span><span style="font-family:'Space Mono',monospace;font-size:12px;color:#92400e;font-weight:700;">${taxable} x MYR ${rate}</span></div>
+            <div style="display:flex;justify-content:space-between;padding:10px 0;"><span style="font-size:13px;font-weight:700;color:#052e16;">Tax Liability</span><span style="font-family:'Space Mono',monospace;font-size:14px;color:#dc2626;font-weight:700;">MYR ${formatNum(taxLiability.toFixed(0))}</span></div>`;
+        const saving=taxLiability-(taxable*15);
+        if(saving>0){const el=document.getElementById('credit-saving');el.style.display='block';el.style.color='#065f46';el.style.background='rgba(255,255,255,0.5)';el.style.border='1px solid rgba(16,185,129,0.3)';el.textContent='BCX credits saves approx. MYR '+formatNum(saving.toFixed(0))+' vs direct tax liability';}
+    }
+}
+
+const benchmarkData={manufacturing:{micro:45,small:180,medium:620},services:{micro:8,small:35,medium:120},retail:{micro:12,small:55,medium:200},logistics:{micro:90,small:380,medium:1200},construction:{micro:60,small:250,medium:800},hospitality:{micro:25,small:110,medium:400}};
+
+function renderBenchmark(){
+    const industry=document.getElementById('bench-industry').value;
+    const myEmissions=parseFloat(document.getElementById('bench-emissions').value)||0;
+    const size=document.getElementById('bench-size').value;
+    const data=benchmarkData[industry];
+    document.getElementById('benchmark-list').innerHTML=['micro','small','medium'].map(s=>`
+        <div class="benchmark-item">
+            <div><div style="font-size:13px;color:#14532d;font-weight:600;">${s.charAt(0).toUpperCase()+s.slice(1)} ${industry}</div><div style="font-size:10px;color:#166534;margin-top:2px;font-weight:600;">Malaysian SME average</div></div>
+            <div style="display:flex;align-items:center;gap:10px;">${size===s?'<span class="your-badge">YOUR SIZE</span>':''}<div class="b-value">${data[s]} tCO2e</div></div>
+        </div>`).join('');
+    if(myEmissions>0){
+        const benchmark=data[size];
+        const diff=((myEmissions-benchmark)/benchmark*100).toFixed(1);
+        const better=myEmissions<benchmark;
+        document.getElementById('bench-position').innerHTML=`
+            <div style="font-size:2.2rem;font-family:'Space Mono',monospace;color:${better?'#065f46':'#dc2626'};margin-bottom:10px;">${better?'▼':'▲'} ${Math.abs(diff)}%</div>
+            <div style="font-size:13px;color:#14532d;line-height:1.7;font-weight:500;">${better?'You emit <strong style="color:#065f46;">'+Math.abs(diff)+'% less</strong> than the average '+size+' '+industry+' business in Malaysia.':'You emit <strong style="color:#dc2626;">'+Math.abs(diff)+'% more</strong> than average. Consider reduction actions.'}</div>`;
+    }
+    document.getElementById('intensity-compare').innerHTML=`
+        <div style="margin-bottom:14px;"><div style="font-size:10px;color:#166534;margin-bottom:6px;font-family:'Space Mono',monospace;letter-spacing:0.08em;font-weight:700;">INDUSTRY AVERAGE (${industry.toUpperCase()})</div><div style="font-size:1.6rem;font-family:'Space Mono',monospace;color:#065f46;font-weight:700;">${data[size]} tCO2e/yr</div></div>
+        <div style="font-size:12px;color:#14532d;line-height:1.6;font-weight:500;">Based on Malaysian SME data from MGTC, DOSM, and MESTECC industry reports.</div>`;
+}
+renderBenchmark();
+
+function buildRoadmap(){
+    const emissions=parseFloat(document.getElementById('rm-emissions').value)||0;
+    const targetPct=parseFloat(document.getElementById('rm-target').value);
+    if(!emissions)return;
+    const targetEmissions=emissions*(1-targetPct/100);
+    const reduction=emissions-targetEmissions;
+    document.getElementById('rm-stat-target').textContent=targetEmissions.toFixed(1);
+    document.getElementById('rm-stat-reduction').textContent=reduction.toFixed(1)+' t';
+    document.getElementById('rm-stat-annual').textContent=(reduction/5).toFixed(1)+' t/yr';
+    const tips=[];
+    if(emissions>50)tips.push({icon:'⚡',bg:'#ecfeff',title:'Switch to Solar (NEM Programme)',desc:'Install rooftop solar under TNB NEM scheme. Typical payback 5-7 years with GITA tax incentive.',saving:'Est. saving: '+(emissions*0.25).toFixed(1)+' tCO2e/yr (25% of footprint)'});
+    if(emissions>20)tips.push({icon:'🚗',bg:'#f0fdf4',title:'Fleet Electrification',desc:'Replace petrol/diesel vehicles with EVs. MyEV incentive provides import duty exemption.',saving:'Est. saving: '+(emissions*0.15).toFixed(1)+' tCO2e/yr (15% of footprint)'});
+    tips.push({icon:'💨',bg:'#fffbeb',title:'Energy Efficiency Audit',desc:'SEDA Malaysia offers free energy audits for SMEs. Typical savings 10-20% on electricity bills.',saving:'Est. saving: '+(emissions*0.12).toFixed(1)+' tCO2e/yr (12% of footprint)'});
+    tips.push({icon:'♻️',bg:'#faf5ff',title:'Waste Reduction Programme',desc:'3R programme with SWCorp. Diverts waste from landfill and cuts methane emissions.',saving:'Est. saving: '+(emissions*0.05).toFixed(1)+' tCO2e/yr (5% of footprint)'});
+    document.getElementById('tips-container').innerHTML=tips.map(t=>`<div class="tip-card"><div class="tip-icon" style="background:${t.bg};">${t.icon}</div><div><div class="tip-title">${t.title}</div><div class="tip-desc">${t.desc}</div><div class="tip-saving">${t.saving}</div></div></div>`).join('');
+}
+
+function switchTab(tab){
+    const tabs=['calculator','tax','benchmark','roadmap'];
+    document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',tabs[i]===tab));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('panel-'+tab).classList.add('active');
+}
+
+function formatNum(n){return parseInt(n).toLocaleString('en-MY');}
+
+function downloadReport(){
+    const total=document.getElementById('total-result').textContent;
+    const annual=document.getElementById('annual-result').textContent;
+    const date=new Date().toLocaleDateString('en-MY');
+    const content=`CARBONIQ CALCULATION REPORT\nEmittiF.io | ${date}\n${'='.repeat(50)}\n\nMONTHLY FOOTPRINT: ${total} kg CO2e\nANNUAL FOOTPRINT:  ${annual} tCO2e\n\nSCOPE 1 (Fuel):        ${document.getElementById('val-s1').textContent}\nSCOPE 2 (Electricity): ${document.getElementById('val-s2').textContent}\nSCOPE 3 (Other):       ${document.getElementById('val-s3').textContent}\n\nEMISSION FACTORS USED (MY 2025)\nPeninsular: 0.740 kg/kWh | Sabah: 0.539 | Sarawak: 0.199\nPetrol: 2.31 kg/L | Diesel: 2.68 kg/L | LPG: 2.98 kg/kg\nNat Gas: 2.02 kg/m3 | Air Travel: 0.20 kg/km | Freight: 0.062 kg/t-km\n\nSources: ST, IPCC, DEFRA\n${'='.repeat(50)}\nGenerated by EmittiF.io CarbonIQ`;
+    const blob=new Blob([content],{type:'text/plain'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=`CarbonIQ_${date.replace(/\//g,'-')}.txt`;
+    a.click();
+}
+</script>
+
+{% endblock %}

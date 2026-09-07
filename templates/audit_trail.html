@@ -1,0 +1,357 @@
+{% extends "base.html" %}
+
+{% block title %}Audit Trail - EmittiF{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h2 mb-0">📝 Immutable Audit Trail</h1>
+                <button class="btn btn-outline-dark" onclick="exportAuditTrail()">
+                    <i class="bi bi-download"></i> Export CSV
+                </button>
+            </div>
+            <p class="text-muted">Complete log of all data changes. Records are immutable once created.</p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Filter Audit Trail</h5>
+                    <form id="auditFilterForm" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Table Name</label>
+                            <select class="form-select" id="tableNameFilter">
+                                <option value="">All Tables</option>
+                                <option value="emission_data">Emission Data</option>
+                                <option value="source_documents">Source Documents</option>
+                                <option value="reporting_periods">Reporting Periods</option>
+                                <option value="supplier_invitations">Supplier Invitations</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Action Type</label>
+                            <select class="form-select" id="actionFilter">
+                                <option value="">All Actions</option>
+                                <option value="CREATE">Create</option>
+                                <option value="UPDATE">Update</option>
+                                <option value="DELETE">Delete</option>
+                                <option value="DOCUMENT_UPLOAD">Document Upload</option>
+                                <option value="PERIOD_LOCKED">Period Locked</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="startDateFilter">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">End Date</label>
+                            <input type="date" class="form-control" id="endDateFilter">
+                        </div>
+                        <div class="col-12">
+                            <button type="button" class="btn btn-dark" onclick="applyFilters()">
+                                Apply Filters
+                            </button>
+                            <button type="button" class="btn btn-outline-dark" onclick="clearFilters()">
+                                Clear Filters
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audit Trail Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Audit Log</h5>
+                    <span class="badge bg-light text-dark" id="auditCount">{{ audit_trail|length }} records</span>
+                </div>
+                <div class="card-body">
+                    {% if audit_trail %}
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="auditTable">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>User</th>
+                                    <th>Action</th>
+                                    <th>Table</th>
+                                    <th>Record ID</th>
+                                    <th>Changes</th>
+                                    <th>Reason</th>
+                                    <th>Checksum</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in audit_trail %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ entry.timestamp[:19] }}</span>
+                                    </td>
+                                    <td><strong>{{ entry.user_id }}</strong></td>
+                                    <td>
+                                        {% if entry.action == 'CREATE' %}
+                                        <span class="badge bg-success">CREATE</span>
+                                        {% elif entry.action == 'UPDATE' %}
+                                        <span class="badge bg-warning text-dark">UPDATE</span>
+                                        {% elif entry.action == 'DELETE' %}
+                                        <span class="badge bg-danger">DELETE</span>
+                                        {% else %}
+                                        <span class="badge bg-info">{{ entry.action }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><code>{{ entry.table_name }}</code></td>
+                                    <td>
+                                        <small class="text-muted">{{ entry.record_id[:12] }}...</small>
+                                        <button class="btn btn-sm btn-link" onclick="copyToClipboard('{{ entry.record_id }}')">
+                                            <i class="bi bi-copy"></i>
+                                        </button>
+                                    </td>
+                                    <td>
+                                        {% if entry.old_value and entry.new_value %}
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                onclick="showChangeDetails('{{ entry.old_value|tojson|safe }}', '{{ entry.new_value|tojson|safe }}')">
+                                            View Changes
+                                        </button>
+                                        {% elif entry.new_value %}
+                                        <span class="badge bg-success">New Record</span>
+                                        {% elif entry.old_value %}
+                                        <span class="badge bg-danger">Deleted</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-truncate" style="max-width: 200px;" 
+                                        title="{{ entry.change_reason }}">
+                                        {{ entry.change_reason }}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ entry.checksum[:16] }}...</small>
+                                        <button class="btn btn-sm btn-link" onclick="verifyChecksum('{{ entry.id }}', '{{ entry.checksum }}')">
+                                            <i class="bi bi-shield-check"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <nav aria-label="Audit trail pagination">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1">Previous</a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-journal-text display-1 text-muted"></i>
+                        <h4 class="mt-3">No audit records found</h4>
+                        <p class="text-muted">Start adding or modifying data to see audit logs here.</p>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-dark mt-2">Go to Dashboard</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Details Modal -->
+<div class="modal fade" id="changeDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Old Value</h6>
+                        <pre id="oldValueDisplay" class="bg-light p-3" style="max-height: 300px; overflow: auto;"></pre>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>New Value</h6>
+                        <pre id="newValueDisplay" class="bg-light p-3" style="max-height: 300px; overflow: auto;"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+function applyFilters() {
+    const filters = {
+        table_name: document.getElementById('tableNameFilter').value,
+        action: document.getElementById('actionFilter').value,
+        start_date: document.getElementById('startDateFilter').value,
+        end_date: document.getElementById('endDateFilter').value
+    };
+    
+    fetch('/api/audit-trail/filter', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(filters)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateAuditTable(data.data);
+            document.getElementById('auditCount').textContent = data.data.length + ' records';
+        }
+    });
+}
+
+function clearFilters() {
+    document.getElementById('tableNameFilter').value = '';
+    document.getElementById('actionFilter').value = '';
+    document.getElementById('startDateFilter').value = '';
+    document.getElementById('endDateFilter').value = '';
+    applyFilters();
+}
+
+function updateAuditTable(data) {
+    const tbody = document.querySelector('#auditTable tbody');
+    tbody.innerHTML = '';
+    
+    if (data.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="text-center py-5">
+                    <div class="text-muted">No audit records match your filters</div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    data.forEach(entry => {
+        const row = document.createElement('tr');
+        
+        // Determine badge color based on action
+        let badgeClass = 'bg-info';
+        if (entry.action === 'CREATE') badgeClass = 'bg-success';
+        else if (entry.action === 'UPDATE') badgeClass = 'bg-warning text-dark';
+        else if (entry.action === 'DELETE') badgeClass = 'bg-danger';
+        
+        row.innerHTML = `
+            <td><span class="badge bg-secondary">${entry.timestamp.substring(0, 19)}</span></td>
+            <td><strong>${entry.user_id}</strong></td>
+            <td><span class="badge ${badgeClass}">${entry.action}</span></td>
+            <td><code>${entry.table_name}</code></td>
+            <td>
+                <small class="text-muted">${entry.record_id.substring(0, 12)}...</small>
+                <button class="btn btn-sm btn-link" onclick="copyToClipboard('${entry.record_id}')">
+                    <i class="bi bi-copy"></i>
+                </button>
+            </td>
+            <td>
+                ${entry.old_value && entry.new_value ? 
+                    `<button class="btn btn-sm btn-outline-primary" onclick="showChangeDetails('${escapeJson(entry.old_value)}', '${escapeJson(entry.new_value)}')">View Changes</button>` :
+                    entry.new_value ? `<span class="badge bg-success">New Record</span>` :
+                    `<span class="badge bg-danger">Deleted</span>`}
+            </td>
+            <td class="text-truncate" style="max-width: 200px;" title="${entry.change_reason}">
+                ${entry.change_reason}
+            </td>
+            <td>
+                <small class="text-muted">${entry.checksum.substring(0, 16)}...</small>
+                <button class="btn btn-sm btn-link" onclick="verifyChecksum('${entry.id}', '${entry.checksum}')">
+                    <i class="bi bi-shield-check"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function escapeJson(jsonString) {
+    return jsonString.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n');
+}
+
+function showChangeDetails(oldValue, newValue) {
+    try {
+        const oldObj = JSON.parse(oldValue);
+        const newObj = JSON.parse(newValue);
+        
+        document.getElementById('oldValueDisplay').textContent = JSON.stringify(oldObj, null, 2);
+        document.getElementById('newValueDisplay').textContent = JSON.stringify(newObj, null, 2);
+        
+        const modal = new bootstrap.Modal(document.getElementById('changeDetailsModal'));
+        modal.show();
+    } catch (e) {
+        document.getElementById('oldValueDisplay').textContent = oldValue;
+        document.getElementById('newValueDisplay').textContent = newValue;
+        const modal = new bootstrap.Modal(document.getElementById('changeDetailsModal'));
+        modal.show();
+    }
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Record ID copied to clipboard');
+    });
+}
+
+function verifyChecksum(entryId, expectedChecksum) {
+    fetch(`/api/verify-audit-checksum/${entryId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (data.checksum === expectedChecksum) {
+                    alert('✅ Checksum verified - Record is authentic and unchanged');
+                } else {
+                    alert('❌ Checksum mismatch - Record may have been altered');
+                }
+            }
+        });
+}
+
+function exportAuditTrail() {
+    // Create CSV content
+    let csv = 'Timestamp,User,Action,Table,Record ID,Change Reason,Checksum\n';
+    
+    {% for entry in audit_trail %}
+    csv += `"{{ entry.timestamp }}","{{ entry.user_id }}","{{ entry.action }}","{{ entry.table_name }}","{{ entry.record_id }}","{{ entry.change_reason }}","{{ entry.checksum }}"\n`;
+    {% endfor %}
+    
+    // Create download link
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `audit_trail_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+
+// Initialize date filters to last 30 days
+window.onload = function() {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 30);
+    
+    document.getElementById('endDateFilter').value = endDate.toISOString().split('T')[0];
+    document.getElementById('startDateFilter').value = startDate.toISOString().split('T')[0];
+};
+</script>
+{% endblock %}

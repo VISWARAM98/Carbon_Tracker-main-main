@@ -1,0 +1,716 @@
+{% extends "base.html" %}
+
+{% block title %}Verification Mode - EmittiF{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h2 mb-0">🔍 Verification Mode</h1>
+                <div>
+                    <span class="badge bg-warning text-dark me-2">
+                        <i class="bi bi-shield-check"></i> Auditor View
+                    </span>
+                    <button class="btn btn-outline-dark" onclick="exportVerificationReport()">
+                        <i class="bi bi-download"></i> Export Report
+                    </button>
+                </div>
+            </div>
+            <p class="text-muted">Auditor view showing complete data traceability with source documents and calculation breakdowns.</p>
+        </div>
+    </div>
+
+    <!-- Verification Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Total Records</h6>
+                    <h2 class="mb-0" id="totalRecords">0</h2>
+                    <small>All emission entries</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-title">With Documents</h6>
+                    <h2 class="mb-0" id="recordsWithDocs">0</h2>
+                    <small>Linked source documents</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Verified</h6>
+                    <h2 class="mb-0" id="verifiedRecords">0</h2>
+                    <small>Auditor verified</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Data Coverage</h6>
+                    <h2 class="mb-0" id="dataCoverage">0%</h2>
+                    <small>Documented evidence</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Verification Tabs -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <ul class="nav nav-tabs card-header-tabs" id="verificationTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="scope1-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#scope1" type="button">
+                                Scope 1 (Direct)
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="scope2-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#scope2" type="button">
+                                Scope 2 (Energy)
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="scope3-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#scope3" type="button">
+                                Scope 3 (Value Chain)
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="calculations-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#calculations" type="button">
+                                Calculation Breakdown
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="verificationTabContent">
+                        <!-- Scope 1 Tab -->
+                        <div class="tab-pane fade show active" id="scope1" role="tabpanel">
+                            {% if enhanced_data.scope1 %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Category</th>
+                                            <th>Amount</th>
+                                            <th>Date</th>
+                                            <th>CO₂e</th>
+                                            <th>Source Docs</th>
+                                            <th>Emission Factor</th>
+                                            <th>Verification</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in enhanced_data.scope1 %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ item.category|replace('_', ' ')|title }}</strong>
+                                            </td>
+                                            <td>{{ item.amount }} {{ item.unit }}</td>
+                                            <td>{{ item.date }}</td>
+                                            <td>
+                                                <span class="badge bg-dark">{{ item.co2e }} kg</span>
+                                            </td>
+                                            <td>
+                                                {% if item.linked_documents %}
+                                                <span class="badge bg-success">
+                                                    {{ item.linked_documents|length }} docs
+                                                </span>
+                                                {% else %}
+                                                <span class="badge bg-warning text-dark">No docs</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if item.factor_metadata %}
+                                                <button class="btn btn-sm btn-outline-info" 
+                                                        onclick="showEmissionFactor('{{ item.factor_metadata|tojson|safe }}')">
+                                                    View Factor
+                                                </button>
+                                                {% else %}
+                                                <span class="text-muted">N/A</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if item.verified %}
+                                                <span class="badge bg-success">
+                                                    <i class="bi bi-check-circle"></i> Verified
+                                                </span>
+                                                {% else %}
+                                                <span class="badge bg-secondary">Pending</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    {% if item.linked_documents %}
+                                                    <button class="btn btn-outline-primary" 
+                                                            onclick="viewDocuments('{{ item.record_id }}')">
+                                                        <i class="bi bi-file-text"></i>
+                                                    </button>
+                                                    {% endif %}
+                                                    <button class="btn btn-outline-success" 
+                                                            onclick="showCalculation('{{ item.scope }}', '{{ item.record_id }}')">
+                                                        <i class="bi bi-calculator"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-dark" 
+                                                            onclick="verifyRecord('{{ item.record_id }}')">
+                                                        <i class="bi bi-check-circle"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-5">
+                                <i class="bi bi-fuel-pump display-1 text-muted"></i>
+                                <h4 class="mt-3">No Scope 1 data</h4>
+                                <p class="text-muted">No direct emissions (fuel, vehicles, etc.) have been recorded yet.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Scope 2 Tab -->
+                        <div class="tab-pane fade" id="scope2" role="tabpanel">
+                            {% if enhanced_data.scope2 %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Category</th>
+                                            <th>Electricity (kWh)</th>
+                                            <th>Date</th>
+                                            <th>CO₂e</th>
+                                            <th>Utility Bills</th>
+                                            <th>Grid Factor</th>
+                                            <th>Verification</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in enhanced_data.scope2 %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ item.category|replace('_', ' ')|title }}</strong>
+                                            </td>
+                                            <td>{{ item.amount }} kWh</td>
+                                            <td>{{ item.date }}</td>
+                                            <td>
+                                                <span class="badge bg-dark">{{ item.co2e }} kg</span>
+                                            </td>
+                                            <td>
+                                                {% if item.linked_documents %}
+                                                <span class="badge bg-success">
+                                                    {{ item.linked_documents|length }} bills
+                                                </span>
+                                                {% else %}
+                                                <span class="badge bg-warning text-dark">No bills</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if item.factor_metadata %}
+                                                <small class="text-muted">
+                                                    {{ item.factor_metadata.source }} 
+                                                    ({{ item.factor_metadata.source_date[:4] }})
+                                                </small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if item.verified %}
+                                                <span class="badge bg-success">Verified</span>
+                                                {% else %}
+                                                <span class="badge bg-secondary">Pending</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    {% if item.linked_documents %}
+                                                    <button class="btn btn-outline-primary" 
+                                                            onclick="viewDocuments('{{ item.record_id }}')">
+                                                        <i class="bi bi-file-text"></i>
+                                                    </button>
+                                                    {% endif %}
+                                                    <button class="btn btn-outline-success" 
+                                                            onclick="showCalculation('{{ item.scope }}', '{{ item.record_id }}')">
+                                                        <i class="bi bi-calculator"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-dark" 
+                                                            onclick="verifyRecord('{{ item.record_id }}')">
+                                                        <i class="bi bi-check-circle"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-5">
+                                <i class="bi bi-lightning-charge display-1 text-muted"></i>
+                                <h4 class="mt-3">No Scope 2 data</h4>
+                                <p class="text-muted">No electricity consumption data has been recorded yet.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Scope 3 Tab -->
+                        <div class="tab-pane fade" id="scope3" role="tabpanel">
+                            {% if enhanced_data.scope3 %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Category</th>
+                                            <th>Amount</th>
+                                            <th>Date</th>
+                                            <th>CO₂e</th>
+                                            <th>Evidence</th>
+                                            <th>Factor Source</th>
+                                            <th>Verification</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in enhanced_data.scope3 %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ item.category|replace('_', ' ')|title }}</strong>
+                                            </td>
+                                            <td>{{ item.amount }} {{ item.unit }}</td>
+                                            <td>{{ item.date }}</td>
+                                            <td>
+                                                <span class="badge bg-dark">{{ item.co2e }} kg</span>
+                                            </td>
+                                            <td>
+                                                {% if item.linked_documents %}
+                                                <span class="badge bg-success">Documented</span>
+                                                {% else %}
+                                                <span class="badge bg-warning text-dark">Estimated</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if item.factor_metadata %}
+                                                <small class="text-muted">
+                                                    {{ item.factor_metadata.source[:30] }}...
+                                                </small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if item.verified %}
+                                                <span class="badge bg-success">Verified</span>
+                                                {% else %}
+                                                <span class="badge bg-secondary">Pending</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    {% if item.linked_documents %}
+                                                    <button class="btn btn-outline-primary" 
+                                                            onclick="viewDocuments('{{ item.record_id }}')">
+                                                        <i class="bi bi-file-text"></i>
+                                                    </button>
+                                                    {% endif %}
+                                                    <button class="btn btn-outline-success" 
+                                                            onclick="showCalculation('{{ item.scope }}', '{{ item.record_id }}')">
+                                                        <i class="bi bi-calculator"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-dark" 
+                                                            onclick="verifyRecord('{{ item.record_id }}')">
+                                                        <i class="bi bi-check-circle"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-5">
+                                <i class="bi bi-truck display-1 text-muted"></i>
+                                <h4 class="mt-3">No Scope 3 data</h4>
+                                <p class="text-muted">No value chain emissions have been recorded yet.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Calculation Breakdown Tab -->
+                        <div class="tab-pane fade" id="calculations" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="card">
+                                        <div class="card-header bg-info text-white">
+                                            <h5 class="mb-0">Calculation Transparency</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="calculationDisplay">
+                                                <div class="text-center py-5">
+                                                    <i class="bi bi-calculator display-1 text-muted"></i>
+                                                    <h4 class="mt-3">Select a record</h4>
+                                                    <p class="text-muted">Click the calculator icon on any record to see its detailed calculation breakdown.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card">
+                                        <div class="card-header bg-success text-white">
+                                            <h5 class="mb-0">Emission Factor Library</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="list-group">
+                                                <div class="list-group-item">
+                                                    <strong>Malaysia Grid Factor</strong>
+                                                    <br><small>0.85 kg CO₂e/kWh</small>
+                                                    <br><small class="text-muted">Source: Suruhanjaya Tenaga 2024</small>
+                                                </div>
+                                                <div class="list-group-item">
+                                                    <strong>Diesel (MY)</strong>
+                                                    <br><small>2.68 kg CO₂e/liter</small>
+                                                    <br><small class="text-muted">Source: MGTC 2024</small>
+                                                </div>
+                                                <div class="list-group-item">
+                                                    <strong>RON95 (MY)</strong>
+                                                    <br><small>2.31 kg CO₂e/liter</small>
+                                                    <br><small class="text-muted">Source: DOE Malaysia 2024</small>
+                                                </div>
+                                                <div class="list-group-item">
+                                                    <strong>Air Travel (SE Asia)</strong>
+                                                    <br><small>0.25 kg CO₂e/km</small>
+                                                    <br><small class="text-muted">Source: ICAO + MY Adjustment</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Calculation Modal -->
+<div class="modal fade" id="calculationModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Calculation Breakdown</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="calculationModalBody">
+                <!-- Calculation details will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Documents Modal -->
+<div class="modal fade" id="documentsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Linked Source Documents</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="documentsModalBody">
+                <!-- Documents will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Emission Factor Modal -->
+<div class="modal fade" id="factorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Emission Factor Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="factorModalBody">
+                <!-- Factor details will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+// Calculate stats on page load
+document.addEventListener('DOMContentLoaded', function() {
+    calculateVerificationStats();
+});
+
+function calculateVerificationStats() {
+    let totalRecords = 0;
+    let recordsWithDocs = 0;
+    let verifiedRecords = 0;
+    
+    // Count Scope 1
+    {% for item in enhanced_data.scope1 %}
+    totalRecords++;
+    {% if item.linked_documents %}recordsWithDocs++;{% endif %}
+    {% if item.verified %}verifiedRecords++;{% endif %}
+    {% endfor %}
+    
+    // Count Scope 2
+    {% for item in enhanced_data.scope2 %}
+    totalRecords++;
+    {% if item.linked_documents %}recordsWithDocs++;{% endif %}
+    {% if item.verified %}verifiedRecords++;{% endif %}
+    {% endfor %}
+    
+    // Count Scope 3
+    {% for item in enhanced_data.scope3 %}
+    totalRecords++;
+    {% if item.linked_documents %}recordsWithDocs++;{% endif %}
+    {% if item.verified %}verifiedRecords++;{% endif %}
+    {% endfor %}
+    
+    // Update UI
+    document.getElementById('totalRecords').textContent = totalRecords;
+    document.getElementById('recordsWithDocs').textContent = recordsWithDocs;
+    document.getElementById('verifiedRecords').textContent = verifiedRecords;
+    
+    const coverage = totalRecords > 0 ? Math.round((recordsWithDocs / totalRecords) * 100) : 0;
+    document.getElementById('dataCoverage').textContent = coverage + '%';
+}
+
+function showCalculation(scope, recordId) {
+    fetch(`/api/show-calculation/${scope}/${recordId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const breakdown = data.calculation_breakdown;
+                let html = `
+                    <div class="calculation-details">
+                        <h6>Calculation Formula</h6>
+                        <div class="alert alert-primary">
+                            <strong>${breakdown.calculation.formula}</strong>
+                            <br>Result: <strong>${breakdown.calculation.result}</strong>
+                        </div>
+                        
+                        <h6 class="mt-3">Emission Factor Details</h6>
+                        <table class="table table-sm">
+                            <tr><td>Value:</td><td>${breakdown.emission_factor.value} ${breakdown.emission_factor.unit}</td></tr>
+                            <tr><td>Source:</td><td>${breakdown.emission_factor.source}</td></tr>
+                            <tr><td>Version:</td><td>${breakdown.emission_factor.source_version}</td></tr>
+                            <tr><td>Date:</td><td>${breakdown.emission_factor.source_date}</td></tr>
+                            <tr><td>Country:</td><td>${breakdown.emission_factor.country}</td></tr>
+                            <tr><td>Confidence:</td><td>${breakdown.emission_factor.confidence_score * 100}%</td></tr>
+                            <tr><td>Validity:</td><td>${breakdown.emission_factor.validity_period}</td></tr>
+                        </table>
+                        
+                        <h6 class="mt-3">Activity Data</h6>
+                        <table class="table table-sm">
+                            <tr><td>Amount:</td><td>${data.record.amount} ${data.record.unit}</td></tr>
+                            <tr><td>Category:</td><td>${data.record.category}</td></tr>
+                            <tr><td>Scope:</td><td>${data.record.scope}</td></tr>
+                            <tr><td>Date:</td><td>${data.record.date}</td></tr>
+                        </table>
+                        
+                        <h6 class="mt-3">Calculation Assumptions</h6>
+                        <ul>
+                `;
+                
+                breakdown.assumptions.forEach(assumption => {
+                    html += `<li>${assumption}</li>`;
+                });
+                
+                html += `
+                        </ul>
+                    </div>
+                `;
+                
+                document.getElementById('calculationModalBody').innerHTML = html;
+                const modal = new bootstrap.Modal(document.getElementById('calculationModal'));
+                modal.show();
+            }
+        });
+}
+
+function viewDocuments(recordId) {
+    fetch(`/api/record-documents/${recordId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                let html = '';
+                
+                if (data.documents.length > 0) {
+                    html += '<div class="row">';
+                    data.documents.forEach(doc => {
+                        const fileType = doc.filename.split('.').pop().toLowerCase();
+                        const icon = fileType === 'pdf' ? 'bi-file-text' : 
+                                    ['jpg', 'jpeg', 'png'].includes(fileType) ? 'bi-image' : 'bi-file';
+                        
+                        html += `
+                            <div class="col-md-4 mb-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <i class="bi ${icon} display-4 text-primary"></i>
+                                        <h6 class="mt-2">${doc.filename}</h6>
+                                        <p class="text-muted small">
+                                            Uploaded: ${doc.upload_date.substring(0, 10)}
+                                            <br>Size: ${(doc.file_size / 1024).toFixed(1)} KB
+                                        </p>
+                                        <div class="btn-group">
+                                            <a href="/api/download-document/${doc.document_id}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-download"></i>
+                                            </a>
+                                            <button class="btn btn-sm btn-outline-success" 
+                                                    onclick="verifyDocument('${doc.document_id}')">
+                                                <i class="bi bi-check-circle"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                } else {
+                    html = '<p class="text-muted">No documents linked to this record.</p>';
+                }
+                
+                document.getElementById('documentsModalBody').innerHTML = html;
+                const modal = new bootstrap.Modal(document.getElementById('documentsModal'));
+                modal.show();
+            }
+        });
+}
+
+function showEmissionFactor(factorData) {
+    const factor = JSON.parse(factorData.replace(/&quot;/g, '"'));
+    
+    let html = `
+        <div class="factor-details">
+            <h6>${factor.category.replace('_', ' ').toUpperCase()}</h6>
+            <div class="alert alert-info">
+                <strong>${factor.value} ${factor.unit}</strong>
+            </div>
+            
+            <table class="table table-sm">
+                <tr><td>Factor ID:</td><td><code>${factor.factor_id}</code></td></tr>
+                <tr><td>Source:</td><td>${factor.source}</td></tr>
+                <tr><td>Version:</td><td>${factor.source_version || 'N/A'}</td></tr>
+                <tr><td>Date:</td><td>${factor.source_date}</td></tr>
+                <tr><td>Country:</td><td>${factor.country}</td></tr>
+                <tr><td>Region:</td><td>${factor.region || 'National'}</td></tr>
+                <tr><td>Validity:</td><td>${factor.validity_start} to ${factor.validity_end}</td></tr>
+                <tr><td>Confidence:</td><td>${factor.confidence_score * 100}%</td></tr>
+            </table>
+            
+            ${factor.notes ? `<div class="alert alert-secondary">${factor.notes}</div>` : ''}
+        </div>
+    `;
+    
+    document.getElementById('factorModalBody').innerHTML = html;
+    const modal = new bootstrap.Modal(document.getElementById('factorModal'));
+    modal.show();
+}
+
+function verifyRecord(recordId) {
+    if (confirm('Mark this record as auditor-verified?')) {
+        fetch(`/api/verify-record/${recordId}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                verified: true,
+                verification_notes: 'Verified by auditor'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Record marked as verified');
+                location.reload();
+            }
+        });
+    }
+}
+
+function verifyDocument(documentId) {
+    if (confirm('Mark this document as verified?')) {
+        fetch(`/api/verify-document/${documentId}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                verified: true
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Document marked as verified');
+            }
+        });
+    }
+}
+
+function exportVerificationReport() {
+    fetch('/api/export-verification-report')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Create download link for the report
+                const blob = new Blob([data.report], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `verification_report_${new Date().toISOString().slice(0,10)}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }
+        });
+}
+
+// Update calculation display in the breakdown tab when clicking calculator buttons
+document.querySelectorAll('[onclick*="showCalculation"]').forEach(button => {
+    button.addEventListener('click', function() {
+        // Switch to calculations tab
+        const calcTab = new bootstrap.Tab(document.getElementById('calculations-tab'));
+        calcTab.show();
+    });
+});
+</script>
+
+<style>
+.calculation-details h6 {
+    border-bottom: 2px solid #dee2e6;
+    padding-bottom: 5px;
+    margin-top: 20px;
+}
+
+.factor-details table td:first-child {
+    font-weight: bold;
+    width: 120px;
+}
+
+.nav-tabs .nav-link.active {
+    background-color: #0F3B2E;
+    color: white;
+    border-color: #0F3B2E;
+}
+</style>
+{% endblock %}

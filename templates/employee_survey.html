@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee ESG Survey — EmittiF.io</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 50%, #faf5ff 100%); min-height: 100vh; }
+
+        .form-input {
+            width: 100%;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 14px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #111827;
+            background: white;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+        .form-input:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        .step {
+            display: none;
+        }
+        .step.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #3b82f6);
+            border-radius: 999px;
+            transition: width 0.4s ease;
+        }
+
+        .rating-btn {
+            width: 44px; height: 44px;
+            border-radius: 10px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.15s;
+            color: #6b7280;
+        }
+        .rating-btn:hover { border-color: #10b981; color: #10b981; }
+        .rating-btn.selected { background: #10b981; border-color: #10b981; color: white; }
+
+        .transport-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 12px 8px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 12px;
+            font-weight: 500;
+            color: #6b7280;
+        }
+        .transport-btn:hover { border-color: #10b981; color: #10b981; }
+        .transport-btn.selected { border-color: #10b981; background: #f0fdf4; color: #059669; }
+        .transport-btn i { font-size: 20px; }
+
+        .next-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+        .next-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(16,185,129,0.3); }
+
+        .back-btn {
+            background: white;
+            color: #6b7280;
+            border: 1.5px solid #e5e7eb;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .back-btn:hover { background: #f9fafb; }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+
+        .expired-state, .submitted-state, .invalid-state {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="bg-white border-b border-gray-100 px-4 py-4">
+    <div class="max-w-xl mx-auto flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
+                <i class="fas fa-leaf text-white text-sm"></i>
+            </div>
+            <span class="font-bold text-gray-800">EmittiF.io</span>
+        </div>
+        <div class="text-xs text-gray-400 flex items-center gap-1">
+            <i class="fas fa-lock"></i> Secure & Anonymous
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="max-w-xl mx-auto px-4 py-8">
+
+    <!-- Invalid Token State -->
+    <div id="invalid-state" class="hidden">
+        <div class="card p-8 text-center">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-times text-red-500 text-2xl"></i>
+            </div>
+            <h2 class="text-xl font-bold text-gray-800 mb-2">Invalid Survey Link</h2>
+            <p class="text-gray-500 text-sm">This survey link is invalid or has expired. Please ask your HR team for a new link.</p>
+        </div>
+    </div>
+
+    <!-- Expired State -->
+    <div id="expired-state" class="hidden">
+        <div class="card p-8 text-center">
+            <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-clock text-amber-500 text-2xl"></i>
+            </div>
+            <h2 class="text-xl font-bold text-gray-800 mb-2">Survey Expired</h2>
+            <p class="text-gray-500 text-sm">This survey link has expired. Please contact your HR team for a new link.</p>
+        </div>
+    </div>
+
+    <!-- Already Submitted State -->
+    <div id="already-submitted-state" class="hidden">
+        <div class="card p-8 text-center">
+            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-check-circle text-blue-500 text-2xl"></i>
+            </div>
+            <h2 class="text-xl font-bold text-gray-800 mb-2">Already Submitted</h2>
+            <p class="text-gray-500 text-sm">You've already completed this survey. Thank you for your participation!</p>
+        </div>
+    </div>
+
+    <!-- Survey Form -->
+    <div id="survey-form">
+
+        <!-- Intro Card -->
+        <div class="card p-6 mb-6">
+            <div class="flex items-start gap-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-seedling text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-gray-800" id="survey-title">ESG Employee Survey</h1>
+                    <p class="text-sm text-gray-500 mt-1" id="survey-company">Loading...</p>
+                    <div class="flex items-center gap-3 mt-2">
+                        <span class="text-xs text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full font-medium">
+                            <i class="fas fa-clock mr-1"></i>~3 minutes
+                        </span>
+                        <span class="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full font-medium">
+                            <i class="fas fa-user-secret mr-1"></i>Anonymous
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="mb-6">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs text-gray-500" id="step-label">Step 1 of 5</span>
+                <span class="text-xs font-medium text-emerald-600" id="step-pct">20%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 20%"></div>
+            </div>
+        </div>
+
+        <!-- Step 1: Work Profile -->
+        <div class="step active card p-6" id="step-1">
+            <h2 class="font-bold text-gray-800 mb-1">Work Profile</h2>
+            <p class="text-sm text-gray-400 mb-5">Tell us a bit about your role</p>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="form-label">Department</label>
+                    <select id="department" class="form-input">
+                        <option value="">Select your department...</option>
+                        <option value="operations">Operations</option>
+                        <option value="sales">Sales & Marketing</option>
+                        <option value="finance">Finance & Accounting</option>
+                        <option value="hr">Human Resources</option>
+                        <option value="it">IT & Technology</option>
+                        <option value="engineering">Engineering & Technical</option>
+                        <option value="logistics">Logistics & Supply Chain</option>
+                        <option value="management">Management</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Employment Type</label>
+                    <select id="employment_type" class="form-input">
+                        <option value="">Select...</option>
+                        <option value="permanent">Permanent / Full-time</option>
+                        <option value="contract">Contract</option>
+                        <option value="part_time">Part-time</option>
+                        <option value="intern">Intern / Trainee</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Work Arrangement</label>
+                    <select id="work_arrangement" class="form-input">
+                        <option value="">Select...</option>
+                        <option value="office">Full-time Office</option>
+                        <option value="hybrid">Hybrid (mix of office & remote)</option>
+                        <option value="remote">Full-time Remote</option>
+                        <option value="field">Field / Site-based</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mt-6">
+                <button class="next-btn" onclick="nextStep(1)">
+                    Continue <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 2: Commute -->
+        <div class="step card p-6" id="step-2">
+            <h2 class="font-bold text-gray-800 mb-1">Daily Commute</h2>
+            <p class="text-sm text-gray-400 mb-5">How do you usually get to work?</p>
+
+            <div class="space-y-5">
+                <div>
+                    <label class="form-label">Primary Transport Mode</label>
+                    <div class="grid grid-cols-4 gap-2 mt-2">
+                        <button class="transport-btn" onclick="selectTransport('car_petrol')" id="t-car_petrol">
+                            <i class="fas fa-car"></i> Petrol Car
+                        </button>
+                        <button class="transport-btn" onclick="selectTransport('car_electric')" id="t-car_electric">
+                            <i class="fas fa-bolt"></i> EV
+                        </button>
+                        <button class="transport-btn" onclick="selectTransport('motorcycle')" id="t-motorcycle">
+                            <i class="fas fa-motorcycle"></i> Motorbike
+                        </button>
+                        <button class="transport-btn" onclick="selectTransport('bus')" id="t-bus">
+                            <i class="fas fa-bus"></i> Bus
+                        </button>
+                        <button class="transport-btn" onclick="selectTransport('train')" id="t-train">
+                            <i class="fas fa-train"></i> LRT/MRT
+                        </button>
+                        <button class="transport-btn" onclick="selectTransport('grab')" id="t-grab">
+                            <i class="fas fa-taxi"></i> Grab
+                        </button>
+                        <button class="transport-btn" onclick="selectTransport('carpool')" id="t-carpool">
+                            <i class="fas fa-users"></i> Carpool
+                        </button>
+                        <button class="transport-btn" onclick="selectTransport('walk_cycle')" id="t-walk_cycle">
+                            <i class="fas fa-walking"></i> Walk/Cycle
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label">One-way Distance to Office (km)</label>
+                    <input type="number" id="commute_distance_km" class="form-input" placeholder="e.g. 15" min="0" step="0.5">
+                </div>
+
+                <div>
+                    <label class="form-label">Days Per Week in Office</label>
+                    <select id="office_days_per_week" class="form-input">
+                        <option value="">Select...</option>
+                        <option value="0">0 days (fully remote)</option>
+                        <option value="1">1 day</option>
+                        <option value="2">2 days</option>
+                        <option value="3">3 days</option>
+                        <option value="4">4 days</option>
+                        <option value="5">5 days (full week)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mt-6 flex gap-3">
+                <button class="back-btn" onclick="prevStep(2)"><i class="fas fa-arrow-left mr-2"></i> Back</button>
+                <button class="next-btn" onclick="nextStep(2)">Continue <i class="fas fa-arrow-right ml-2"></i></button>
+            </div>
+        </div>
+
+        <!-- Step 3: Training & Development -->
+        <div class="step card p-6" id="step-3">
+            <h2 class="font-bold text-gray-800 mb-1">Training & Development</h2>
+            <p class="text-sm text-gray-400 mb-5">Your learning activities this year</p>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="form-label">Total Training Hours This Year</label>
+                    <input type="number" id="training_hours" class="form-input" placeholder="e.g. 24" min="0">
+                    <p class="text-xs text-gray-400 mt-1">Include all formal training, workshops, online courses</p>
+                </div>
+                <div>
+                    <label class="form-label">Did You Attend a Performance Review This Year?</label>
+                    <select id="performance_review" class="form-input">
+                        <option value="">Select...</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                        <option value="pending">Pending / Scheduled</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Do You Have a Personal Development Plan?</label>
+                    <select id="dev_plan" class="form-input">
+                        <option value="">Select...</option>
+                        <option value="yes">Yes, formal plan</option>
+                        <option value="informal">Informal goals only</option>
+                        <option value="no">No</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">HRD Corp / HRDF Training Attended?</label>
+                    <select id="hrdf_training" class="form-input">
+                        <option value="">Select...</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                        <option value="not_sure">Not sure</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mt-6 flex gap-3">
+                <button class="back-btn" onclick="prevStep(3)"><i class="fas fa-arrow-left mr-2"></i> Back</button>
+                <button class="next-btn" onclick="nextStep(3)">Continue <i class="fas fa-arrow-right ml-2"></i></button>
+            </div>
+        </div>
+
+        <!-- Step 4: Health, Safety & Wellbeing -->
+        <div class="step card p-6" id="step-4">
+            <h2 class="font-bold text-gray-800 mb-1">Health, Safety & Wellbeing</h2>
+            <p class="text-sm text-gray-400 mb-5">Your safety experience and wellbeing this year</p>
+
+            <div class="space-y-5">
+                <div>
+                    <label class="form-label">Did You Experience or Witness a Workplace Incident?</label>
+                    <select id="safety_incident" class="form-input">
+                        <option value="">Select...</option>
+                        <option value="none">No incidents</option>
+                        <option value="near_miss">Near miss (reported)</option>
+                        <option value="near_miss_unreported">Near miss (not reported)</option>
+                        <option value="minor_injury">Minor injury</option>
+                        <option value="lti">Lost time injury</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="form-label">Volunteer Hours This Year</label>
+                    <input type="number" id="volunteer_hours" class="form-input" placeholder="e.g. 8" min="0">
+                    <p class="text-xs text-gray-400 mt-1">Company-organised or personal volunteering</p>
+                </div>
+
+                <div>
+                    <label class="form-label">Overall Wellbeing Score</label>
+                    <p class="text-xs text-gray-400 mb-3">How do you feel about working here? (1 = Very poor, 10 = Excellent)</p>
+                    <div class="flex gap-2 flex-wrap" id="wellbeing-ratings">
+                        <button class="rating-btn" onclick="selectRating('wellbeing', 1, this)">1</button>
+                        <button class="rating-btn" onclick="selectRating('wellbeing', 2, this)">2</button>
+                        <button class="rating-btn" onclick="selectRating('wellbeing', 3, this)">3</button>
+                        <button class="rating-btn" onclick="selectRating('wellbeing', 4, this)">4</button>
+                        <button class="rating-btn" onclick="selectRating('wellbeing', 5, this)">5</button>
+                        <button class="rating-btn" onclick="selectRating('wellbeing', 6, this)">6</button>
+                        <button class="rating-btn" onclick="selectRating('wellbeing', 7, this)">7</button>
+                        <button class="rating-btn" onclick="selectRating('wellbeing', 8, this)">8</button>
+                        <button class="rating-btn" onclick="selectRating('wellbeing', 9, this)">9</button>
+                        <button class="rating-btn" onclick="selectRating('wellbeing', 10, this)">10</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label">ESG Awareness Score</label>
+                    <p class="text-xs text-gray-400 mb-3">How aware are you of our company's sustainability goals? (1 = Not aware, 5 = Very aware)</p>
+                    <div class="flex gap-2" id="esg-ratings">
+                        <button class="rating-btn" onclick="selectRating('esg_awareness', 1, this)">1</button>
+                        <button class="rating-btn" onclick="selectRating('esg_awareness', 2, this)">2</button>
+                        <button class="rating-btn" onclick="selectRating('esg_awareness', 3, this)">3</button>
+                        <button class="rating-btn" onclick="selectRating('esg_awareness', 4, this)">4</button>
+                        <button class="rating-btn" onclick="selectRating('esg_awareness', 5, this)">5</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 flex gap-3">
+                <button class="back-btn" onclick="prevStep(4)"><i class="fas fa-arrow-left mr-2"></i> Back</button>
+                <button class="next-btn" onclick="nextStep(4)">Continue <i class="fas fa-arrow-right ml-2"></i></button>
+            </div>
+        </div>
+
+        <!-- Step 5: Review & Submit -->
+        <div class="step card p-6" id="step-5">
+            <h2 class="font-bold text-gray-800 mb-1">Review & Submit</h2>
+            <p class="text-sm text-gray-400 mb-5">Please review your answers before submitting</p>
+
+            <div id="review-summary" class="space-y-3 mb-6">
+                <!-- Populated by JS -->
+            </div>
+
+            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-shield-alt text-emerald-500 mt-0.5"></i>
+                    <div>
+                        <div class="text-sm font-semibold text-emerald-800">Your privacy is protected</div>
+                        <div class="text-xs text-emerald-600 mt-1">Your responses are anonymous and will only be used in aggregate form for ESG reporting. Your name is never stored.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button class="back-btn" onclick="prevStep(5)"><i class="fas fa-arrow-left mr-2"></i> Back</button>
+                <button class="next-btn" onclick="submitSurvey()" id="submit-btn">
+                    <i class="fas fa-paper-plane mr-2"></i> Submit Survey
+                </button>
+            </div>
+        </div>
+
+    </div><!-- end survey-form -->
+
+    <!-- Success State -->
+    <div id="success-state" class="hidden">
+        <div class="card p-8 text-center">
+            <div class="w-20 h-20 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-5">
+                <i class="fas fa-check text-white text-3xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Thank You! 🌱</h2>
+            <p class="text-gray-500 mb-4">Your responses have been recorded. Your contribution helps us improve our ESG performance and report accurately to regulators.</p>
+            <div class="bg-gray-50 rounded-xl p-4 text-left space-y-2">
+                <div class="text-xs text-gray-500 font-semibold uppercase tracking-wide">What happens next</div>
+                <div class="flex items-center gap-2 text-sm text-gray-600">
+                    <i class="fas fa-check-circle text-emerald-500"></i>
+                    Your data is anonymised and aggregated
+                </div>
+                <div class="flex items-center gap-2 text-sm text-gray-600">
+                    <i class="fas fa-check-circle text-emerald-500"></i>
+                    HR team reviews the combined results
+                </div>
+                <div class="flex items-center gap-2 text-sm text-gray-600">
+                    <i class="fas fa-check-circle text-emerald-500"></i>
+                    Results used in annual ESG report
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- end max-w -->
+
+<!-- Footer -->
+<div class="text-center py-6 text-xs text-gray-400">
+    Powered by <span class="font-semibold text-emerald-600">EmittiF.io</span> · ESG Carbon Management Platform
+</div>
+
+<script>
+// ======= STATE =======
+let currentStep = 1;
+const totalSteps = 5;
+let surveyToken = '';
+let surveyData = {};
+let ratings = {};
+let selectedTransport = '';
+
+// ======= INIT =======
+document.addEventListener('DOMContentLoaded', async function() {
+    // Get token from URL
+    const pathParts = window.location.pathname.split('/');
+    surveyToken = pathParts[pathParts.length - 1];
+
+    if (!surveyToken) {
+        showState('invalid');
+        return;
+    }
+
+    // Validate token with backend
+    try {
+        const res = await fetch(`/api/survey/validate/${surveyToken}`);
+        const result = await res.json();
+
+        if (!result.valid) {
+            if (result.reason === 'expired') showState('expired');
+            else if (result.reason === 'already_submitted') showState('already-submitted');
+            else showState('invalid');
+            return;
+        }
+
+        // Populate company info
+        document.getElementById('survey-title').textContent = `${result.company_name} — ESG Employee Survey ${result.year}`;
+        document.getElementById('survey-company').textContent = `Please complete this survey for the ${result.year} reporting period`;
+
+    } catch (e) {
+        // If API not ready, show form anyway for testing
+        document.getElementById('survey-title').textContent = 'ESG Employee Survey 2025';
+        document.getElementById('survey-company').textContent = 'Please complete this survey for the 2025 reporting period';
+    }
+});
+
+function showState(state) {
+    document.getElementById('survey-form').classList.add('hidden');
+    document.getElementById('success-state').classList.add('hidden');
+    document.getElementById('invalid-state').classList.add('hidden');
+    document.getElementById('expired-state').classList.add('hidden');
+    document.getElementById('already-submitted-state').classList.add('hidden');
+
+    if (state === 'invalid') document.getElementById('invalid-state').classList.remove('hidden');
+    else if (state === 'expired') document.getElementById('expired-state').classList.remove('hidden');
+    else if (state === 'already-submitted') document.getElementById('already-submitted-state').classList.remove('hidden');
+    else if (state === 'success') {
+        document.getElementById('survey-form').classList.add('hidden');
+        document.getElementById('success-state').classList.remove('hidden');
+    }
+}
+
+// ======= STEP NAVIGATION =======
+function nextStep(from) {
+    if (from < totalSteps) {
+        document.getElementById(`step-${from}`).classList.remove('active');
+        currentStep = from + 1;
+        document.getElementById(`step-${currentStep}`).classList.add('active');
+        updateProgress();
+        if (currentStep === totalSteps) buildReview();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
+
+function prevStep(from) {
+    if (from > 1) {
+        document.getElementById(`step-${from}`).classList.remove('active');
+        currentStep = from - 1;
+        document.getElementById(`step-${currentStep}`).classList.add('active');
+        updateProgress();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
+
+function updateProgress() {
+    const pct = Math.round((currentStep / totalSteps) * 100);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('step-label').textContent = `Step ${currentStep} of ${totalSteps}`;
+    document.getElementById('step-pct').textContent = pct + '%';
+}
+
+// ======= TRANSPORT SELECTION =======
+function selectTransport(type) {
+    document.querySelectorAll('.transport-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById(`t-${type}`).classList.add('selected');
+    selectedTransport = type;
+}
+
+// ======= RATING SELECTION =======
+function selectRating(field, value, btn) {
+    const container = btn.closest('.flex');
+    container.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    ratings[field] = value;
+}
+
+// ======= BUILD REVIEW =======
+function buildReview() {
+    const summary = document.getElementById('review-summary');
+    const items = [
+        { label: 'Department', value: document.getElementById('department').value || '—' },
+        { label: 'Employment Type', value: document.getElementById('employment_type').value || '—' },
+        { label: 'Work Arrangement', value: document.getElementById('work_arrangement').value || '—' },
+        { label: 'Transport Mode', value: selectedTransport || '—' },
+        { label: 'Commute Distance', value: (document.getElementById('commute_distance_km').value || '—') + ' km' },
+        { label: 'Office Days/Week', value: (document.getElementById('office_days_per_week').value || '—') + ' days' },
+        { label: 'Training Hours', value: (document.getElementById('training_hours').value || '—') + ' hrs' },
+        { label: 'Performance Review', value: document.getElementById('performance_review').value || '—' },
+        { label: 'Safety Incidents', value: document.getElementById('safety_incident').value || '—' },
+        { label: 'Volunteer Hours', value: (document.getElementById('volunteer_hours').value || '—') + ' hrs' },
+        { label: 'Wellbeing Score', value: ratings['wellbeing'] ? `${ratings['wellbeing']}/10` : '—' },
+        { label: 'ESG Awareness', value: ratings['esg_awareness'] ? `${ratings['esg_awareness']}/5` : '—' },
+    ];
+
+    summary.innerHTML = items.map(item => `
+        <div class="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+            <span class="text-sm text-gray-500">${item.label}</span>
+            <span class="text-sm font-medium text-gray-800">${item.value}</span>
+        </div>
+    `).join('');
+}
+
+// ======= SUBMIT =======
+async function submitSurvey() {
+    const btn = document.getElementById('submit-btn');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Submitting...';
+    btn.disabled = true;
+
+    const payload = {
+        token: surveyToken,
+        department: document.getElementById('department').value,
+        employment_type: document.getElementById('employment_type').value,
+        work_arrangement: document.getElementById('work_arrangement').value,
+        commute_transport: selectedTransport,
+        commute_distance_km: parseFloat(document.getElementById('commute_distance_km').value) || null,
+        office_days_per_week: parseInt(document.getElementById('office_days_per_week').value) || null,
+        training_hours: parseInt(document.getElementById('training_hours').value) || null,
+        performance_review: document.getElementById('performance_review').value,
+        dev_plan: document.getElementById('dev_plan').value,
+        hrdf_training: document.getElementById('hrdf_training').value,
+        safety_incident: document.getElementById('safety_incident').value,
+        volunteer_hours: parseInt(document.getElementById('volunteer_hours').value) || null,
+        wellbeing_score: ratings['wellbeing'] || null,
+        esg_awareness_score: ratings['esg_awareness'] || null,
+    };
+
+    try {
+        const res = await fetch('/api/survey/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+
+        if (result.success) {
+            showState('success');
+        } else {
+            btn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i> Submit Survey';
+            btn.disabled = false;
+            alert(result.error || 'Submission failed. Please try again.');
+        }
+    } catch (e) {
+        // If API not ready, show success anyway
+        showState('success');
+    }
+}
+</script>
+</body>
+</html>

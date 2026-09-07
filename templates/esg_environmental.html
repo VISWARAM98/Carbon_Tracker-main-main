@@ -1,0 +1,414 @@
+{% extends "base_auth.html" %}
+
+{% block title %}Environmental Data Module - EmittiF.io{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+
+    <!-- Page Header -->
+    <div class="bg-white border-b border-gray-200 px-6 py-5">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div>
+                <div class="flex items-center space-x-3 mb-1">
+                    <a href="{{ url_for('esg_data_center') }}" class="text-sm text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-arrow-left mr-1"></i>Data Hub
+                    </a>
+                    <span class="text-gray-300">/</span>
+                    <span class="text-sm text-emerald-600 font-medium">Environmental</span>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-800">Environmental Data Module</h1>
+                <p class="text-sm text-gray-500 mt-1">Track energy, water, waste, and land/biodiversity activity data.</p>
+            </div>
+            <div class="flex items-center space-x-3">
+                <!-- Completion Badge -->
+                <div class="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 text-center">
+                    <div class="text-xs text-emerald-600 font-medium">Completion</div>
+                    <div class="text-xl font-bold text-emerald-700" id="env-completion-badge">{{ completion_percentage }}%</div>
+                </div>
+                <!-- Add Data Button — goes to dashboard modal -->
+                <button onclick="goToAddData('energy')"
+                    class="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-medium transition-colors shadow-sm">
+                    <i class="fas fa-plus"></i>
+                    <span>Add Data</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 py-6">
+
+        <!-- Tab Navigation -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            
+            <!-- Tab Headers -->
+            <div class="flex border-b border-gray-200 overflow-x-auto">
+                <!-- Emissions Tab -->
+                <button id="btn-emissions" onclick="switchEnvTab('emissions')"
+                    class="env-tab-btn flex items-center space-x-2 px-5 py-4 text-sm font-medium whitespace-nowrap transition-colors border-b-2 border-emerald-600 text-emerald-700 font-semibold active">
+                    <i class="fas fa-smog"></i>
+                    <span>Emissions</span>
+                </button>
+                <!-- Energy Tab -->
+                <button id="btn-energy" onclick="switchEnvTab('energy')"
+                    class="env-tab-btn flex items-center space-x-2 px-5 py-4 text-sm font-medium whitespace-nowrap transition-colors text-gray-500 hover:text-gray-700 border-b-2 border-transparent">
+                    <i class="fas fa-bolt"></i>
+                    <span>Energy</span>
+                    <span id="energy-count-badge" class="bg-emerald-100 text-emerald-700 text-xs px-1.5 py-0.5 rounded-full hidden">0</span>
+                </button>
+                <!-- Fuel Tab -->
+                <button id="btn-fuel" onclick="switchEnvTab('fuel')"
+                    class="env-tab-btn flex items-center space-x-2 px-5 py-4 text-sm font-medium whitespace-nowrap transition-colors text-gray-500 hover:text-gray-700 border-b-2 border-transparent">
+                    <i class="fas fa-gas-pump"></i>
+                    <span>Fuel</span>
+                    <span id="fuel-count-badge" class="bg-orange-100 text-orange-700 text-xs px-1.5 py-0.5 rounded-full hidden">0</span>
+                </button>
+                <!-- Water Tab -->
+                <button id="btn-water" onclick="switchEnvTab('water')"
+                    class="env-tab-btn flex items-center space-x-2 px-5 py-4 text-sm font-medium whitespace-nowrap transition-colors text-gray-500 hover:text-gray-700 border-b-2 border-transparent">
+                    <i class="fas fa-tint"></i>
+                    <span>Water</span>
+                    <span id="water-count-badge" class="bg-blue-100 text-blue-700 text-xs px-1.5 py-0.5 rounded-full hidden">0</span>
+                </button>
+                <!-- Waste Tab -->
+                <button id="btn-waste" onclick="switchEnvTab('waste')"
+                    class="env-tab-btn flex items-center space-x-2 px-5 py-4 text-sm font-medium whitespace-nowrap transition-colors text-gray-500 hover:text-gray-700 border-b-2 border-transparent">
+                    <i class="fas fa-trash"></i>
+                    <span>Waste</span>
+                    <span id="waste-count-badge" class="bg-gray-200 text-gray-600 text-xs px-1.5 py-0.5 rounded-full hidden">0</span>
+                </button>
+                <!-- Land & Biodiversity Tab -->
+                <button id="btn-land_biodiversity" onclick="switchEnvTab('land_biodiversity')"
+                    class="env-tab-btn flex items-center space-x-2 px-5 py-4 text-sm font-medium whitespace-nowrap transition-colors text-gray-500 hover:text-gray-700 border-b-2 border-transparent">
+                    <i class="fas fa-leaf"></i>
+                    <span>Land & Biodiversity</span>
+                    <span id="land_biodiversity-count-badge" class="bg-green-100 text-green-700 text-xs px-1.5 py-0.5 rounded-full hidden">0</span>
+                </button>
+                <!-- Travel Tab -->
+                <button id="btn-travel" onclick="switchEnvTab('travel')"
+                    class="env-tab-btn flex items-center space-x-2 px-5 py-4 text-sm font-medium whitespace-nowrap transition-colors text-gray-500 hover:text-gray-700 border-b-2 border-transparent">
+                    <i class="fas fa-plane"></i>
+                    <span>Travel</span>
+                    <span id="travel-count-badge" class="bg-sky-100 text-sky-700 text-xs px-1.5 py-0.5 rounded-full hidden">0</span>
+                </button>
+            </div>
+
+            <!-- ===================== EMISSIONS TAB ===================== -->
+            <div id="tab-emissions" class="env-tab-content p-6">
+                <div id="emissions-summary-container">
+                    <div class="flex items-center justify-center py-8 text-gray-400">
+                        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-emerald-500 mr-2"></div>
+                        Calculating emissions...
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===================== ENERGY TAB ===================== -->
+            <div id="tab-energy" class="env-tab-content hidden">
+                <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h3 class="font-semibold text-gray-800">⚡ Energy Consumption</h3>
+                        <p class="text-sm text-gray-500 mt-0.5">Track electricity and renewable energy. Feeds into Scope 2 emissions.</p>
+                    </div>
+                    <button onclick="goToAddData('energy')"
+                        class="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        <i class="fas fa-plus"></i><span>Add Energy Data</span>
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Activity</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Quantity</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">CO₂e</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Year</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Period</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Evidence</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="energy-table-body">
+                            <tr>
+                                <td colspan="8" class="text-center py-8 text-gray-400">
+                                    <div class="animate-spin inline-block h-5 w-5 border-b-2 border-emerald-500 rounded-full"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===================== FUEL TAB ===================== -->
+            <div id="tab-fuel" class="env-tab-content hidden">
+                <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h3 class="font-semibold text-gray-800">⛽ Fuel Consumption</h3>
+                        <p class="text-sm text-gray-500 mt-0.5">Track diesel, petrol, gas and other fuels. Feeds into Scope 1 emissions.</p>
+                    </div>
+                    <button onclick="goToAddData('fuel')"
+                        class="flex items-center space-x-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        <i class="fas fa-plus"></i><span>Add Fuel Data</span>
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Activity</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Quantity</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">CO₂e</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Year</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Period</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Evidence</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fuel-table-body">
+                            <tr>
+                                <td colspan="8" class="text-center py-8 text-gray-400">
+                                    <div class="animate-spin inline-block h-5 w-5 border-b-2 border-orange-500 rounded-full"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===================== WATER TAB ===================== -->
+            <div id="tab-water" class="env-tab-content hidden">
+                <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h3 class="font-semibold text-gray-800">💧 Water Usage</h3>
+                        <p class="text-sm text-gray-500 mt-0.5">Track water consumption from bills. Feeds into Scope 3 emissions (0.344 kg CO₂e/m³).</p>
+                    </div>
+                    <button onclick="goToAddData('water')"
+                        class="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        <i class="fas fa-plus"></i><span>Add Water Data</span>
+                    </button>
+                </div>
+                <!-- Water info banner -->
+                <div class="mx-5 mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start space-x-2">
+                    <i class="fas fa-info-circle text-blue-500 mt-0.5 shrink-0"></i>
+                    <p class="text-sm text-blue-700">
+                        For office buildings served by <strong>IndahWater (IWK)</strong>, only water supply emissions apply (0.344 kg CO₂e/m³).
+                        Upload your monthly water bill — AI will extract the m³ reading automatically.
+                    </p>
+                </div>
+                <div class="overflow-x-auto mt-4">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Activity</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Volume (m³)</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">CO₂e</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Year</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Period</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Evidence</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="water-table-body">
+                            <tr>
+                                <td colspan="8" class="text-center py-8 text-gray-400">
+                                    <div class="animate-spin inline-block h-5 w-5 border-b-2 border-blue-500 rounded-full"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===================== WASTE TAB ===================== -->
+            <div id="tab-waste" class="env-tab-content hidden">
+                <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h3 class="font-semibold text-gray-800">🗑️ Waste Generation</h3>
+                        <p class="text-sm text-gray-500 mt-0.5">Track general, hazardous, recycled and organic waste. Feeds into Scope 3 emissions.</p>
+                    </div>
+                    <button onclick="goToAddData('waste')"
+                        class="flex items-center space-x-2 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        <i class="fas fa-plus"></i><span>Add Waste Data</span>
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Waste Type</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Quantity</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">CO₂e</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Year</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Period</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Evidence</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="waste-table-body">
+                            <tr>
+                                <td colspan="8" class="text-center py-8 text-gray-400">
+                                    <div class="animate-spin inline-block h-5 w-5 border-b-2 border-gray-500 rounded-full"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===================== LAND & BIODIVERSITY TAB ===================== -->
+            <div id="tab-land_biodiversity" class="env-tab-content hidden">
+                <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h3 class="font-semibold text-gray-800">🌿 Land & Biodiversity</h3>
+                        <p class="text-sm text-gray-500 mt-0.5">Track land use and biodiversity impact. Optional module for GRI 304 reporting.</p>
+                    </div>
+                    <button onclick="goToAddData('land_biodiversity')"
+                        class="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        <i class="fas fa-plus"></i><span>Add Land Data</span>
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Activity</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Area</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">CO₂e</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Year</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Period</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Evidence</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="land_biodiversity-table-body">
+                            <tr>
+                                <td colspan="8" class="text-center py-8 text-gray-400">
+                                    <div class="animate-spin inline-block h-5 w-5 border-b-2 border-green-500 rounded-full"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===================== TRAVEL TAB ===================== -->
+            <div id="tab-travel" class="env-tab-content hidden">
+                <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h3 class="font-semibold text-gray-800">✈️ Business Travel</h3>
+                        <p class="text-sm text-gray-500 mt-0.5">Track flights, car trips, and public transport. Feeds into Scope 3 emissions.</p>
+                    </div>
+                    <button onclick="goToAddData('travel')"
+                        class="flex items-center space-x-2 bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        <i class="fas fa-plus"></i><span>Add Travel Data</span>
+                    </button>
+                </div>
+                <!-- Travel info banner -->
+                <div class="mx-5 mt-4 bg-sky-50 border border-sky-200 rounded-lg p-3 flex items-start space-x-2">
+                    <i class="fas fa-info-circle text-sky-500 mt-0.5 shrink-0"></i>
+                    <p class="text-sm text-sky-700">
+                        Emission factors per km: <strong>Domestic flight</strong> 0.255 kg · <strong>Car (petrol)</strong> 0.192 kg · <strong>Train</strong> 0.041 kg · <strong>Bus</strong> 0.089 kg CO₂e
+                    </p>
+                </div>
+                <div class="overflow-x-auto mt-4">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Transport Type</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Distance</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">CO₂e</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Year</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Period</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Evidence</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="travel-table-body">
+                            <tr>
+                                <td colspan="8" class="text-center py-8 text-gray-400">
+                                    <div class="animate-spin inline-block h-5 w-5 border-b-2 border-sky-500 rounded-full"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div><!-- end tabs card -->
+
+        <!-- ===================== INTENSITY METRICS ===================== -->
+        <div class="mt-6 bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h2 class="text-lg font-bold text-gray-800">Environmental Intensity Analysis</h2>
+                    <p class="text-sm text-gray-500">Normalised metrics per employee and per m² floor area</p>
+                </div>
+                <button onclick="loadIntensityMetrics()"
+                    class="flex items-center space-x-2 text-sm text-emerald-600 hover:text-emerald-800 border border-emerald-200 hover:border-emerald-400 px-3 py-1.5 rounded-lg transition-colors">
+                    <i class="fas fa-sync-alt"></i><span>Refresh</span>
+                </button>
+            </div>
+            <div id="intensity-metrics" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="flex items-center justify-center py-8 text-gray-400 col-span-3">
+                    <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-emerald-500 mr-2"></div>
+                    Loading intensity metrics...
+                </div>
+            </div>
+        </div>
+
+    </div><!-- end max-w-7xl -->
+</div><!-- end min-h-screen -->
+
+<!-- ===================== EVIDENCE MODAL ===================== -->
+<div id="evidenceModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+            <h3 class="font-bold text-gray-800">Evidence Files</h3>
+            <button onclick="closeEvidenceModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fas fa-times text-lg"></i>
+            </button>
+        </div>
+        <div class="p-6 max-h-96 overflow-y-auto" id="evidenceList">
+            <div class="text-center py-4 text-gray-400">Loading...</div>
+        </div>
+        <div class="px-6 py-4 border-t border-gray-100 flex justify-end">
+            <button onclick="closeEvidenceModal()"
+                class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/environmental_module.js') }}"></script>
+<script>
+    // Auto-open correct tab if coming from dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabToOpen = sessionStorage.getItem('openESGTab');
+        if (tabToOpen) {
+            sessionStorage.removeItem('openESGTab');
+            // Map dashboard tab names to env module tab names
+            const tabMap = {
+                'energy': 'energy',
+                'fuel': 'fuel',
+                'water': 'water',
+                'waste': 'waste',
+                'travel': 'emissions'
+            };
+            const envTab = tabMap[tabToOpen] || 'emissions';
+            setTimeout(() => switchEnvTab(envTab), 300);
+        } else {
+            // Default: load emissions tab
+            switchEnvTab('emissions');
+        }
+    });
+</script>
+{% endblock %}

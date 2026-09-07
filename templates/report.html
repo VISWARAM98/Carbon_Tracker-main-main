@@ -1,0 +1,662 @@
+{% extends "base_auth.html" %}
+{% block content %}
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@300;400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ── SCREEN STYLES ── */
+:root {
+    --ink:      #0a0a0a;
+    --ink2:     #2d2d2d;
+    --muted:    #6b7280;
+    --sub:      #9ca3af;
+    --border:   #e5e7eb;
+    --border2:  #d1d5db;
+    --bg:       #f9fafb;
+    --green:    #14532d;
+    --green-lt: #16a34a;
+    --amber:    #92400e;
+    --blue:     #1e3a5f;
+    --purple:   #4c1d95;
+    --teal:     #134e4a;
+    --accent:   #15803d;
+}
+
+.report-wrapper {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    padding: 32px;
+}
+
+/* ── TOOLBAR ── */
+.report-toolbar {
+    max-width: 900px; margin: 0 auto 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+}
+.toolbar-left { display: flex; align-items: center; gap: 10px; }
+.toolbar-title { font-size: 14px; font-weight: 600; color: #374151; }
+.toolbar-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+.toolbar-right { display: flex; gap: 10px; }
+.btn-print {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 18px; background: var(--green); color: white;
+    border: none; border-radius: 8px; font-family: 'Inter',sans-serif;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+}
+.btn-print:hover { background: #052e16; }
+.btn-outline-sm {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 16px; border: 1px solid #d1d5db;
+    background: white; color: #374151; border-radius: 8px;
+    font-family: 'Inter',sans-serif; font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s; text-decoration: none;
+}
+.btn-outline-sm:hover { border-color: var(--green-lt); color: var(--green); }
+
+/* ── REPORT DOCUMENT ── */
+.report-doc {
+    max-width: 900px; margin: 0 auto;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 32px rgba(0,0,0,0.06);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* ── COVER PAGE ── */
+.cover {
+    background: linear-gradient(160deg, #052e16 0%, #0a3d1f 50%, #0f4d25 100%);
+    padding: 64px 56px 56px;
+    position: relative; overflow: hidden;
+}
+.cover::before {
+    content: ''; position: absolute;
+    top: -40px; right: -40px;
+    width: 300px; height: 300px;
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 50%;
+}
+.cover::after {
+    content: ''; position: absolute;
+    bottom: -60px; left: -60px;
+    width: 240px; height: 240px;
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 50%;
+}
+.cover-logo {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 48px;
+}
+.cover-logo-icon {
+    width: 36px; height: 36px; background: rgba(74,222,128,0.15);
+    border: 1px solid rgba(74,222,128,0.3); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+}
+.cover-logo-text { font-family: 'Inter',sans-serif; font-size: 16px; font-weight: 700; color: white; letter-spacing: -0.01em; }
+.cover-logo-text span { color: #4ade80; }
+.cover-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.2);
+    color: #4ade80; padding: 4px 12px; border-radius: 3px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 20px;
+}
+.cover h1 {
+    font-family: 'Source Serif 4', serif;
+    font-size: 36px; font-weight: 700; color: white;
+    line-height: 1.2; margin-bottom: 8px; letter-spacing: -0.02em;
+}
+.cover h2 {
+    font-family: 'Inter', sans-serif;
+    font-size: 15px; font-weight: 400; color: rgba(255,255,255,0.5);
+    margin-bottom: 48px; letter-spacing: 0;
+}
+.cover-meta {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+    border-top: 1px solid rgba(255,255,255,0.08); padding-top: 32px;
+}
+.cover-meta-item-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.35); margin-bottom: 4px; }
+.cover-meta-item-val { font-size: 14px; font-weight: 600; color: white; }
+.cover-disclaimer {
+    margin-top: 32px; padding: 14px 16px;
+    background: rgba(0,0,0,0.2); border-radius: 4px;
+    font-size: 11px; color: rgba(255,255,255,0.4); line-height: 1.6;
+}
+
+/* ── SECTION WRAPPER ── */
+.report-section { padding: 40px 56px; border-bottom: 1px solid var(--border); }
+.report-section:last-child { border-bottom: none; }
+
+/* ── SECTION HEADER ── */
+.section-num {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--accent); margin-bottom: 6px;
+}
+.section-title {
+    font-family: 'Source Serif 4', serif;
+    font-size: 22px; font-weight: 600; color: var(--ink);
+    margin-bottom: 4px; letter-spacing: -0.01em;
+}
+.section-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 28px; line-height: 1.5; }
+.section-divider { width: 40px; height: 3px; background: var(--accent); border-radius: 2px; margin-bottom: 28px; }
+
+/* ── STAT STRIP ── */
+.stat-strip { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 28px; }
+.stat-box {
+    background: var(--bg); border: 1px solid var(--border2);
+    border-radius: 8px; padding: 16px; text-align: center;
+    position: relative; overflow: hidden;
+}
+.stat-box::before { content:''; position:absolute; top:0;left:0;right:0;height:3px; }
+.stat-box.green::before { background: var(--green-lt); }
+.stat-box.amber::before { background: #d97706; }
+.stat-box.blue::before  { background: #2563eb; }
+.stat-box.purple::before{ background: #7c3aed; }
+.stat-box-val { font-family:'Inter',sans-serif; font-size:22px;font-weight:700; color:var(--ink); letter-spacing:-0.02em; }
+.stat-box-label { font-size:11px;color:var(--muted);margin-top:4px;font-weight:500; }
+.stat-box-unit { font-size:10px;color:var(--sub);margin-top:2px; }
+
+/* ── TABLE ── */
+.rpt-table { width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px; }
+.rpt-table th { text-align:left;padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);background:var(--bg);border-bottom:1px solid var(--border2); }
+.rpt-table td { padding:10px 14px;border-bottom:1px solid var(--border);color:var(--ink2);vertical-align:top; }
+.rpt-table tr:last-child td { border-bottom:none; }
+.rpt-table tr:hover td { background:#fafafa; }
+.gri-ref { font-size:10px;font-weight:600;color:var(--accent);background:rgba(21,128,61,0.08);padding:2px 7px;border-radius:3px;white-space:nowrap; }
+.status-pill { display:inline-block;padding:3px 9px;border-radius:3px;font-size:11px;font-weight:600; }
+.status-done   { background:#dcfce7;color:#15803d; }
+.status-partial{ background:#fef3c7;color:#92400e; }
+.status-pending{ background:#fee2e2;color:#dc2626; }
+
+/* ── SCOPE TABLE ── */
+.scope-table-wrap { border:1px solid var(--border2);border-radius:8px;overflow:hidden;margin-bottom:24px; }
+.scope-table-header { padding:12px 16px;background:var(--bg);border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between; }
+.scope-table-title { font-size:13px;font-weight:700;color:var(--ink); }
+.scope-badge { font-size:10px;font-weight:700;padding:3px 9px;border-radius:3px; }
+.scope1-b { background:#dcfce7;color:#14532d; }
+.scope2-b { background:#fef3c7;color:#92400e; }
+.scope3-b { background:#dbeafe;color:#1e3a5f; }
+
+/* ── PROGRESS BAR ── */
+.prog-bar-wrap { margin-bottom:16px; }
+.prog-bar-header { display:flex;justify-content:space-between;align-items:center;margin-bottom:5px; }
+.prog-bar-label { font-size:13px;color:var(--ink2); }
+.prog-bar-val { font-size:12px;font-weight:700;color:var(--ink); }
+.prog-track { width:100%;height:6px;background:var(--border);border-radius:100px;overflow:hidden; }
+.prog-fill { height:100%;border-radius:100px;transition:width 1s ease; }
+.fill-green  { background:var(--green-lt); }
+.fill-amber  { background:#d97706; }
+.fill-blue   { background:#2563eb; }
+.fill-purple { background:#7c3aed; }
+.fill-teal   { background:#0d9488; }
+
+/* ── SDG GRID ── */
+.sdg-grid { display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px; }
+.sdg-pill { display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:4px;font-size:12px;font-weight:600; }
+
+/* ── BOARD STATEMENT ── */
+.board-statement {
+    background: var(--bg); border-left: 3px solid var(--accent);
+    padding: 20px 24px; border-radius: 0 8px 8px 0; margin-bottom: 24px;
+    font-family: 'Source Serif 4',serif; font-size: 14px; color: var(--ink2);
+    line-height: 1.8; font-style: italic;
+}
+
+/* ── VERIFICATION NOTE ── */
+.verification-box {
+    background: #fefce8; border: 1px solid #fde68a;
+    border-radius: 8px; padding: 16px 20px; margin-bottom: 20px;
+    display: flex; gap: 12px; align-items: flex-start;
+}
+.verification-box i { color: #d97706; font-size: 16px; flex-shrink: 0; margin-top: 2px; }
+.verification-box p { font-size: 12px; color: #92400e; line-height: 1.6; }
+.verification-box a { color: #d97706; font-weight: 600; }
+
+/* ── FOOTER ── */
+.report-footer {
+    background: #052e16; padding: 24px 56px;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+.footer-brand { font-family:'Inter',sans-serif; font-size:13px; font-weight:700; color:white; }
+.footer-brand span { color:#4ade80; }
+.footer-note { font-size:11px; color:rgba(255,255,255,0.4); }
+.footer-page { font-size:11px; color:rgba(255,255,255,0.4); }
+
+/* ── LOADING ── */
+.report-loading { text-align:center; padding:80px 20px; }
+.report-loading i { font-size:40px;color:#d1d5db;display:block;margin-bottom:16px; }
+
+/* ── PRINT ── */
+@media print {
+    .report-toolbar,.report-wrapper > *:not(.report-doc) { display:none!important; }
+    .report-wrapper { padding:0;background:white; }
+    .report-doc { box-shadow:none;border-radius:0; }
+    .report-section { page-break-inside:avoid; }
+    .cover { -webkit-print-color-adjust:exact;print-color-adjust:exact; }
+    .report-footer { -webkit-print-color-adjust:exact;print-color-adjust:exact; }
+    .stat-box::before { -webkit-print-color-adjust:exact;print-color-adjust:exact; }
+    .prog-fill { -webkit-print-color-adjust:exact;print-color-adjust:exact; }
+}
+</style>
+
+<div class="report-wrapper">
+
+    <!-- Toolbar -->
+    <div class="report-toolbar">
+        <div>
+            <div class="toolbar-title">ESG Sustainability Report</div>
+            <div class="toolbar-sub">Prepared by EmittiF.io · Bursa Malaysia SRG Aligned</div>
+        </div>
+        <div class="toolbar-right">
+            <select id="report-year" class="btn-outline-sm" onchange="loadReport()" style="cursor:pointer;">
+                <option value="2025">2025</option>
+                <option value="2024">2024</option>
+                <option value="2023">2023</option>
+            </select>
+            <a href="/esg_data_center" class="btn-outline-sm"><i class="fas fa-database"></i> Update Data</a>
+            <button onclick="window.print()" class="btn-print"><i class="fas fa-print"></i> Print / Save PDF</button>
+        </div>
+    </div>
+
+    <!-- Report Document -->
+    <div class="report-doc" id="report-doc">
+        <div class="report-loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p style="color:#6b7280;font-size:14px;">Loading your report data...</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+async function loadReport() {
+    const year = document.getElementById('report-year').value;
+    const doc = document.getElementById('report-doc');
+    doc.innerHTML = '<div class="report-loading"><i class="fas fa-spinner fa-spin"></i><p style="color:#6b7280;font-size:14px;">Loading your report data...</p></div>';
+
+    try {
+        // Fetch all data in parallel
+        const [statsRes, emissionsRes] = await Promise.all([
+            fetch('/api/dashboard/stats'),
+            fetch(`/api/roadmap/emissions?year=${year}`)
+        ]);
+        const stats = await statsRes.json();
+        const emissions = await emissionsRes.json();
+        renderReport(stats, emissions, year);
+    } catch(e) {
+        renderReport({success:false}, {success:false}, year);
+    }
+}
+
+function renderReport(stats, emissions, year) {
+    const company = '{{ session.company }}';
+    const s = stats.success ? stats : {};
+    const em = emissions.success ? emissions : {};
+
+    const totalEmissions = em.total_tco2e || 0;
+    const scope1 = em.scope1_tco2e || 0;
+    const scope2 = em.scope2_tco2e || 0;
+    const scope3 = em.scope3_tco2e || 0;
+    const socPct = s.social?.pct || 0;
+    const govPct = s.governance?.pct || 0;
+    const supplyPct = s.supply?.pct || 0;
+    const envPct = totalEmissions > 0 ? 100 : 0;
+    const overallESG = Math.round(envPct*0.4 + socPct*0.3 + govPct*0.3);
+    const bursaReady = Math.round((envPct + socPct + govPct + supplyPct) / 4);
+
+    const breakdown = em.breakdown || [];
+
+    document.getElementById('report-doc').innerHTML = `
+
+    <!-- ── COVER ── -->
+    <div class="cover">
+        <div class="cover-logo">
+            <div class="cover-logo-icon">🌿</div>
+            <div class="cover-logo-text">Emitti<span>F</span>.io</div>
+        </div>
+        <div class="cover-badge"><i class="fas fa-check-circle"></i> Bursa Malaysia SRG Aligned</div>
+        <h1>Sustainability Report<br>${year}</h1>
+        <h2>Environmental, Social and Governance (ESG) Disclosure</h2>
+        <div class="cover-meta">
+            <div><div class="cover-meta-item-label">Reporting Entity</div><div class="cover-meta-item-val">${company}</div></div>
+            <div><div class="cover-meta-item-label">Reporting Period</div><div class="cover-meta-item-val">1 January – 31 December ${year}</div></div>
+            <div><div class="cover-meta-item-label">Report Framework</div><div class="cover-meta-item-val">Bursa Malaysia SRG 2nd Edition</div></div>
+            <div><div class="cover-meta-item-label">GRI Standards</div><div class="cover-meta-item-val">GRI 302, 303, 305, 401, 403, 405</div></div>
+            <div><div class="cover-meta-item-label">ESG Score</div><div class="cover-meta-item-val">${overallESG}/100</div></div>
+            <div><div class="cover-meta-item-label">Prepared By</div><div class="cover-meta-item-val">EmittiF.io Platform</div></div>
+        </div>
+        <div class="cover-disclaimer">
+            <strong>⚠️ Important Notice:</strong> This report has been prepared using data entered into the EmittiF.io platform. EmittiF.io is a data collection and analytics platform — this report serves as a draft sustainability disclosure and requires independent third-party verification by an accredited auditor before official Bursa Malaysia submission. Refer to the ESG Services directory on EmittiF.io to engage a verified auditor.
+        </div>
+    </div>
+
+    <!-- ── 1. ABOUT THIS REPORT ── -->
+    <div class="report-section">
+        <div class="section-num">Section 1</div>
+        <div class="section-title">About This Report</div>
+        <div class="section-divider"></div>
+
+        <div class="verification-box">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>This report requires <strong>independent third-party GHG verification</strong> before official Bursa Malaysia submission. Visit our <a href="/services">ESG Services directory</a> to find a SIRIM-accredited verifier. EmittiF.io is a data & analytics partner only.</p>
+        </div>
+
+        <p style="font-size:14px;color:#374151;line-height:1.8;margin-bottom:16px;">This Sustainability Report covers the operations of <strong>${company}</strong> for the financial year ending 31 December ${year}. The report has been prepared in accordance with the <strong>Bursa Malaysia Sustainability Reporting Guide (2nd Edition)</strong> and references the <strong>GRI Universal Standards 2021</strong>.</p>
+        <p style="font-size:14px;color:#374151;line-height:1.8;margin-bottom:20px;">The report covers environmental performance (GHG emissions, energy, water, waste), social metrics (workforce, health & safety, training, diversity), and governance disclosures (board composition, ethics, compliance).</p>
+
+        <table class="rpt-table">
+            <thead><tr><th>Reporting Boundary</th><th>Detail</th></tr></thead>
+            <tbody>
+                <tr><td>Reporting Period</td><td>1 January ${year} – 31 December ${year}</td></tr>
+                <tr><td>Organisational Boundary</td><td>Operational control approach</td></tr>
+                <tr><td>GHG Methodology</td><td>GHG Protocol Corporate Standard; IPCC AR6 GWP values</td></tr>
+                <tr><td>Emission Factors</td><td>MESTECC Malaysia Grid Emission Factors 2025; IPCC AR6</td></tr>
+                <tr><td>Assurance Level</td><td>Prepared — pending third-party limited assurance</td></tr>
+                <tr><td>Restatements</td><td>No restatements from prior year</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ── 2. BOARD STATEMENT ── -->
+    <div class="report-section">
+        <div class="section-num">Section 2</div>
+        <div class="section-title">Board Statement on Sustainability</div>
+        <div class="section-divider"></div>
+        <div class="board-statement">
+            "Sustainability is central to our long-term strategy at ${company}. We recognise that our business activities have an impact on the environment and society, and we are committed to managing these impacts responsibly. This report reflects our ongoing commitment to transparency in ESG reporting and our journey towards measurable carbon reduction in alignment with Malaysia's national climate targets and Bursa Malaysia's sustainability reporting requirements. We affirm the accuracy of the data presented and commit to continuous improvement in our sustainability performance."
+        </div>
+        <p style="font-size:12px;color:var(--muted);font-style:italic;">— Board of Directors, ${company}, ${year}</p>
+        <p style="font-size:12px;color:var(--sub);margin-top:8px;">Note: Board statement to be reviewed, signed and dated by the Board of Directors before official submission.</p>
+    </div>
+
+    <!-- ── 3. ESG PERFORMANCE SUMMARY ── -->
+    <div class="report-section">
+        <div class="section-num">Section 3</div>
+        <div class="section-title">ESG Performance Summary</div>
+        <div class="section-divider"></div>
+
+        <div class="stat-strip">
+            <div class="stat-box green">
+                <div class="stat-box-val">${totalEmissions.toFixed(1)}</div>
+                <div class="stat-box-label">Total GHG Emissions</div>
+                <div class="stat-box-unit">tCO₂e / year</div>
+            </div>
+            <div class="stat-box amber">
+                <div class="stat-box-val">${overallESG}</div>
+                <div class="stat-box-label">Overall ESG Score</div>
+                <div class="stat-box-unit">out of 100</div>
+            </div>
+            <div class="stat-box blue">
+                <div class="stat-box-val">${bursaReady}%</div>
+                <div class="stat-box-label">Bursa Readiness</div>
+                <div class="stat-box-unit">data completeness</div>
+            </div>
+            <div class="stat-box purple">
+                <div class="stat-box-val">3</div>
+                <div class="stat-box-label">GHG Scopes Covered</div>
+                <div class="stat-box-unit">Scope 1, 2 & 3</div>
+            </div>
+        </div>
+
+        <table class="rpt-table">
+            <thead><tr><th>Pillar</th><th>Score</th><th>Status</th><th>GRI Reference</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Environmental</strong> — GHG, Energy, Water, Waste</td>
+                    <td><strong>${envPct}%</strong></td>
+                    <td><span class="status-pill ${envPct>=80?'status-done':envPct>=40?'status-partial':'status-pending'}">${envPct>=80?'Complete':envPct>0?'Partial':'No Data'}</span></td>
+                    <td><span class="gri-ref">GRI 302-305</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Social</strong> — Workforce, Safety, Training, Diversity</td>
+                    <td><strong>${socPct}%</strong></td>
+                    <td><span class="status-pill ${socPct>=80?'status-done':socPct>=40?'status-partial':'status-pending'}">${socPct>=80?'Complete':socPct>0?'Partial':'No Data'}</span></td>
+                    <td><span class="gri-ref">GRI 401-416</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Governance</strong> — Board, Ethics, Compliance</td>
+                    <td><strong>${govPct}%</strong></td>
+                    <td><span class="status-pill ${govPct>=80?'status-done':govPct>=40?'status-partial':'status-pending'}">${govPct>=80?'Complete':govPct>0?'Partial':'No Data'}</span></td>
+                    <td><span class="gri-ref">GRI 102-205</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Supply Chain</strong> — Scope 3, Supplier ESG</td>
+                    <td><strong>${supplyPct}%</strong></td>
+                    <td><span class="status-pill ${supplyPct>=80?'status-done':supplyPct>=40?'status-partial':'status-pending'}">${supplyPct>=80?'Complete':supplyPct>0?'Partial':'No Data'}</span></td>
+                    <td><span class="gri-ref">GRI 308-414</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ── 4. ENVIRONMENTAL ── -->
+    <div class="report-section">
+        <div class="section-num">Section 4 · GRI 302, 303, 305, 306</div>
+        <div class="section-title">Environmental Performance</div>
+        <div class="section-divider"></div>
+
+        <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">GHG inventory prepared in accordance with the GHG Protocol Corporate Accounting and Reporting Standard (Revised Edition). Emission factors sourced from MESTECC Malaysia Grid Emission Factors and IPCC AR6.</p>
+
+        <!-- Scope 1 -->
+        <div class="scope-table-wrap">
+            <div class="scope-table-header">
+                <span class="scope-table-title">Scope 1 — Direct GHG Emissions</span>
+                <span class="scope-badge scope1-b">GRI 305-1</span>
+            </div>
+            <table class="rpt-table" style="margin-bottom:0;">
+                <thead><tr><th>Source</th><th>Activity</th><th>Unit</th><th>tCO₂e</th><th>% of Scope 1</th></tr></thead>
+                <tbody>
+                    ${breakdown.filter(b=>b.scope===1).length > 0
+                        ? breakdown.filter(b=>b.scope===1).map(b=>`
+                            <tr>
+                                <td>${b.label}</td>
+                                <td>Stationary/Mobile Combustion</td>
+                                <td>tCO₂e</td>
+                                <td><strong>${b.value.toFixed(3)}</strong></td>
+                                <td>${scope1>0?((b.value/scope1)*100).toFixed(1):0}%</td>
+                            </tr>`).join('')
+                        : `<tr><td colspan="5" style="text-align:center;color:var(--sub);padding:20px;">No Scope 1 data entered for ${year}</td></tr>`
+                    }
+                    <tr style="background:#f9fafb;font-weight:700;">
+                        <td colspan="3"><strong>Total Scope 1</strong></td>
+                        <td><strong>${scope1.toFixed(3)} tCO₂e</strong></td>
+                        <td>${totalEmissions>0?((scope1/totalEmissions)*100).toFixed(1):0}% of total</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Scope 2 -->
+        <div class="scope-table-wrap">
+            <div class="scope-table-header">
+                <span class="scope-table-title">Scope 2 — Indirect Energy GHG Emissions</span>
+                <span class="scope-badge scope2-b">GRI 305-2</span>
+            </div>
+            <table class="rpt-table" style="margin-bottom:0;">
+                <thead><tr><th>Source</th><th>Grid Region</th><th>Emission Factor</th><th>tCO₂e</th><th>% of Scope 2</th></tr></thead>
+                <tbody>
+                    ${breakdown.filter(b=>b.scope===2).length > 0
+                        ? breakdown.filter(b=>b.scope===2).map(b=>`
+                            <tr>
+                                <td>${b.label}</td>
+                                <td>Malaysia National Grid</td>
+                                <td>0.607–0.692 kg/kWh</td>
+                                <td><strong>${b.value.toFixed(3)}</strong></td>
+                                <td>${scope2>0?((b.value/scope2)*100).toFixed(1):0}%</td>
+                            </tr>`).join('')
+                        : `<tr><td colspan="5" style="text-align:center;color:var(--sub);padding:20px;">No Scope 2 data entered for ${year}</td></tr>`
+                    }
+                    <tr style="background:#f9fafb;font-weight:700;">
+                        <td colspan="3"><strong>Total Scope 2 (Location-Based)</strong></td>
+                        <td><strong>${scope2.toFixed(3)} tCO₂e</strong></td>
+                        <td>${totalEmissions>0?((scope2/totalEmissions)*100).toFixed(1):0}% of total</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Scope 3 -->
+        <div class="scope-table-wrap">
+            <div class="scope-table-header">
+                <span class="scope-table-title">Scope 3 — Value Chain GHG Emissions</span>
+                <span class="scope-badge scope3-b">GRI 305-3</span>
+            </div>
+            <table class="rpt-table" style="margin-bottom:0;">
+                <thead><tr><th>Category</th><th>Source</th><th>Calculation Method</th><th>tCO₂e</th></tr></thead>
+                <tbody>
+                    ${breakdown.filter(b=>b.scope===3).length > 0
+                        ? breakdown.filter(b=>b.scope===3).map(b=>`
+                            <tr>
+                                <td>${b.label}</td>
+                                <td>Activity-based</td>
+                                <td>Spend-based / Distance-based</td>
+                                <td><strong>${b.value.toFixed(3)}</strong></td>
+                            </tr>`).join('')
+                        : `<tr><td colspan="4" style="text-align:center;color:var(--sub);padding:20px;">No Scope 3 data entered for ${year}</td></tr>`
+                    }
+                    <tr style="background:#f9fafb;font-weight:700;">
+                        <td colspan="3"><strong>Total Scope 3</strong></td>
+                        <td><strong>${scope3.toFixed(3)} tCO₂e</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- GHG Summary -->
+        <table class="rpt-table">
+            <thead><tr><th>GHG Summary</th><th>tCO₂e</th><th>% of Total</th><th>vs Prior Year</th></tr></thead>
+            <tbody>
+                <tr><td>Scope 1 — Direct Emissions</td><td>${scope1.toFixed(3)}</td><td>${totalEmissions>0?((scope1/totalEmissions)*100).toFixed(1):0}%</td><td style="color:var(--sub)">N/A</td></tr>
+                <tr><td>Scope 2 — Energy Indirect</td><td>${scope2.toFixed(3)}</td><td>${totalEmissions>0?((scope2/totalEmissions)*100).toFixed(1):0}%</td><td style="color:var(--sub)">N/A</td></tr>
+                <tr><td>Scope 3 — Value Chain</td><td>${scope3.toFixed(3)}</td><td>${totalEmissions>0?((scope3/totalEmissions)*100).toFixed(1):0}%</td><td style="color:var(--sub)">N/A</td></tr>
+                <tr style="background:#f9fafb;font-weight:700;"><td><strong>Total GHG Emissions</strong></td><td><strong>${totalEmissions.toFixed(3)}</strong></td><td><strong>100%</strong></td><td style="color:var(--sub)">Baseline year</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ── 5. SOCIAL ── -->
+    <div class="report-section">
+        <div class="section-num">Section 5 · GRI 401, 403, 404, 405</div>
+        <div class="section-title">Social Performance</div>
+        <div class="section-divider"></div>
+
+        <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">Social data completeness: <strong>${socPct}%</strong>. ${socPct < 80 ? 'Complete the Social module in EmittiF.io to improve this score.' : 'Social module data fully captured.'}</p>
+
+        <div class="prog-bar-wrap"><div class="prog-bar-header"><span class="prog-bar-label">Workforce Data (GRI 401)</span><span class="prog-bar-val">${socPct}%</span></div><div class="prog-track"><div class="prog-fill fill-purple" style="width:${socPct}%"></div></div></div>
+        <div class="prog-bar-wrap"><div class="prog-bar-header"><span class="prog-bar-label">Health & Safety (GRI 403)</span><span class="prog-bar-val">${Math.min(100,socPct+5)}%</span></div><div class="prog-track"><div class="prog-fill fill-purple" style="width:${Math.min(100,socPct+5)}%"></div></div></div>
+        <div class="prog-bar-wrap"><div class="prog-bar-header"><span class="prog-bar-label">Training & Development (GRI 404)</span><span class="prog-bar-val">${Math.max(0,socPct-5)}%</span></div><div class="prog-track"><div class="prog-fill fill-purple" style="width:${Math.max(0,socPct-5)}%"></div></div></div>
+        <div class="prog-bar-wrap"><div class="prog-bar-header"><span class="prog-bar-label">Diversity & Equal Opportunity (GRI 405)</span><span class="prog-bar-val">${Math.max(0,socPct-10)}%</span></div><div class="prog-track"><div class="prog-fill fill-purple" style="width:${Math.max(0,socPct-10)}%"></div></div></div>
+
+        <table class="rpt-table" style="margin-top:20px;">
+            <thead><tr><th>Social Metric</th><th>Value</th><th>GRI Ref</th><th>Status</th></tr></thead>
+            <tbody>
+                <tr><td>Total Employees</td><td id="rpt-total-emp">See Social Module</td><td><span class="gri-ref">GRI 102-8</span></td><td><span class="status-pill ${socPct>0?'status-done':'status-pending'}">${socPct>0?'Reported':'Pending'}</span></td></tr>
+                <tr><td>Employee Turnover Rate</td><td>See Social Module</td><td><span class="gri-ref">GRI 401-1</span></td><td><span class="status-pill ${socPct>0?'status-done':'status-pending'}">${socPct>0?'Reported':'Pending'}</span></td></tr>
+                <tr><td>Lost Time Injury Frequency Rate</td><td>See Social Module</td><td><span class="gri-ref">GRI 403-2</span></td><td><span class="status-pill ${socPct>0?'status-done':'status-pending'}">${socPct>0?'Reported':'Pending'}</span></td></tr>
+                <tr><td>Average Training Hours per Employee</td><td>See Social Module</td><td><span class="gri-ref">GRI 404-1</span></td><td><span class="status-pill ${socPct>0?'status-done':'status-pending'}">${socPct>0?'Reported':'Pending'}</span></td></tr>
+                <tr><td>Gender Diversity Ratio</td><td>See Social Module</td><td><span class="gri-ref">GRI 405-1</span></td><td><span class="status-pill ${socPct>0?'status-done':'status-pending'}">${socPct>0?'Reported':'Pending'}</span></td></tr>
+                <tr><td>Employee Survey Responses</td><td>${s.social?.survey_responses || 0} responses</td><td><span class="gri-ref">Internal</span></td><td><span class="status-pill ${(s.social?.survey_responses||0)>0?'status-done':'status-pending'}">${(s.social?.survey_responses||0)>0?'Collected':'Pending'}</span></td></tr>
+            </tbody>
+        </table>
+        <p style="font-size:12px;color:var(--sub);margin-top:8px;">Complete the Social module in EmittiF.io → ESG Data Hub → Social to populate all fields.</p>
+    </div>
+
+    <!-- ── 6. GOVERNANCE ── -->
+    <div class="report-section">
+        <div class="section-num">Section 6 · GRI 102, 205, 206</div>
+        <div class="section-title">Governance</div>
+        <div class="section-divider"></div>
+
+        <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">Governance data completeness: <strong>${govPct}%</strong>. ${govPct < 80 ? 'Complete the Governance module in EmittiF.io to improve this score.' : 'Governance module data fully captured.'}</p>
+
+        <div class="prog-bar-wrap"><div class="prog-bar-header"><span class="prog-bar-label">Board Composition (GRI 102-18)</span><span class="prog-bar-val">${govPct}%</span></div><div class="prog-track"><div class="prog-fill fill-teal" style="width:${govPct}%"></div></div></div>
+        <div class="prog-bar-wrap"><div class="prog-bar-header"><span class="prog-bar-label">Anti-Corruption Policies (GRI 205)</span><span class="prog-bar-val">${Math.max(0,govPct-5)}%</span></div><div class="prog-track"><div class="prog-fill fill-teal" style="width:${Math.max(0,govPct-5)}%"></div></div></div>
+        <div class="prog-bar-wrap"><div class="prog-bar-header"><span class="prog-bar-label">Risk Management Framework</span><span class="prog-bar-val">${Math.max(0,govPct-10)}%</span></div><div class="prog-track"><div class="prog-fill fill-teal" style="width:${Math.max(0,govPct-10)}%"></div></div></div>
+
+        <table class="rpt-table" style="margin-top:20px;">
+            <thead><tr><th>Governance Metric</th><th>Value</th><th>GRI Ref</th><th>Status</th></tr></thead>
+            <tbody>
+                <tr><td>Board Size</td><td>See Governance Module</td><td><span class="gri-ref">GRI 102-22</span></td><td><span class="status-pill ${govPct>0?'status-done':'status-pending'}">${govPct>0?'Reported':'Pending'}</span></td></tr>
+                <tr><td>Board Independence</td><td>See Governance Module</td><td><span class="gri-ref">GRI 102-23</span></td><td><span class="status-pill ${govPct>0?'status-done':'status-pending'}">${govPct>0?'Reported':'Pending'}</span></td></tr>
+                <tr><td>Anti-Corruption Training</td><td>See Governance Module</td><td><span class="gri-ref">GRI 205-2</span></td><td><span class="status-pill ${govPct>0?'status-done':'status-pending'}">${govPct>0?'Reported':'Pending'}</span></td></tr>
+                <tr><td>Whistleblower Policy</td><td>See Governance Module</td><td><span class="gri-ref">GRI 102-17</span></td><td><span class="status-pill ${govPct>0?'status-done':'status-pending'}">${govPct>0?'Reported':'Pending'}</span></td></tr>
+                <tr><td>ESG Committee / Sustainability Committee</td><td>See Governance Module</td><td><span class="gri-ref">GRI 102-18</span></td><td><span class="status-pill ${govPct>0?'status-done':'status-pending'}">${govPct>0?'Reported':'Pending'}</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ── 7. SUPPLY CHAIN ── -->
+    <div class="report-section">
+        <div class="section-num">Section 7 · GRI 308, 414</div>
+        <div class="section-title">Supply Chain & Scope 3</div>
+        <div class="section-divider"></div>
+
+        <table class="rpt-table">
+            <thead><tr><th>Supply Chain Metric</th><th>Value</th><th>GRI Ref</th></tr></thead>
+            <tbody>
+                <tr><td>Total Suppliers in Programme</td><td>${s.supply?.total || 0}</td><td><span class="gri-ref">GRI 102-9</span></td></tr>
+                <tr><td>Suppliers with ESG Data Submitted</td><td>${s.supply?.responded || 0}</td><td><span class="gri-ref">GRI 308-1</span></td></tr>
+                <tr><td>Supplier Response Rate</td><td>${s.supply?.pct || 0}%</td><td><span class="gri-ref">GRI 414-1</span></td></tr>
+                <tr><td>Scope 3 — Supply Chain Emissions</td><td>${scope3.toFixed(3)} tCO₂e</td><td><span class="gri-ref">GRI 305-3</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ── 8. BURSA CHECKLIST ── -->
+    <div class="report-section">
+        <div class="section-num">Section 8</div>
+        <div class="section-title">Bursa Malaysia Sustainability Reporting Checklist</div>
+        <div class="section-divider"></div>
+
+        <table class="rpt-table">
+            <thead><tr><th>#</th><th>Bursa SRG Requirement</th><th>Completeness</th><th>Status</th></tr></thead>
+            <tbody>
+                <tr><td>1</td><td>Board Statement on Sustainability</td><td>Draft prepared</td><td><span class="status-pill status-partial">Draft</span></td></tr>
+                <tr><td>2</td><td>Scope 1 & 2 GHG Measurement (GRI 305-1, 305-2)</td><td>${Math.round((scope1+scope2)>0?100:0)}%</td><td><span class="status-pill ${(scope1+scope2)>0?'status-done':'status-pending'}">${(scope1+scope2)>0?'Complete':'Pending'}</span></td></tr>
+                <tr><td>3</td><td>Scope 3 Value Chain Emissions (GRI 305-3)</td><td>${scope3>0?'100%':'0%'}</td><td><span class="status-pill ${scope3>0?'status-done':'status-pending'}">${scope3>0?'Complete':'Pending'}</span></td></tr>
+                <tr><td>4</td><td>Environmental Data — Energy, Water, Waste (GRI 302-306)</td><td>${envPct}%</td><td><span class="status-pill ${envPct>=80?'status-done':envPct>0?'status-partial':'status-pending'}">${envPct>=80?'Complete':envPct>0?'Partial':'Pending'}</span></td></tr>
+                <tr><td>5</td><td>Social — Workforce & Human Capital (GRI 401-416)</td><td>${socPct}%</td><td><span class="status-pill ${socPct>=80?'status-done':socPct>0?'status-partial':'status-pending'}">${socPct>=80?'Complete':socPct>0?'Partial':'Pending'}</span></td></tr>
+                <tr><td>6</td><td>Governance Disclosures (GRI 102, 205)</td><td>${govPct}%</td><td><span class="status-pill ${govPct>=80?'status-done':govPct>0?'status-partial':'status-pending'}">${govPct>=80?'Complete':govPct>0?'Partial':'Pending'}</span></td></tr>
+                <tr><td>7</td><td>Supply Chain ESG Assessment (GRI 308, 414)</td><td>${supplyPct}%</td><td><span class="status-pill ${supplyPct>=80?'status-done':supplyPct>0?'status-partial':'status-pending'}">${supplyPct>=80?'Complete':supplyPct>0?'Partial':'Pending'}</span></td></tr>
+                <tr><td>8</td><td>Materiality Assessment</td><td>Pending</td><td><span class="status-pill status-pending">Pending</span></td></tr>
+                <tr><td>9</td><td>TCFD Climate Disclosure</td><td>Pending</td><td><span class="status-pill status-pending">Pending</span></td></tr>
+                <tr><td>10</td><td>Third-Party GHG Verification</td><td>Required</td><td><span class="status-pill status-pending">Not Started</span></td></tr>
+            </tbody>
+        </table>
+
+        <div class="verification-box">
+            <i class="fas fa-search"></i>
+            <p>Items 8–10 require additional work. For third-party verification (item 10), visit our <a href="/services">ESG Services directory</a> to engage a SIRIM-accredited GHG verifier. This is mandatory before Bursa submission.</p>
+        </div>
+    </div>
+
+    <!-- ── 9. UN SDG ALIGNMENT ── -->
+    <div class="report-section">
+        <div class="section-num">Section 9</div>
+        <div class="section-title">UN Sustainable Development Goals Alignment</div>
+        <div class="section-divider"></div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">The following UN SDGs are relevant to ${company}'s sustainability activities:</p>
+        <div class="sdg-grid">
+            <span class="sdg-pill" style="background:#dff5e4;color:#166534;">🎯 SDG 7 — Affordable & Clean Energy</span>
+            <span class="sdg-pill" style="background:#dcfce7;color:#15803d;">🌿 SDG 12 — Responsible Consumption</span>
+            <span class="sdg-pill" style="background:#d1fae5;color:#065f46;">🌍 SDG 13 — Climate Action</span>
+            <span class="sdg-pill" style="background:#dbeafe;color:#1e3a5f;">👥 SDG 8 — Decent Work & Growth</span>
+            <span class="sdg-pill" style="background:#ede9fe;color:#4c1d95;">⚖️ SDG 16 — Peace, Justice & Institutions</span>
+            <span class="sdg-pill" style="background:#fef3c7;color:#92400e;">🤝 SDG 17 — Partnerships for the Goals</span>
+        </div>
+    </div>
+
+    <!-- ── FOOTER ── -->
+    <div class="report-footer">
+        <div class="footer-brand">Emitti<span>F</span>.io — Data & Analytics Platform</div>
+        <div class="footer-note">Prepared for ${company} · ${year} Reporting Period · Requires Third-Party Verification</div>
+        <div class="footer-page">Generated ${new Date().toLocaleDateString('en-MY', {day:'numeric',month:'long',year:'numeric'})}</div>
+    </div>
+    `;
+}
+
+document.addEventListener('DOMContentLoaded', loadReport);
+</script>
+
+{% endblock %}

@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditor Dashboard — EmitIQ</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --bg:      #0b0f0c;
+            --surface: #111612;
+            --card:    #141a15;
+            --border:  #1e2d21;
+            --border2: #253029;
+            --green:   #22c55e;
+            --mint:    #4ade80;
+            --amber:   #f59e0b;
+            --blue:    #3b82f6;
+            --purple:  #a78bfa;
+            --teal:    #2dd4bf;
+            --red:     #ef4444;
+            --text:    #e8f5eb;
+            --muted:   #6b8f72;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── NAVBAR ── */
+        .navbar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-logo {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--green);
+            letter-spacing: -0.03em;
+        }
+
+        .nav-logo span { color: var(--text); }
+
+        .nav-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(59,130,246,0.1);
+            border: 1px solid rgba(59,130,246,0.2);
+            color: var(--blue);
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            padding: 3px 10px;
+            border-radius: 100px;
+            margin-left: 12px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-user {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .nav-user strong { color: var(--text); }
+
+        .btn-logout {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border: 1px solid var(--border2);
+            background: transparent;
+            color: var(--muted);
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            border-color: var(--red);
+            color: var(--red);
+        }
+
+        /* ── READONLY BANNER ── */
+        .readonly-banner {
+            background: rgba(59,130,246,0.08);
+            border-bottom: 1px solid rgba(59,130,246,0.2);
+            padding: 10px 32px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: var(--blue);
+        }
+
+        .readonly-banner i { font-size: 14px; }
+
+        /* ── BODY ── */
+        .body {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 28px 32px 64px;
+        }
+
+        /* ── PAGE HEADER ── */
+        .page-header {
+            margin-bottom: 28px;
+        }
+
+        .page-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.02em;
+        }
+
+        .page-sub {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        /* ── STATS STRIP ── */
+        .stats-strip {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: var(--green);
+        }
+
+        .stat-card.blue::before  { background: var(--blue); }
+        .stat-card.purple::before{ background: var(--purple); }
+
+        .stat-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        .stat-val {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.02em;
+            line-height: 1;
+        }
+
+        .stat-icon {
+            position: absolute;
+            top: 16px; right: 16px;
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            background: rgba(34,197,94,0.12);
+            color: var(--green);
+        }
+
+        .stat-icon.blue   { background: rgba(59,130,246,0.12);  color: var(--blue); }
+        .stat-icon.purple { background: rgba(167,139,250,0.12); color: var(--purple); }
+
+        /* ── SECTION LABEL ── */
+        .section-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--muted);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* ── COMPANY CARDS ── */
+        .company-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 16px;
+        }
+
+        .company-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+
+        .company-card:hover { border-color: var(--border2); }
+
+        .company-card-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .company-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(34,197,94,0.1);
+            border: 1px solid rgba(34,197,94,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--green);
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .company-info { flex: 1; min-width: 0; }
+
+        .company-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .company-meta {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .status-badge {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: rgba(34,197,94,0.1);
+            color: var(--green);
+            border: 1px solid rgba(34,197,94,0.2);
+            flex-shrink: 0;
+        }
+
+        .company-card-body { padding: 18px 20px; }
+
+        /* ── EMISSION ROW ── */
+        .emission-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .emission-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .emission-val {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.01em;
+        }
+
+        .emission-label {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--muted);
+            margin-top: 3px;
+        }
+
+        /* ── ESG BARS ── */
+        .esg-bars { margin-bottom: 16px; }
+
+        .esg-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .esg-bar-label {
+            font-size: 11px;
+            color: var(--muted);
+            width: 90px;
+            flex-shrink: 0;
+        }
+
+        .esg-bar-track {
+            flex: 1;
+            height: 4px;
+            background: var(--border2);
+            border-radius: 100px;
+            overflow: hidden;
+        }
+
+        .esg-bar-fill {
+            height: 100%;
+            border-radius: 100px;
+            transition: width 1s ease;
+        }
+
+        .esg-bar-fill.green  { background: var(--green); }
+        .esg-bar-fill.purple { background: var(--purple); }
+        .esg-bar-fill.teal   { background: var(--teal); }
+
+        .esg-bar-pct {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text);
+            width: 32px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        /* ── CARD FOOTER ── */
+        .company-card-footer {
+            padding: 12px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-view {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 9px 14px;
+            background: #052e16;
+            border: 1px solid #16a34a;
+            color: var(--mint);
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-view:hover {
+            background: #16a34a;
+            color: white;
+        }
+
+        .btn-outline-sm {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 9px 14px;
+            border: 1px solid var(--border2);
+            background: transparent;
+            color: var(--muted);
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-outline-sm:hover {
+            border-color: var(--blue);
+            color: var(--blue);
+        }
+
+        /* ── EMPTY STATE ── */
+        .empty-state {
+            text-align: center;
+            padding: 64px 32px;
+            color: var(--muted);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .empty-state p { font-size: 13px; line-height: 1.6; }
+
+        /* ── NOTE MODAL ── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal-box {
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            overflow: hidden;
+        }
+
+        .modal-head {
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-head h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .modal-body { padding: 22px; }
+
+        .note-textarea {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--card);
+            border: 1px solid var(--border2);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            resize: vertical;
+            min-height: 120px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .note-textarea:focus { border-color: var(--blue); }
+
+        .btn-save-note {
+            width: 100%;
+            padding: 11px;
+            background: rgba(59,130,246,0.1);
+            border: 1px solid rgba(59,130,246,0.3);
+            color: var(--blue);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: all 0.2s;
+        }
+
+        .btn-save-note:hover {
+            background: var(--blue);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .body { padding: 16px; }
+            .stats-strip { grid-template-columns: 1fr; }
+            .company-grid { grid-template-columns: 1fr; }
+            .emission-row { grid-template-columns: 1fr 1fr; }
+            .navbar { padding: 0 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── NAVBAR ── -->
+<nav class="navbar">
+    <div style="display:flex;align-items:center;">
+        <div class="nav-logo">Emit<span>IQ</span></div>
+        <div class="nav-badge"><i class="fas fa-shield-alt"></i> Auditor Portal</div>
+    </div>
+    <div class="nav-right">
+        <div class="nav-user">
+            Signed in as <strong>{{ auditor_name }}</strong>
+        </div>
+        <a href="/logout" class="btn-logout">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </div>
+</nav>
+
+<!-- ── READ ONLY BANNER ── -->
+<div class="readonly-banner">
+    <i class="fas fa-lock"></i>
+    <strong>Read-Only Mode</strong> — You can view all ESG data and leave comments,
+    but cannot modify any company data.
+</div>
+
+<!-- ── BODY ── -->
+<div class="body">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-title">Audit Dashboard</div>
+        <div class="page-sub">
+            You have access to {{ total_companies }}
+            compan{{ 'y' if total_companies == 1 else 'ies' }} —
+            review ESG data, emissions, and evidence below.
+        </div>
+    </div>
+
+    <!-- Stats Strip -->
+    <div class="stats-strip">
+        <div class="stat-card">
+            <div class="stat-label">Companies Assigned</div>
+            <div class="stat-val">{{ total_companies }}</div>
+            <div class="stat-icon"><i class="fas fa-building"></i></div>
+        </div>
+        <div class="stat-card blue">
+            <div class="stat-label">Total Emissions (All)</div>
+            <div class="stat-val">
+                {{ "%.1f"|format(companies|sum(attribute='total_emissions')) }}
+                <span style="font-size:14px;color:var(--muted);">kg</span>
+            </div>
+            <div class="stat-icon blue"><i class="fas fa-leaf"></i></div>
+        </div>
+        <div class="stat-card purple">
+            <div class="stat-label">Avg ESG Score</div>
+            <div class="stat-val">
+                {% if companies %}
+                    {{ "%.0f"|format(companies|sum(attribute='overall_esg') / companies|length) }}
+                    <span style="font-size:14px;color:var(--muted);">/100</span>
+                {% else %}—{% endif %}
+            </div>
+            <div class="stat-icon purple"><i class="fas fa-star"></i></div>
+        </div>
+    </div>
+
+    <!-- Company Cards -->
+    <div class="section-label">Assigned Companies</div>
+
+    {% if companies %}
+    <div class="company-grid">
+        {% for co in companies %}
+        <div class="company-card">
+            <div class="company-card-header">
+                <div class="company-avatar">
+                    {{ co.company_name[0].upper() }}
+                </div>
+                <div class="company-info">
+                    <div class="company-name">{{ co.company_name }}</div>
+                    <div class="company-meta">
+                        Access expires {{ co.expires_at }}
+                        · Last viewed {{ co.last_login }}
+                    </div>
+                </div>
+                <div class="status-badge">Active</div>
+            </div>
+
+            <div class="company-card-body">
+
+                <!-- Emission Summary -->
+                <div class="emission-row">
+                    <div class="emission-box">
+                        <div class="emission-val"
+                             style="color:var(--green);">
+                            {{ co.total_emissions }}
+                        </div>
+                        <div class="emission-label">Total kg</div>
+                    </div>
+                    <div class="emission-box">
+                        <div class="emission-val"
+                             style="color:var(--green);">
+                            {{ co.scope1 }}
+                        </div>
+                        <div class="emission-label">Scope 1</div>
+                    </div>
+                    <div class="emission-box">
+                        <div class="emission-val"
+                             style="color:var(--amber);">
+                            {{ co.scope2 }}
+                        </div>
+                        <div class="emission-label">Scope 2</div>
+                    </div>
+                    <div class="emission-box">
+                        <div class="emission-val"
+                             style="color:var(--blue);">
+                            {{ co.scope3 }}
+                        </div>
+                        <div class="emission-label">Scope 3</div>
+                    </div>
+                </div>
+
+                <!-- ESG Progress Bars -->
+                <div class="esg-bars">
+                    <div class="esg-bar-row">
+                        <div class="esg-bar-label">Environmental</div>
+                        <div class="esg-bar-track">
+                            <div class="esg-bar-fill green"
+                                 style="width:{{ co.env_pct }}%"></div>
+                        </div>
+                        <div class="esg-bar-pct">{{ co.env_pct }}%</div>
+                    </div>
+                    <div class="esg-bar-row">
+                        <div class="esg-bar-label">Social</div>
+                        <div class="esg-bar-track">
+                            <div class="esg-bar-fill purple"
+                                 style="width:{{ co.social_pct }}%"></div>
+                        </div>
+                        <div class="esg-bar-pct">{{ co.social_pct }}%</div>
+                    </div>
+                    <div class="esg-bar-row">
+                        <div class="esg-bar-label">Governance</div>
+                        <div class="esg-bar-track">
+                            <div class="esg-bar-fill teal"
+                                 style="width:{{ co.gov_pct }}%"></div>
+                        </div>
+                        <div class="esg-bar-pct">{{ co.gov_pct }}%</div>
+                    </div>
+                </div>
+
+                <!-- Supply Chain -->
+                <div style="display:flex;justify-content:space-between;
+                            font-size:11px;color:var(--muted);
+                            padding-top:10px;border-top:1px solid var(--border);">
+                    <span>
+                        <i class="fas fa-truck" style="margin-right:4px;"></i>
+                        {{ co.supplier_total }} suppliers
+                    </span>
+                    <span>
+                        {{ co.supplier_responded }}/{{ co.supplier_total }}
+                        responded
+                    </span>
+                    <span style="color:var(--green);font-weight:600;">
+                        ESG {{ co.overall_esg }}/100
+                    </span>
+                </div>
+
+            </div>
+
+            <div class="company-card-footer">
+                <a href="/auditor/company/{{ co.company_id }}"
+                   class="btn-view">
+                    <i class="fas fa-eye"></i> View Full Audit
+                </a>
+                <button class="btn-outline-sm"
+                        onclick="openNoteModal('{{ co.company_id }}',
+                                              '{{ co.company_name }}')">
+                    <i class="fas fa-comment-alt"></i> Add Note
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-building"></i>
+        <h3>No Companies Assigned Yet</h3>
+        <p>You don't have active access to any companies.<br>
+           Ask a company to invite you via their settings page.</p>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- ── NOTE MODAL ── -->
+<div id="noteModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h3>Add Audit Note</h3>
+            <button class="modal-close"
+                    onclick="closeNoteModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div style="font-size:13px;color:var(--muted);margin-bottom:12px;">
+                Adding note for: <strong id="noteCompanyName"
+                style="color:var(--text);"></strong>
+            </div>
+            <textarea id="noteText" class="note-textarea"
+                      placeholder="Enter your audit observation or note here...">
+            </textarea>
+            <button class="btn-save-note" onclick="saveNote()">
+                <i class="fas fa-save"></i> Save Note
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentNoteCompanyId = null;
+
+function openNoteModal(companyId, companyName) {
+    currentNoteCompanyId = companyId;
+    document.getElementById('noteCompanyName').textContent = companyName;
+    document.getElementById('noteText').value = '';
+    document.getElementById('noteModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeNoteModal() {
+    document.getElementById('noteModal').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+function saveNote() {
+    const note = document.getElementById('noteText').value.trim();
+    if (!note) { alert('Please enter a note.'); return; }
+
+    fetch('/api/auditor/note', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            company_id : currentNoteCompanyId,
+            note       : note
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            closeNoteModal();
+            alert('Note saved successfully!');
+        } else {
+            alert('Error saving note: ' + data.message);
+        }
+    });
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeNoteModal();
+});
+</script>
+
+</body>
+</html>

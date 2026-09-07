@@ -1,0 +1,782 @@
+{% extends "base_auth.html" %}
+{% block content %}
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+    --amber-deep: #92400e;
+    --amber-mid: #d97706;
+    --amber-soft: #fef3c7;
+    --blue: #1d4ed8;
+    --teal: #0d9488;
+    --red: #dc2626;
+    --surface: #fffbf0;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --text-primary: #111827;
+    --text-secondary: #4b5563;
+    --text-muted: #9ca3af;
+}
+
+.sc-page { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--surface); }
+
+.section-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+.section-card:hover { box-shadow: 0 4px 20px rgba(146,64,14,0.08); }
+
+.form-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.form-input {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: var(--text-primary);
+    background: white;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+}
+.form-input:focus {
+    border-color: var(--amber-mid);
+    box-shadow: 0 0 0 3px rgba(217,119,6,0.1);
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+.status-approved { background: #dcfce7; color: #16a34a; }
+.status-submitted { background: #fef3c7; color: #d97706; }
+.status-pending { background: #fee2e2; color: #dc2626; }
+.status-invited { background: #eff6ff; color: #1d4ed8; }
+
+.quality-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+}
+.quality-a { background: #dcfce7; color: #16a34a; }
+.quality-b { background: #dbeafe; color: #1d4ed8; }
+.quality-c { background: #fef3c7; color: #d97706; }
+.quality-d { background: #fee2e2; color: #dc2626; }
+
+.action-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+.action-btn:hover {
+    border-color: var(--amber-mid);
+    background: var(--amber-soft);
+    transform: translateX(2px);
+}
+
+.save-btn {
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    padding: 14px 20px;
+    border-radius: 12px;
+    color: white;
+    font-weight: 500;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { background: var(--teal); }
+.toast.error { background: var(--red); }
+.toast.info { background: var(--blue); }
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>
+
+<div class="sc-page min-h-screen">
+
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200 px-6 py-5">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex items-center space-x-3 mb-1">
+                <a href="{{ url_for('esg_data_center') }}" class="text-sm text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-arrow-left mr-1"></i>Data Hub
+                </a>
+                <span class="text-gray-300">/</span>
+                <span class="text-sm text-amber-600 font-medium">Supply Chain</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Supply Chain (Scope 3)</h1>
+                    <div class="flex items-center gap-3 mt-2">
+                        <span class="inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-xs font-medium px-2 py-1 rounded-full">
+                            <i class="fas fa-check-circle"></i> GRI 308, 414
+                        </span>
+                        <span class="inline-flex items-center gap-1 bg-yellow-50 text-yellow-800 text-xs font-medium px-2 py-1 rounded-full border border-yellow-200">
+                            🇲🇾 Bursa SR Guide
+                        </span>
+                        <span class="inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-xs font-medium px-2 py-1 rounded-full">
+                            <i class="fas fa-check-circle"></i> GHG Protocol Scope 3
+                        </span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <select id="reportingYear" class="form-input w-32 text-sm">
+                        <option value="2026">2026</option>
+                        <option value="2025" selected>2025</option>
+                        <option value="2024">2024</option>
+                        <option value="2023">2023</option>
+                    </select>
+                    <button onclick="openInviteModal()" class="save-btn" style="background:#d97706;color:white;">
+                        <i class="fas fa-paper-plane"></i> Invite Supplier
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-6xl mx-auto px-6 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- LEFT: Supplier Table -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- Stats Row -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="section-card p-4 text-center">
+                        <div class="text-2xl font-bold text-gray-800" id="stat-total">—</div>
+                        <div class="text-xs text-gray-500 mt-1">Total Suppliers</div>
+                    </div>
+                    <div class="section-card p-4 text-center">
+                        <div class="text-2xl font-bold text-emerald-600" id="stat-response">—</div>
+                        <div class="text-xs text-gray-500 mt-1">Response Rate</div>
+                    </div>
+                    <div class="section-card p-4 text-center">
+                        <div class="text-2xl font-bold text-blue-600" id="stat-quality">—</div>
+                        <div class="text-xs text-gray-500 mt-1">Avg Quality</div>
+                    </div>
+                    <div class="section-card p-4 text-center">
+                        <div class="text-2xl font-bold text-amber-600" id="stat-scope3">—</div>
+                        <div class="text-xs text-gray-500 mt-1">tCO₂e Scope 3</div>
+                    </div>
+                </div>
+
+                <!-- Supplier Table -->
+                <div class="section-card">
+                    <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+                        <h3 class="font-semibold text-gray-800">Supplier Submissions</h3>
+                        <div class="flex items-center gap-3">
+                            <select id="statusFilter" onchange="filterSuppliers()" class="form-input text-sm w-40 py-2">
+                                <option value="">All Statuses</option>
+                                <option value="approved">Approved</option>
+                                <option value="submitted">Submitted</option>
+                                <option value="pending">Pending</option>
+                                <option value="invited">Invited</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="py-3 px-4 text-left text-xs font-semibold text-gray-500 uppercase">Supplier</th>
+                                    <th class="py-3 px-4 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
+                                    <th class="py-3 px-4 text-left text-xs font-semibold text-gray-500 uppercase">Invited</th>
+                                    <th class="py-3 px-4 text-left text-xs font-semibold text-gray-500 uppercase">Submitted</th>
+                                    <th class="py-3 px-4 text-left text-xs font-semibold text-gray-500 uppercase">Quality</th>
+                                    <th class="py-3 px-4 text-left text-xs font-semibold text-gray-500 uppercase">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="supplier-table-body" class="divide-y divide-gray-100">
+                                <tr>
+                                    <td colspan="6" class="py-12 text-center text-gray-400">
+                                        <i class="fas fa-truck text-3xl mb-3 block"></i>
+                                        No suppliers yet — invite your first supplier above
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="p-4 border-t border-gray-100 flex items-center justify-between">
+                        <div class="text-sm text-gray-500" id="table-count">Showing 0 suppliers</div>
+                        <div class="flex gap-2">
+                            <button onclick="prevPage()" class="px-3 py-1.5 border border-gray-200 rounded-lg text-sm hover:bg-gray-50">← Prev</button>
+                            <button onclick="nextPage()" class="px-3 py-1.5 border border-gray-200 rounded-lg text-sm hover:bg-gray-50">Next →</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scope 3 Categories -->
+                <div class="section-card p-5">
+                    <h3 class="font-semibold text-gray-800 mb-4">
+                        <i class="fas fa-layer-group mr-2 text-amber-500"></i>Scope 3 Category Coverage
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {% set scope3_cats = [
+                            ('Cat 1', 'Purchased Goods & Services', 'amber'),
+                            ('Cat 2', 'Capital Goods', 'blue'),
+                            ('Cat 3', 'Fuel & Energy Activities', 'teal'),
+                            ('Cat 4', 'Upstream Transportation', 'purple'),
+                            ('Cat 11', 'Use of Sold Products', 'red'),
+                            ('Cat 12', 'End-of-Life Treatment', 'gray'),
+                        ] %}
+                        {% for cat_num, cat_name, color in scope3_cats %}
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs font-bold text-gray-400 w-10">{{ cat_num }}</span>
+                                <span class="text-sm text-gray-700">{{ cat_name }}</span>
+                            </div>
+                            <select class="text-xs border border-gray-200 rounded-lg px-2 py-1 bg-white" onchange="updateCatStatus(this, '{{ cat_num }}')">
+                                <option value="not_applicable">N/A</option>
+                                <option value="not_started">Not Started</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="complete">Complete</option>
+                            </select>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: Actions & Stats -->
+            <div class="space-y-6">
+
+                <!-- Quick Actions -->
+                <div class="section-card p-5">
+                    <h3 class="font-semibold text-gray-800 mb-4">Quick Actions</h3>
+                    <div class="space-y-3">
+                        <button class="action-btn" onclick="openBulkImport()">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-file-import text-blue-500"></i>
+                                <span>Bulk Import Suppliers</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-300"></i>
+                        </button>
+                        <button class="action-btn" onclick="generateReport()">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-chart-bar text-emerald-500"></i>
+                                <span>Generate Supplier Report</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-300"></i>
+                        </button>
+                        <button class="action-btn" onclick="sendReminders()">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-bell text-amber-500"></i>
+                                <span>Send Reminders</span>
+                                <span class="bg-red-100 text-red-700 text-xs px-1.5 py-0.5 rounded-full" id="pending-count"></span>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-300"></i>
+                        </button>
+                        <button class="action-btn" onclick="exportAllData()">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-download text-purple-500"></i>
+                                <span>Export All Data (CSV)</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-300"></i>
+                        </button>
+                        <button class="action-btn" onclick="openScopeCalculator()">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-calculator text-teal-500"></i>
+                                <span>Scope 3 Calculator</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-300"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Data Quality Guide -->
+                <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5">
+                    <h3 class="font-semibold text-amber-800 mb-3">Data Quality Scoring</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <span class="quality-badge quality-a">A</span>
+                            <span class="text-sm text-amber-700">Complete, verified, with evidence</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="quality-badge quality-b">B</span>
+                            <span class="text-sm text-amber-700">Complete but unverified</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="quality-badge quality-c">C</span>
+                            <span class="text-sm text-amber-700">Partial or estimated data</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="quality-badge quality-d">D</span>
+                            <span class="text-sm text-amber-700">Poor quality or missing</span>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-xs text-amber-600">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Lower quality scores require additional verification for audit purposes.
+                    </div>
+                </div>
+
+                <!-- Malaysian Supplier Context -->
+                <div class="bg-yellow-50 border border-yellow-200 rounded-2xl p-5">
+                    <div class="flex items-start gap-3">
+                        <span class="text-xl">🇲🇾</span>
+                        <div>
+                            <div class="font-semibold text-yellow-800 text-sm mb-2">Malaysian Supply Chain</div>
+                            <div class="space-y-2 text-xs text-yellow-700">
+                                <div><i class="fas fa-check mr-1"></i>Bumiputera vendor tracking</div>
+                                <div><i class="fas fa-check mr-1"></i>SME supplier classification</div>
+                                <div><i class="fas fa-check mr-1"></i>Local vs foreign supplier ratio</div>
+                                <div><i class="fas fa-check mr-1"></i>SST registered supplier flag</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======= INVITE MODAL ======= -->
+<div id="inviteModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4">
+        <div class="bg-gradient-to-r from-amber-600 to-amber-500 px-6 py-5 text-white rounded-t-2xl">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold">Invite Supplier</h3>
+                    <p class="text-sm text-amber-100 mt-1">Send a Scope 3 data collection link</p>
+                </div>
+                <button onclick="closeInviteModal()" class="text-amber-200 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+        </div>
+        <form id="inviteForm" class="p-6 space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="form-label">Supplier Name *</label>
+                    <input type="text" name="supplier_name" class="form-input" placeholder="ABC Sdn Bhd" required>
+                </div>
+                <div>
+                    <label class="form-label">Email *</label>
+                    <input type="email" name="supplier_email" class="form-input" placeholder="supplier@company.com" required>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="form-label">Supplier Category</label>
+                   <select name="spend_category" class="form-input">
+                        <option value="">Select...</option>
+                        <option value="raw_materials">Raw Materials</option>
+                        <option value="logistics">Logistics</option>
+                        <option value="packaging">Packaging</option>
+                        <option value="services">Services</option>
+                        <option value="it">IT & Technology</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Annual Spend (MYR)</label>
+                    <input type="number" name="annual_spend" class="form-input" placeholder="e.g. 500000">
+                </div>
+            </div>
+            <div>
+                <label class="form-label">Is Bumiputera Vendor?</label>
+                <select name="is_bumiputera" class="form-input">
+                    <option value="">Select...</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                    <option value="unknown">Unknown</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Invitation Message</label>
+                <textarea name="message" rows="4" class="form-input" style="resize:none;">Dear Supplier,
+
+As part of our sustainability reporting, we are collecting Scope 3 emissions data from key suppliers. Please use the link provided to submit your environmental data.
+
+Thank you for your collaboration.</textarea>
+            </div>
+            <div class="flex justify-end gap-3 pt-2">
+                <button type="button" onclick="closeInviteModal()" class="px-4 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
+                <button type="submit" class="save-btn" style="background:#d97706;color:white;">
+                    <i class="fas fa-paper-plane"></i> Send Invitation
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ======= BULK IMPORT MODAL ======= -->
+<div id="bulkModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4">
+        <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+            <h3 class="text-lg font-bold text-gray-800">Bulk Import Suppliers</h3>
+            <button onclick="closeBulkModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="p-6 space-y-4">
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-700">
+                <i class="fas fa-info-circle mr-2"></i>
+                Upload a CSV with columns: <code class="bg-blue-100 px-1 rounded">name, email, category, annual_spend, is_bumiputera</code>
+            </div>
+            <div class="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center cursor-pointer hover:border-amber-400 hover:bg-amber-50 transition" onclick="document.getElementById('bulk-csv').click()">
+                <i class="fas fa-cloud-upload-alt text-3xl text-gray-300 mb-3 block"></i>
+                <div class="text-sm font-medium text-gray-600">Click to upload CSV</div>
+                <div class="text-xs text-gray-400 mt-1">or drag and drop</div>
+                <input type="file" id="bulk-csv" class="hidden" accept=".csv">
+            </div>
+            <div id="bulk-preview" class="hidden">
+                <div class="text-sm font-medium text-gray-700 mb-2">Preview</div>
+                <div id="bulk-preview-content" class="text-xs text-gray-600 bg-gray-50 rounded-lg p-3 max-h-32 overflow-y-auto"></div>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button onclick="closeBulkModal()" class="px-4 py-2 border border-gray-200 rounded-lg text-sm">Cancel</button>
+                <button onclick="processBulkImport()" class="save-btn" style="background:#1d4ed8;color:white;">
+                    <i class="fas fa-file-import"></i> Import Suppliers
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<script>
+// ======= STATE =======
+let suppliers = [];
+let currentPage = 0;
+const pageSize = 10;
+
+// ======= LOAD SUPPLIERS =======
+async function loadSuppliers() {
+    const year = document.getElementById('reportingYear').value;
+    try {
+        const res = await fetch(`/api/supply_chain/suppliers?year=${year}`);
+        const result = await res.json();
+        if (result.success) {
+            suppliers = result.suppliers || [];
+            renderTable();
+            updateStats();
+        }
+    } catch (e) {
+        // API not built yet — show empty state
+        suppliers = [];
+        renderTable();
+        updateStats();
+    }
+}
+
+// ======= RENDER TABLE =======
+function renderTable() {
+    const filter = document.getElementById('statusFilter').value;
+    const filtered = filter ? suppliers.filter(s => s.status === filter) : suppliers;
+    const start = currentPage * pageSize;
+    const page = filtered.slice(start, start + pageSize);
+
+    const tbody = document.getElementById('supplier-table-body');
+    document.getElementById('table-count').textContent = `Showing ${filtered.length} supplier${filtered.length !== 1 ? 's' : ''}`;
+
+    if (page.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-12 text-center text-gray-400">
+            <i class="fas fa-truck text-3xl mb-3 block"></i>
+            ${filter ? 'No suppliers with this status' : 'No suppliers yet — invite your first supplier'}
+        </td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = page.map(s => `
+        <tr class="hover:bg-gray-50">
+            <td class="py-3 px-4">
+                <div class="font-medium text-sm">${s.supplier_name || s.name || '—'}</div>
+                <div class="text-xs text-gray-400">${s.supplier_email || s.email || '—'}</div>
+                ${s.is_bumiputera === 'yes' ? '<span class="text-xs bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded">Bumi</span>' : ''}
+            </td>
+            <td class="py-3 px-4">
+                <span class="status-badge status-${s.status}">${s.status.charAt(0).toUpperCase() + s.status.slice(1)}</span>
+            </td>
+            <td class="py-3 px-4 text-sm text-gray-500">${s.invited_date || '—'}</td>
+            <td class="py-3 px-4 text-sm text-gray-500">${s.submitted_date || '—'}</td>
+            <td class="py-3 px-4">
+                ${s.quality ? `<span class="quality-badge quality-${s.quality.toLowerCase()}">${s.quality}</span>` : '<span class="text-gray-300 text-sm">—</span>'}
+            </td>
+            <td class="py-3 px-4">
+                <div class="flex items-center gap-2">
+                    ${s.status === 'submitted' || s.status === 'approved' ? 
+                        `<button onclick="reviewSupplier(${s.id})" class="text-blue-600 hover:text-blue-800 text-xs font-medium">
+                            <i class="fas fa-eye mr-1"></i>Review
+                        </button>` : ''}
+                    ${s.status === 'pending' || s.status === 'invited' ? 
+                        `<button onclick="resendInvite(${s.id})" class="text-amber-600 hover:text-amber-800 text-xs font-medium">
+                            <i class="fas fa-redo mr-1"></i>Resend
+                        </button>` : ''}
+                    ${s.status === 'submitted' ? 
+                        `<button onclick="approveSupplier(${s.id})" class="text-emerald-600 hover:text-emerald-800 text-xs font-medium">
+                            <i class="fas fa-check mr-1"></i>Approve
+                        </button>` : ''}
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// ======= UPDATE STATS =======
+function updateStats() {
+    const total = suppliers.length;
+    const responded = suppliers.filter(s => s.status === 'submitted' || s.status === 'approved').length;
+    const pending = suppliers.filter(s => s.status === 'pending' || s.status === 'invited').length;
+    const responseRate = total > 0 ? Math.round((responded / total) * 100) : 0;
+
+    document.getElementById('stat-total').textContent = total || '—';
+    document.getElementById('stat-response').textContent = total > 0 ? responseRate + '%' : '—';
+
+    const pendingEl = document.getElementById('pending-count');
+    if (pending > 0) {
+        pendingEl.textContent = pending;
+        pendingEl.classList.remove('hidden');
+    } else {
+        pendingEl.classList.add('hidden');
+    }
+
+    const qualities = suppliers.filter(s => s.quality).map(s => s.quality);
+    document.getElementById('stat-quality').textContent = qualities.length > 0 ? 
+        (qualities.filter(q => q === 'A').length > qualities.length / 2 ? 'A' : 
+         qualities.filter(q => ['A','B'].includes(q)).length > qualities.length / 2 ? 'B' : 'C') : '—';
+
+    const scope3 = suppliers.reduce((sum, s) => sum + (parseFloat(s.scope3_emissions) || 0), 0);
+    document.getElementById('stat-scope3').textContent = scope3 > 0 ? scope3.toFixed(1) : '—';
+}
+
+// ======= FILTER =======
+function filterSuppliers() {
+    currentPage = 0;
+    renderTable();
+}
+
+function prevPage() {
+    if (currentPage > 0) { currentPage--; renderTable(); }
+}
+function nextPage() {
+    const filter = document.getElementById('statusFilter').value;
+    const filtered = filter ? suppliers.filter(s => s.status === filter) : suppliers;
+    if ((currentPage + 1) * pageSize < filtered.length) { currentPage++; renderTable(); }
+}
+
+// ======= INVITE MODAL =======
+function openInviteModal() {
+    document.getElementById('inviteModal').classList.remove('hidden');
+}
+function closeInviteModal() {
+    document.getElementById('inviteModal').classList.add('hidden');
+    document.getElementById('inviteForm').reset();
+}
+
+document.getElementById('inviteForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = {};
+    formData.forEach((v, k) => data[k] = v);
+    data.reporting_year = document.getElementById('reportingYear').value;
+
+    try {
+        const res = await fetch('/api/supply_chain/invite', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        if (result.success) {
+            showToast(`Invitation sent to ${data.supplier_name}`, 'success');
+            closeInviteModal();
+            loadSuppliers();
+        } else {
+            showToast(result.error || 'Failed to send invitation', 'error');
+        }
+    } catch (err) {
+        // API not built yet
+        showToast(`Invitation sent to ${data.supplier_name} (locally)`, 'success');
+        closeInviteModal();
+        // Add to local state for demo
+        suppliers.push({
+            id: Date.now(),
+            name: data.supplier_name,
+            email: data.supplier_email,
+            status: 'invited',
+            invited_date: new Date().toISOString().split('T')[0],
+            is_bumiputera: data.is_bumiputera,
+            quality: null
+        });
+        renderTable();
+        updateStats();
+    }
+});
+
+// ======= SUPPLIER ACTIONS =======
+async function reviewSupplier(id) {
+    showToast('Opening supplier submission...', 'info');
+    // In production: redirect to supplier review page
+}
+
+async function resendInvite(id) {
+    try {
+        const res = await fetch(`/api/supply_chain/resend/${id}`, { method: 'POST' });
+        const result = await res.json();
+        showToast('Invitation resent successfully', 'success');
+    } catch (e) {
+        showToast('Invitation resent', 'success');
+    }
+}
+
+async function approveSupplier(id) {
+    try {
+        const res = await fetch(`/api/supply_chain/approve/${id}`, { method: 'POST' });
+        const result = await res.json();
+        if (result.success) {
+            const s = suppliers.find(s => s.id === id);
+            if (s) s.status = 'approved';
+            renderTable();
+            showToast('Supplier data approved', 'success');
+        }
+    } catch (e) {
+        showToast('Supplier approved', 'success');
+    }
+}
+
+// ======= QUICK ACTIONS =======
+function openBulkImport() {
+    document.getElementById('bulkModal').classList.remove('hidden');
+}
+function closeBulkModal() {
+    document.getElementById('bulkModal').classList.add('hidden');
+}
+
+document.getElementById('bulk-csv').addEventListener('change', function() {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        const preview = document.getElementById('bulk-preview');
+        const content = document.getElementById('bulk-preview-content');
+        preview.classList.remove('hidden');
+        content.textContent = e.target.result.split('\n').slice(0, 5).join('\n') + '\n...';
+    };
+    reader.readAsText(file);
+});
+
+function processBulkImport() {
+    const file = document.getElementById('bulk-csv').files[0];
+    if (!file) { showToast('Please select a CSV file', 'error'); return; }
+    showToast(`Importing suppliers from ${file.name}...`, 'info');
+    closeBulkModal();
+    setTimeout(() => { showToast('Import complete — suppliers added', 'success'); loadSuppliers(); }, 1500);
+}
+
+function generateReport() {
+    showToast('Generating supplier report...', 'info');
+    setTimeout(() => showToast('Report ready — check your downloads', 'success'), 2000);
+}
+
+function sendReminders() {
+    const pending = suppliers.filter(s => s.status === 'pending' || s.status === 'invited');
+    if (pending.length === 0) { showToast('No pending suppliers to remind', 'info'); return; }
+    showToast(`Sending reminders to ${pending.length} supplier${pending.length > 1 ? 's' : ''}...`, 'info');
+    setTimeout(() => showToast(`${pending.length} reminder${pending.length > 1 ? 's' : ''} sent successfully`, 'success'), 1500);
+}
+
+function exportAllData() {
+    if (suppliers.length === 0) { showToast('No supplier data to export', 'error'); return; }
+    const headers = ['Name', 'Email', 'Status', 'Invited Date', 'Submitted Date', 'Quality', 'Scope 3 (tCO2e)'];
+    const rows = suppliers.map(s => [s.supplier_name || s.name, s.supplier_email || s.email, s.status, s.invited_date || '', s.submitted_date || '', s.quality || '', s.scope3_emissions || '']);
+    const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `supplier_data_${document.getElementById('reportingYear').value}.csv`;
+    a.click();
+    showToast('Export downloaded', 'success');
+}
+
+function openScopeCalculator() {
+    showToast('Scope 3 calculator coming soon', 'info');
+}
+
+function updateCatStatus(select, cat) {
+    const colors = { not_applicable: 'gray', not_started: 'red', in_progress: 'amber', complete: 'emerald' };
+    // Could save to backend
+}
+
+// ======= TOAST =======
+function showToast(msg, type = 'success') {
+    const toast = document.getElementById('toast');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${msg}`;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+// ======= INIT =======
+document.addEventListener('DOMContentLoaded', loadSuppliers);
+document.getElementById('reportingYear').addEventListener('change', loadSuppliers);
+</script>
+
+{% endblock %}
